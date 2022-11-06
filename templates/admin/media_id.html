@@ -1,0 +1,266 @@
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+    <link href="{{ url_for('static', filename='../static/style.css') }}" rel="stylesheet">
+    <title>Dashboard - CMS</title>
+</head>
+
+<body>
+    <div id="app">
+        <div class="template-default">
+            <aside class="nav">
+                <div class="nav__scroll">
+                    <header>
+                        <a class="nav__brand" href="/admin">
+                            <svg width="25" height="25" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg"
+                                class="graphic-icon">
+                                <style>
+                                    .graphic-icon path {
+                                        fill: var(--theme-elevation-1000);
+                                    }
+                                </style>
+                                <path d="M11.5293 0L23 6.90096V19.9978L14.3608 25V11.9032L2.88452 5.00777L11.5293 0Z">
+                                </path>
+                                <path d="M10.6559 24.2727V14.0518L2 19.0651L10.6559 24.2727Z"></path>
+                            </svg>
+                        </a>
+
+                        <button type="button" class="nav__mobile-menu-btn"><svg width="25" height="25"
+                                viewBox="0 0 25 25" fill="none" class="icon icon--menu"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <rect x="3.5" y="4.5" width="18" height="2" class="fill"></rect>
+                                <rect x="3.5" y="11.5" width="18" height="2" class="fill"></rect>
+                                <rect x="3.5" y="18.5" width="18" height="2" class="fill"></rect>
+                            </svg>
+                        </button>
+                    </header>
+
+                    <nav class="nav__wrap">
+                        <div id="nav-group-Content" class="nav-group Content"><button type="button"
+                                class="nav-group__toggle nav-group__toggle--open">
+                                <div class="nav-group__label">Content</div><svg
+                                    class="icon icon--chevron nav-group__indicator" xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 25 25">
+                                    <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
+                                </svg>
+                            </button>
+                            <div aria-hidden="false" class="rah-static rah-static--height-auto">
+                                <div>
+                                    <div class="nav-group__content"><a class="nav__link" id="nav-media"
+                                            href="/admin/media"><svg class="icon icon--chevron"
+                                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                                <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
+                                            </svg>Media</a><a class="nav__link" id="nav-posts"
+                                            href="/admin/posts"><svg class="icon icon--chevron"
+                                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                                <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
+                                            </svg>Posts</a></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="nav-group-Admin" class="nav-group Admin"><button type="button"
+                                class="nav-group__toggle nav-group__toggle--open">
+                                <div class="nav-group__label">Admin</div><svg
+                                    class="icon icon--chevron nav-group__indicator" xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 25 25">
+                                    <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
+                                </svg>
+                            </button>
+                            <div aria-hidden="false" class="rah-static rah-static--height-auto">
+                                <div>
+                                    <div class="nav-group__content"><a class="nav__link" id="nav-users"
+                                            href="/admin/users"><svg class="icon icon--chevron"
+                                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                                <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
+                                            </svg>Users</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="nav__controls">
+                            <a class="nav__account" href="/admin/account"><svg class="graphic-account" width="25"
+                                    height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                    <style>
+                                        .graphic-account .circle1 {
+                                            fill: var(--theme-elevation-100);
+                                        }
+
+                                        .graphic-account .circle2,
+                                        .graphic-account path {
+                                            fill: var(--theme-elevation-300);
+                                        }
+                                    </style>
+                                    <circle class="circle1" cx="12.5" cy="12.5" r="11.5"></circle>
+                                    <circle class="circle2" cx="12.5" cy="10.73" r="3.98"></circle>
+                                    <path
+                                        d="M12.5,24a11.44,11.44,0,0,0,7.66-2.94c-.5-2.71-3.73-4.8-7.66-4.8s-7.16,2.09-7.66,4.8A11.44,11.44,0,0,0,12.5,24Z">
+                                    </path>
+                                </svg></a><a class="nav__log-out" href="/admin/logout"><svg class="icon icon--logout"
+                                    viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M10 5H18V19H10" class="stroke"></path>
+                                    <g>
+                                        <path d="M8 8.5L4.46447 12.0355L8 15.5711" class="stroke"></path>
+                                        <line x1="5" y1="12" x2="13" y2="12" class="stroke"></line>
+                                    </g>
+                                </svg></a>
+                        </div>
+                    </nav>
+                </div>
+            </aside>
+
+            <div class="template-default__wrap">
+                <div class="collection-edit collection-edit--is-editing">
+                    <form novalidate="" method="patch"
+                        action="https://demo.payloadcms.com/api/media/6366f90008fff3c0c302902a?locale=en&amp;depth=0&amp;fallback-locale=null"
+                        class="collection-edit__form form">
+                        <div class="collection-edit__main">
+                            <div class="eyebrow">
+                                <div class="gutter--left gutter--right eyebrow__wrap">
+                                    <nav class="step-nav"><a href="/admin"><span>Dashboard</span><svg
+                                                class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 25 25">
+                                                <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
+                                            </svg></a><a href="/admin/media"><span>Media</span><svg
+                                                class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 25 25">
+                                                <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
+                                            </svg></a><span>CMS.jpg</span></nav>
+                                </div>
+                            </div>
+                            <div class="gutter--left gutter--right collection-edit__edit">
+                                <header class="collection-edit__header">
+                                    <h1>
+                                        <div class="id-label">ID:&nbsp;&nbsp;6366f90008fff3c0c302902a</div>
+                                    </h1>
+                                </header>
+                                <div class="file-field field-type">
+                                    <div class="file-details">
+                                        <header>
+                                            <div class="thumbnail thumbnail--size-medium"><img
+                                                    src="https://source.unsplash.com/random"
+                                                    alt="CMS.jpg"></div>
+                                            <div class="file-details__main-detail">
+                                                <div class="file-meta">
+                                                    <div class="file-meta__url"><a
+                                                            href="/admin/media/CMS"
+                                                            target="_blank"
+                                                            rel="noopener noreferrer">CMS.jpg</a><button
+                                                            type="button" class="copy-to-clipboard"><svg
+                                                                class="icon icon--copy"
+                                                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                                                <rect x="6.5" y="10" width="8" height="8"
+                                                                    class="stroke"></rect>
+                                                                <path d="M10 9.98438V6.5H18V14.5H14" class="stroke">
+                                                                </path>
+                                                            </svg>
+                                                            <aside class="tooltip">Copy URL<span></span></aside>
+                                                            <textarea
+                                                                readonly="">https://source.unsplash.com/random</textarea>
+                                                        </button></div>
+                                                    <div class="file-meta__size-type">
+                                                        252KB&nbsp;-&nbsp;1920x1080&nbsp;-&nbsp;image/jpeg</div>
+                                                </div><button type="button"
+                                                    class="btn file-details__toggle-more-info open btn--style-none btn--icon-style-without-border btn--size-medium btn--icon-position-right"><span
+                                                        class="btn__content"><span class="btn__label">Less info<svg
+                                                                class="icon icon--chevron"
+                                                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                                                <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5">
+                                                                </path>
+                                                            </svg></span></span></button>
+                                            </div><button type="button"
+                                                class="btn file-details__remove btn--style-icon-label btn--icon btn--icon-style-with-border btn--icon-only btn--round btn--size-medium btn--icon-position-right"><span
+                                                    class="btn__content"><span class="btn__icon"><svg width="25"
+                                                            height="25" class="icon icon--x"
+                                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                                            <line class="stroke" x1="8.74612" y1="16.347" x2="16.3973"
+                                                                y2="8.69584"></line>
+                                                            <line class="stroke" x1="8.6027" y1="8.69585" x2="16.2539"
+                                                                y2="16.3471"></line>
+                                                        </svg></span></span></button>
+                                        </header>
+                                        <div class="rah-static rah-static--height-auto file-details__more-info"
+                                            aria-hidden="false">
+                                            <div>
+                                                <ul class="file-details__sizes">
+                                                    <li>
+                                                        <div class="file-details__size-label">thumbnail</div>
+                                                        <div class="file-meta">
+                                                            <div class="file-meta__url"><a
+                                                                    href="https://source.unsplash.com/random"
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer">CMS-480x320.jpg</a><button
+                                                                    type="button" class="copy-to-clipboard"><svg
+                                                                        class="icon icon--copy"
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        viewBox="0 0 25 25">
+                                                                        <rect x="6.5" y="10" width="8" height="8"
+                                                                            class="stroke"></rect>
+                                                                        <path d="M10 9.98438V6.5H18V14.5H14"
+                                                                            class="stroke"></path>
+                                                                    </svg>
+                                                                    <aside class="tooltip">Copy URL<span></span></aside>
+                                                                    <textarea
+                                                                        readonly="">https://demo.payloadcms.com/media/CMS-480x320.jpg</textarea>
+                                                                </button></div>
+                                                            <div class="file-meta__size-type">
+                                                                9KB&nbsp;-&nbsp;480x320&nbsp;-&nbsp;image/jpeg</div>
+                                                        </div>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="render-fields">
+                                    <div class="field-type text read-only"><label for="field-alt"
+                                            class="field-label">Alt Text<span class="required">*</span></label><input
+                                            id="field-alt" disabled="" type="text" name="alt" value="CMS"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="collection-edit__sidebar-wrap">
+                            <div class="collection-edit__sidebar">
+                                <div class="collection-edit__sidebar-sticky-wrap">
+                                    <ul class="collection-edit__collection-actions"></ul>
+                                    <div class="collection-edit__document-actions"></div>
+                                    <div class="collection-edit__sidebar-fields">
+                                        <div class="render-fields"></div>
+                                    </div>
+                                    <ul class="collection-edit__meta">
+                                        <li class="collection-edit__api-url"><span class="collection-edit__label">API
+                                                URL <button type="button" class="copy-to-clipboard"><svg
+                                                        class="icon icon--copy" xmlns="http://www.w3.org/2000/svg"
+                                                        viewBox="0 0 25 25">
+                                                        <rect x="6.5" y="10" width="8" height="8" class="stroke"></rect>
+                                                        <path d="M10 9.98438V6.5H18V14.5H14" class="stroke"></path>
+                                                    </svg>
+                                                    <aside class="tooltip">copy<span></span></aside><textarea
+                                                        readonly="">https://demo.payloadcms.com/api/media/6366f90008fff3c0c302902a</textarea>
+                                                </button></span><a
+                                                href="https://demo.payloadcms.com/api/media/6366f90008fff3c0c302902a"
+                                                target="_blank"
+                                                rel="noopener noreferrer">https://demo.payloadcms.com/api/media/6366f90008fff3c0c302902a</a>
+                                        </li>
+                                        <li>
+                                            <div class="collection-edit__label">Last Modified</div>
+                                            <div>November 6th 2022, 8:00 AM</div>
+                                        </li>
+                                        <li>
+                                            <div class="collection-edit__label">Created</div>
+                                            <div>November 6th 2022, 8:00 AM</div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

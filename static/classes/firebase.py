@@ -58,6 +58,3 @@ class Firebase:
     def update_csp(self, csp_dict):
         self.__database.child("Content_Security_Policy").update(csp_dict)
 
-
-# if __name__ == "__main__":
-#     firebase = Firebase()

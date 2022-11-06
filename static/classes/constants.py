@@ -53,7 +53,6 @@ class SecretConstants:
         self.__APP_ID = GoogleSecretManager.get_secret_payload(self, CONSTANTS.GOOGLE_PROJECT_ID, "appId", "1")
         self.__MEASUREMENT_ID = GoogleSecretManager.get_secret_payload(self, CONSTANTS.GOOGLE_PROJECT_ID, "measurementId", "1")
 
-        print(self.__API_KEY)
         # --- RETRIEVING FLASK SECRET KEY ---
         # self.__FLASK_SECRET_KEY = GoogleSecretManager.get_secret_payload(self, CONSTANTS.GOOGLE_PROJECT_ID, CONSTANTS.FLASK_SECRET_KEY_NAME, "2")
 
@@ -98,7 +97,6 @@ class SecretConstants:
     #     return self.__FLASK_SECRET_KEY
 
 SECRET_CONSTANTS = SecretConstants()
-print("lo")
 
 __all__ = [
     "CONSTANTS",
