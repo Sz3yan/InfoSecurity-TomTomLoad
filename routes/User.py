@@ -1,4 +1,6 @@
-from static.classes.constants import CONSTANTS
+import vt
+
+from static.classes.constants import CONSTANTS, SECRET_CONSTANTS
 from static.classes.firebase import Firebase
 from flask import Blueprint, render_template, request, session, redirect, abort
 

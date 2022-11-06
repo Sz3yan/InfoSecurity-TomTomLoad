@@ -34,6 +34,7 @@ Flask-Session==0.4.0
 Flask-SQLAlchemy==2.5.1
 flask-talisman==1.0.0
 Flask-WTF==1.0.1
+future==0.18.2
 gcloud==0.18.3
 geocoder==1.38.1
 geographiclib==1.52
@@ -50,6 +51,7 @@ google-cloud-core==2.3.2
 google-cloud-firestore==2.6.0
 google-cloud-kms==2.12.0
 google-cloud-logging==3.2.1
+google-cloud-private-ca==1.4.3
 google-cloud-secret-manager==2.12.2
 google-cloud-storage==2.5.0
 google-crc32c==1.3.0
@@ -75,8 +77,9 @@ Naked==0.1.31
 oauth2client==4.1.3
 oauthlib==3.2.1
 packaging==21.3
+pem==21.2.0
 proto-plus==1.22.0
-protobuf==3.20.1
+protobuf==4.21.9
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
 pycparser==2.21

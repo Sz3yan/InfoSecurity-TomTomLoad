@@ -42,7 +42,6 @@ class SecretConstants:
 
         # --- RETRIEVING HSM SECRET KEY ---
         # self.__POST_SECRET_KEY = GoogleSecretManager.get_secret_payload(self, CONSTANTS.GOOGLE_PROJECT_ID, CONSTANTS.AVAILABLE_KEY_RINGS[0], "1")
-        # self.__PAGE_SECRET_KEY = GoogleSecretManager.get_secret_payload(self, CONSTANTS.GOOGLE_PROJECT_ID, CONSTANTS.AVAILABLE_KEY_RINGS[1], "1")
 
         # --- RETRIEVING FIREBASE CREDENTIALS ---
         self.__API_KEY = GoogleSecretManager.get_secret_payload(self, CONSTANTS.GOOGLE_PROJECT_ID, "apiKey", "1")
@@ -53,6 +52,9 @@ class SecretConstants:
         self.__APP_ID = GoogleSecretManager.get_secret_payload(self, CONSTANTS.GOOGLE_PROJECT_ID, "appId", "1")
         self.__MEASUREMENT_ID = GoogleSecretManager.get_secret_payload(self, CONSTANTS.GOOGLE_PROJECT_ID, "measurementId", "1")
 
+        # --- VIRUSTOTAL API ---
+        self.__virus_total_api_key = GoogleSecretManager.get_secret_payload(self, CONSTANTS.GOOGLE_PROJECT_ID, "virustotal", "1")
+
         # --- RETRIEVING FLASK SECRET KEY ---
         # self.__FLASK_SECRET_KEY = GoogleSecretManager.get_secret_payload(self, CONSTANTS.GOOGLE_PROJECT_ID, CONSTANTS.FLASK_SECRET_KEY_NAME, "2")
 
@@ -60,9 +62,6 @@ class SecretConstants:
     # def POST_SECRET_KEY(self) -> str:
     #     return self.__POST_SECRET_KEY
 
-    # @property
-    # def PAGE_SECRET_KEY(self) -> str:
-    #     return self.__PAGE_SECRET_KEY
 
     @property
     def API_KEY(self) -> str:
@@ -91,6 +90,10 @@ class SecretConstants:
     @property
     def MEASUREMENT_ID(self) -> str:
         return self.__MEASUREMENT_ID
+
+    @property
+    def virus_total_api_key(self) -> str:
+        return self.__virus_total_api_key
 
     # @property
     # def FLASK_SECRET_KEY(self) -> str:
