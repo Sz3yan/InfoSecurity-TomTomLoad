@@ -2,6 +2,7 @@ from flask import Blueprint, render_template
 
 error = Blueprint("error", __name__, static_folder="static", template_folder="templates")
 
+
 # Bad Request
 @error.app_errorhandler(400)
 def error400(e):
