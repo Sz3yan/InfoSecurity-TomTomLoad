@@ -2,6 +2,7 @@ import os
 
 from flask import Flask
 from flask_session import Session
+from flask_paranoid import Paranoid
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
@@ -16,15 +17,19 @@ app = Flask(__name__)
 app.config["CONSTANTS"] = CONSTANTS
 app.config["SECRET"] = SECRET_CONSTANTS
 app.config["DEBUG_FLAG"] = app.config["CONSTANTS"].DEBUG_MODE
-# app.config['SESSION_TYPE'] = 'filesystem'
-# app.config["SECRET_KEY"] = "SECRET.FLASK_SECRET_KEY"
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config["SECRET_KEY"] = "SECRET.FLASK_SECRET_KEY"
 
 
 csrf = CSRFProtect(app)
 
-# sess = Session(app)
-# if app.config["CONSTANTS"].DEBUG_MODE:
-#     app.config["SESSION_COOKIE_SECURE"] = True
+sess = Session(app)
+if app.config["CONSTANTS"].DEBUG_MODE:
+    app.config["SESSION_COOKIE_SECURE"] = True
+
+paranoid = Paranoid(app)
+paranoid.redirect_view = "/"
+
 
 # limiter = Limiter(
 #     app=app,
