@@ -40,7 +40,7 @@
                     <nav class="nav__wrap">
                         <div id="nav-group-Content" class="nav-group Content"><button type="button"
                                 class="nav-group__toggle nav-group__toggle--open">
-                                <div class="nav-group__label">Content</div><svg
+                                <div class="nav-group__label">Content {{ session["name"] }}</div><svg
                                     class="icon icon--chevron nav-group__indicator" xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 25 25">
                                     <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
@@ -116,7 +116,9 @@
                     <div class="eyebrow">
                         <div class="gutter--left gutter--right eyebrow__wrap">
                             <nav class="step-nav"><span>Dashboard</span></nav>
+                            <a href="/logout">logout</a>
                         </div>
+                        
                     </div>
                     <div class="gutter--left gutter--right dashboard__wrap">
                         <h2 class="dashboard__label">Content</h2>

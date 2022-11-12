@@ -27,8 +27,11 @@ class Constants:
     # FLASK_SECRET_KEY_NAME: str = ""
 
     # --- RATE LIMITING ---
-    # DEFAULT_REQUEST_LIMIT: str = ""
-    # SENSITIVE_PAGE_LIMIT: str = ""
+    DEFAULT_REQUEST_LIMIT: str = "60 per minute"
+    SENSITIVE_PAGE_LIMIT: str = "9 per minute"
+
+    # --- GOOGLE OAUTH ---
+    GOOGLE_CLIENT_ID: str = "526204912239-9t2aptlchfeclmkcsegpp69cb690jre3.apps.googleusercontent.com"
 
 
 CONSTANTS = Constants()
