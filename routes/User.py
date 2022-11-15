@@ -3,7 +3,7 @@ import requests
 import google.auth.transport.requests
 
 from static.classes.constants import CONSTANTS, SECRET_CONSTANTS
-from flask import Blueprint, render_template, request, session, redirect, abort
+from flask import Blueprint, render_template, request, session, redirect, abort, make_response
 from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
@@ -46,8 +46,6 @@ def callback():
         audience=CONSTANTS.GOOGLE_CLIENT_ID
     )
 
-    print(id_info)
-
     session["google_id"] = id_info.get("sub")  #defing the results to show on the page
     session["name"] = id_info.get("name")
     return redirect("/admin")  #the final page where the authorized users will end up
@@ -61,4 +59,11 @@ def logout():
 
 @user.route('/')
 def home():
-    return render_template('user/home.html')
+    # add http headers
+    resp = make_response("Hello World", 200)
+    resp.headers.extend({'X-TTL-Authenticated-Email': 'll@gmail.com'})
+    resp.headers.extend({'X-TTL-Authenticated-id': 'asdfafgafa'})
+    resp.headers.extend({'X-TTL-JWTAuthenticated': 'AT-5000'})
+    return resp
+
+    # return render_template('user/home.html')
