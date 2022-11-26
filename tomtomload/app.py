@@ -7,17 +7,19 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
 from flask_talisman import Talisman
-from static.classes.constants import CONSTANTS, SECRET_CONSTANTS
+from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 
-from routes.Admin import admin
 from routes.Errors import error
-from routes.User import user
+from routes.authorised_user import authorised_user
+
 
 app = Flask(__name__)
+
 app.config["CONSTANTS"] = CONSTANTS
 app.config["SECRET"] = SECRET_CONSTANTS
 app.config["DEBUG_FLAG"] = app.config["CONSTANTS"].DEBUG_MODE
 app.config['SESSION_TYPE'] = 'filesystem'
+app.config["SESSION_FILE_DIR"] = os.path.join(app.config["CONSTANTS"].TTL_ROOT_FOLDER, "sessions")
 app.config["SECRET_KEY"] = "SECRET.FLASK_SECRET_KEY"
 
 
@@ -44,7 +46,7 @@ talisman = Talisman(
     content_security_policy=None,
     content_security_policy_nonce_in=["script-src", "style-src"],
 
-    x_xss_protection=True,  # require nonce="{{ csp_nonce() }}" in script tags
+    x_xss_protection=True,
 
     force_https=True,
     force_https_permanent=True,
@@ -60,20 +62,24 @@ talisman = Talisman(
 )
 
 with app.app_context():
-    app.register_blueprint(admin)
+    app.register_blueprint(authorised_user)
     app.register_blueprint(error)
-    app.register_blueprint(user)
 
 
 if __name__ == "__main__":
     if app.config["DEBUG_FLAG"]:
         SSL_CONTEXT = (
-            CONSTANTS.CONFIG_FOLDER.joinpath("certificate.pem"),
-            CONSTANTS.CONFIG_FOLDER.joinpath("key.pem")
+            CONSTANTS.TTL_CONFIG_FOLDER.joinpath("certificate.pem"),
+            CONSTANTS.TTL_CONFIG_FOLDER.joinpath("key.pem")
         )
         host = None
     else:
         SSL_CONTEXT = None
         host = "0.0.0.0"
 
-    app.run(debug=app.config["DEBUG_FLAG"], host=host, port=int(os.environ.get("PORT", 8080)), ssl_context=SSL_CONTEXT)
+    app.run(
+        debug=app.config["DEBUG_FLAG"],
+        host=host,
+        port=int(os.environ.get("PORT", 5000)),
+        ssl_context=SSL_CONTEXT
+    )
