@@ -21,6 +21,11 @@ class Constants:
     # --- GOOGLE SECRET MANAGER ---
     # FLASK_SECRET_KEY_NAME: str = ""
 
+    # --- JWT ACCESS TOKEN ---
+    JWT_ACCESS_TOKEN_EXPIRATION_TIME: int = 3600  # 1 hour
+    JWT_ACCESS_TOKEN_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_SECRET_KEY: str = "SECRET.JWT"
+
     # --- GOOGLE OAUTH ---
     GOOGLE_CLIENT_ID: str = "526204912239-9t2aptlchfeclmkcsegpp69cb690jre3.apps.googleusercontent.com"
 
