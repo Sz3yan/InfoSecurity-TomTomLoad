@@ -8,6 +8,8 @@ from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
 
+from ..static.security.secret_manager import SecretManager
+
 
 potential_user = Blueprint('potential_user', __name__, template_folder="templates", static_folder='static')
 
@@ -60,7 +62,6 @@ def callback():
 
     jwt_token = jwt.encode(
         {
-            
             "google_id": id_info.get("sub"),
             "name": id_info.get("name"),
             "email": id_info.get("email"),
@@ -76,6 +77,13 @@ def callback():
         "TTL-JWTAuthenticated-User": jwt_token,
     }
 
+    secret_manager = SecretManager()
+    secret_manager.add_secret_version(
+        CONSTANTS.GOOGLE_PROJECT_ID,
+        "signed-tokens",
+        signed_token
+    )
+
     # Identity proxy will then check for the role and see if the user is allowed to access the page.
     # if the user is allowed to access the page, the identity proxy will then redirect the user to Tom Tom Load.
     # if the user is not allowed to access the page, the identity proxy will then redirect the user to the error page.
@@ -85,5 +93,4 @@ def callback():
         return {"error": "User not authorized"}
 
     else:
-        # redirect to tomtomload server
         return redirect("https://127.0.0.1:5000/")
