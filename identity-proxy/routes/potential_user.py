@@ -1,5 +1,6 @@
 import jwt
 import requests
+import socket
 import google.auth.transport.requests
 
 from static.classes.config import CONSTANTS
@@ -100,7 +101,16 @@ def signed_header():
 
     print(f"signed_headers {signed_headers}", "\n")
 
-    
+    host = socket.gethostname()  # as both code is running on same pc
+    port = 5001  # socket server port number
+
+    client_socket = socket.socket()  # instantiate
+    client_socket.connect((host, port))  # connect to the server
+    client_socket.send(str(signed_headers).encode())
+    client_socket.close()  # close the connection
+
+    print("Signed Headers Sent")
+
 
     # Identity proxy will then check for the role and see if the user is allowed to access the page.
     # if the user is allowed to access the page, the identity proxy will then redirect the user to Tom Tom Load.
@@ -111,4 +121,4 @@ def signed_header():
     #     return {"error": "User not authorized"}
 
     # else:
-    return make_response(redirect(requests.get("https://127.0.0.1:5000/", verify=False).url), signed_headers)
+    return redirect("https://127.0.0.1:5000/")
