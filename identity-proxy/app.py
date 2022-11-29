@@ -1,6 +1,8 @@
 import os
 
 from flask import Flask
+from flask_session import Session
+from flask_paranoid import Paranoid
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 
 from routes.potential_user import potential_user
@@ -11,7 +13,17 @@ app = Flask(__name__)
 app.config["CONSTANTS"] = CONSTANTS
 app.config["SECRET"] = SECRET_CONSTANTS
 app.config["DEBUG_FLAG"] = app.config["CONSTANTS"].DEBUG_MODE
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config["SESSION_FILE_DIR"] = os.path.join(app.config["CONSTANTS"].IP_ROOT_FOLDER, "sessions")
 app.config["SECRET_KEY"] = "SECRET.FLASK_SECRET_KEY"
+
+
+sess = Session(app)
+if app.config["CONSTANTS"].DEBUG_MODE:
+    app.config["SESSION_COOKIE_SECURE"] = True
+
+paranoid = Paranoid(app)
+paranoid.redirect_view = "/"
 
 
 app.register_blueprint(potential_user)

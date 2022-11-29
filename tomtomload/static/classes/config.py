@@ -27,7 +27,7 @@ class Constants:
     # FLASK_SECRET_KEY_NAME: str = ""
 
     # --- RATE LIMITING ---
-    DEFAULT_REQUEST_LIMIT: str = "60 per minute"
+    DEFAULT_REQUEST_LIMIT: str = "600 per minute"
     SENSITIVE_PAGE_LIMIT: str = "9 per minute"
 
 

@@ -63,7 +63,7 @@ talisman = Talisman(
 
 with app.app_context():
     app.register_blueprint(authorised_user)
-    app.register_blueprint(error)
+    # app.register_blueprint(error)
 
 
 if __name__ == "__main__":

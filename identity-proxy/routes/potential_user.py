@@ -3,12 +3,12 @@ import requests
 import google.auth.transport.requests
 
 from static.classes.config import CONSTANTS
-from flask import Blueprint, request, session, redirect, abort
+from flask import Blueprint, request, session, redirect, abort, make_response
 from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
 
-from ..static.security.secret_manager import SecretManager
+# from ..static.security.secret_manager import SecretManager
 
 
 potential_user = Blueprint('potential_user', __name__, template_folder="templates", static_folder='static')
@@ -20,6 +20,17 @@ flow = Flow.from_client_secrets_file(
     scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],  #here we are specifing what do we get after the authorization
     redirect_uri="https://127.0.0.1:8080/callback"
 )
+
+# wrapper to check for session
+def authenticated(function):
+    def wrapper(*args, **kwargs):
+        if "id_info" in session:
+            return function()
+        else:
+            return {"error": "User not authorized"}
+
+    wrapper.__name__ = function.__name__
+    return wrapper
 
 
 @potential_user.route("/")
@@ -52,6 +63,16 @@ def callback():
         audience=CONSTANTS.GOOGLE_CLIENT_ID
     )
 
+    session['id_info'] = id_info
+
+    print(session['id_info'])
+
+    return redirect("/signed-header")
+
+
+@potential_user.route("/signed-header")
+@authenticated
+def signed_header():
     # Signed Token (previously signed headers) will consist of 
     #  1. user's name
     #  2. user's email
@@ -62,35 +83,32 @@ def callback():
 
     jwt_token = jwt.encode(
         {
-            "google_id": id_info.get("sub"),
-            "name": id_info.get("name"),
-            "email": id_info.get("email"),
-            "picture": id_info.get("picture")
+            "google_id": session['id_info'].get("sub"),
+            "name": session['id_info'].get("name"),
+            "email": session['id_info'].get("email"),
+            "picture": session['id_info'].get("picture")
         },
         CONSTANTS.JWT_ACCESS_TOKEN_SECRET_KEY,
         algorithm=CONSTANTS.JWT_ACCESS_TOKEN_ALGORITHM
     )
 
-    signed_token = {
-        "TTL-Authenticated-User-Name": id_info.get("name"),
-        "TTL-Authenticated-User-Email": id_info.get("email"),
+    signed_headers = {
+        "TTL-Authenticated-User-Name": session['id_info'].get("name"),
+        "TTL-Authenticated-User-Email": session['id_info'].get("email"),
         "TTL-JWTAuthenticated-User": jwt_token,
     }
 
-    secret_manager = SecretManager()
-    secret_manager.add_secret_version(
-        CONSTANTS.GOOGLE_PROJECT_ID,
-        "signed-tokens",
-        signed_token
-    )
+    print(f"signed_headers {signed_headers}", "\n")
+
+    
 
     # Identity proxy will then check for the role and see if the user is allowed to access the page.
     # if the user is allowed to access the page, the identity proxy will then redirect the user to Tom Tom Load.
     # if the user is not allowed to access the page, the identity proxy will then redirect the user to the error page.
     # only correct authentication and authorisation will ever reach Tom Tom Load.
     
-    if id_info.get("name") not in CONSTANTS.AUTHORIZED_USERS:
-        return {"error": "User not authorized"}
+    # if session['id_info'].get("name") not in CONSTANTS.AUTHORIZED_USERS:
+    #     return {"error": "User not authorized"}
 
-    else:
-        return redirect("https://127.0.0.1:5000/")
+    # else:
+    return make_response(redirect(requests.get("https://127.0.0.1:5000/", verify=False).url), signed_headers)

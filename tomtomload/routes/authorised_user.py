@@ -1,3 +1,4 @@
+import requests
 from flask import Blueprint, render_template, session, redirect
 
 authorised_user = Blueprint('authorised_user', __name__, template_folder="templates", static_folder='static')
@@ -15,6 +16,9 @@ authorised_user = Blueprint('authorised_user', __name__, template_folder="templa
 
 @authorised_user.route('/')
 def home():
+    request = requests.get("https://127.0.0.1:5000/signed-header", verify=False)
+    print(request.headers)
+    
     return render_template('authorised_admin/dashboard.html')
 
 
