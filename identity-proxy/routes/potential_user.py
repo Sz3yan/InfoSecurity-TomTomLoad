@@ -68,8 +68,8 @@ def callback():
 
 @potential_user.route("/signed-header")
 @authenticated
-def signed_header():
-    # Signed Token (previously signed headers) will consist of 
+def signed_query():
+    # Signed Query will consist of 
     #  1. user's name
     #  2. user's email
     #  3. user's JWT = id_info
@@ -78,12 +78,10 @@ def signed_header():
 
     JWTAuthenticated = jwt.encode(
         {
-            "iss": "identity-proxy",
-            "sub": "sub",
-            "aud": "identity-proxy",
-            "exp": "exp",
-            "nbf": "nbf",
-            "iat": "iat",
+            "iss": "identity-proxy",                        # issuer (must be identity proxy)
+            "sub": "sub",                                   # subject (The unique, stable identifier for the user.)
+            "exp": "exp",                                   # expiration time (Must be in the future. The time is measured in seconds since the UNIX epoch. Allow 30 seconds for skew. The maximum lifetime of a token is 10 minutes + 2 * skew.)
+            "iat": "iat",                                   # issued at time (Must be in the past. The time is measured in seconds since the UNIX epoch. Allow 30 seconds for skew.)
             "google_id": session['id_info'].get("sub"),
             "name": session['id_info'].get("name"),
             "email": session['id_info'].get("email"),
@@ -93,13 +91,13 @@ def signed_header():
         algorithm=CONSTANTS.JWT_ALGORITHM
     )
 
-    signed_headers = {
+    signed_query = {
         "TTL-Authenticated-User-Name": session['id_info'].get("name"),
         "TTL-Authenticated-User-Email": session['id_info'].get("email"),
         "TTL-JWTAuthenticated-User": JWTAuthenticated,
     }
 
-    print(f"signed_headers {signed_headers}", "\n")
+    print(f"signed_querys {signed_query}", "\n")
     print("Signed Headers Sent")
 
 
@@ -112,4 +110,4 @@ def signed_header():
     #     return {"error": "User not authorized"}
 
     # else:
-    return redirect("https://127.0.0.1:5000/?signed_headers=" + str(signed_headers))
+    return redirect("https://127.0.0.1:5000/?signed_query=" + str(signed_query))

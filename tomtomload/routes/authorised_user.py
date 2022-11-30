@@ -4,10 +4,9 @@ from flask import Blueprint, render_template, session, redirect, request
 authorised_user = Blueprint('authorised_user', __name__, template_folder="templates", static_folder='static')
 
 
-# # check for session
-# def check_signed_headers(function):
+# def check_signed_query(function):
 #     def wrapper(*args, **kwargs):
-#         if "signed_headers" in session:
+#         if "signed_query" in session:
 #             return function()
 #         else:
 #             return {"error": "User not authorized"}
@@ -18,17 +17,18 @@ authorised_user = Blueprint('authorised_user', __name__, template_folder="templa
 
 @authorised_user.route('/')
 def home():
-    # get headers from request
-    signed_headers = request.args["signed_headers"]
-    session["signed_headers"] = signed_headers
-    print(signed_headers)
+    signed_query = request.args["signed_query"]
+    session["signed_query"] = signed_query
+    print(f"signed_query: {signed_query}")
+    print(f"session: {session}")
 
     return redirect("/dashboard")
 
 
-# @check_signed_headers
+# @check_signed_query
 @authorised_user.route('/dashboard')
 def dashboard():
+    print(f"session: {session}")
     return render_template('authorised_admin/dashboard.html')
 
 
