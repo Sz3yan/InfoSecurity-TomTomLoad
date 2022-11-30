@@ -2,7 +2,7 @@ import os
 import pathlib
 
 from dataclasses import dataclass
-from ..security.secret_manager import GoogleSecretManager
+from ..security.secure_data import GoogleSecretManager
 
 
 DEBUG_MODE = True
@@ -17,14 +17,16 @@ class Constants:
 
     # --- GOOGLE CLOUD ---
     GOOGLE_PROJECT_ID: str = "infosec-62c05"
+    GOOGLE_LOCATION_ID: str = "global"
+    GOOGLE_KEY_RING_ID: str = "identity-proxy"
 
     # --- GOOGLE SECRET MANAGER ---
     # FLASK_SECRET_KEY_NAME: str = ""
 
     # --- JWT ACCESS TOKEN ---
     JWT_ACCESS_TOKEN_EXPIRATION_TIME: int = 3600  # 1 hour
-    JWT_ACCESS_TOKEN_ALGORITHM: str = "HS256"
-    JWT_ACCESS_TOKEN_SECRET_KEY: str = "SECRET.JWT"
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_SECRET_KEY: str = "identity-proxy-jwt-key"
 
     # --- GOOGLE OAUTH ---
     GOOGLE_CLIENT_ID: str = "526204912239-9t2aptlchfeclmkcsegpp69cb690jre3.apps.googleusercontent.com"
@@ -41,9 +43,22 @@ class SecretConstants:
         # --- RETRIEVING FLASK SECRET KEY ---
         self.__FLASK_SECRET_KEY = "lll"
 
+        # --- RETRIEVING JWT ACCESS TOKEN SECRET KEY ---
+        self.__JWT_SECRET_KEY = GoogleSecretManager.get_secret_payload(
+            self,
+            project_id=Constants.GOOGLE_PROJECT_ID,
+            secret_id=Constants.JWT_ACCESS_TOKEN_SECRET_KEY,
+            version_id="1"
+        )
+
     @property
     def FLASK_SECRET_KEY(self) -> str:
         return self.__FLASK_SECRET_KEY
+
+    @property
+    def JWT_SECRET_KEY(self) -> str:
+        return self.__JWT_SECRET_KEY
+
 
 SECRET_CONSTANTS = SecretConstants()
 

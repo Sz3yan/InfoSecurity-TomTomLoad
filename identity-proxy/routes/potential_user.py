@@ -1,16 +1,12 @@
 import jwt
 import requests
-import socket
-import json
 import google.auth.transport.requests
 
-from static.classes.config import CONSTANTS
-from flask import Blueprint, request, session, redirect, abort, make_response
+from static.classes.config import CONSTANTS, SECRET_CONSTANTS
+from flask import Blueprint, request, session, redirect, abort
 from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
-
-# from static.security.secret_manager import SecretManager
 
 
 potential_user = Blueprint('potential_user', __name__, template_folder="templates", static_folder='static')
@@ -80,21 +76,27 @@ def signed_header():
     # the point of signed tokens is to verify that the user is who they say they are,
     # in case they managed to bypass the identity proxy.
 
-    jwt_token = jwt.encode(
+    JWTAuthenticated = jwt.encode(
         {
+            "iss": "identity-proxy",
+            "sub": "sub",
+            "aud": "identity-proxy",
+            "exp": "exp",
+            "nbf": "nbf",
+            "iat": "iat",
             "google_id": session['id_info'].get("sub"),
             "name": session['id_info'].get("name"),
             "email": session['id_info'].get("email"),
             "picture": session['id_info'].get("picture")
         },
-        CONSTANTS.JWT_ACCESS_TOKEN_SECRET_KEY,
-        algorithm=CONSTANTS.JWT_ACCESS_TOKEN_ALGORITHM
+        SECRET_CONSTANTS.JWT_SECRET_KEY,
+        algorithm=CONSTANTS.JWT_ALGORITHM
     )
 
     signed_headers = {
         "TTL-Authenticated-User-Name": session['id_info'].get("name"),
         "TTL-Authenticated-User-Email": session['id_info'].get("email"),
-        "TTL-JWTAuthenticated-User": jwt_token,
+        "TTL-JWTAuthenticated-User": JWTAuthenticated,
     }
 
     print(f"signed_headers {signed_headers}", "\n")
