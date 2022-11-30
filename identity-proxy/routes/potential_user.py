@@ -66,9 +66,9 @@ def callback():
     return redirect("/signed-header")
 
 
-@potential_user.route("/signed-header")
+@potential_user.route("/signed-header", methods=["GET", "POST"])
 @authenticated
-def signed_query():
+def signed_header():
     # Signed Query will consist of 
     #  1. user's name
     #  2. user's email
@@ -91,14 +91,15 @@ def signed_query():
         algorithm=CONSTANTS.JWT_ALGORITHM
     )
 
-    signed_query = {
+    signed_header = {
         "TTL-Authenticated-User-Name": session['id_info'].get("name"),
-        "TTL-Authenticated-User-Email": session['id_info'].get("email"),
         "TTL-JWTAuthenticated-User": JWTAuthenticated,
     }
 
-    print(f"signed_querys {signed_query}", "\n")
-    print("Signed Headers Sent")
+    # print(f"signed_headers {signed_header}", "\n")
+    # print("Signed Headers Sent")
+
+    return redirect(requests.get("https://127.0.0.1:5000/", headers=signed_header, verify=False).url, Response=requests.get("https://127.0.0.1:5000/", headers=signed_header, verify=False))
 
 
     # Identity proxy will then check for the role and see if the user is allowed to access the page.
@@ -110,4 +111,4 @@ def signed_query():
     #     return {"error": "User not authorized"}
 
     # else:
-    return redirect("https://127.0.0.1:5000/?signed_query=" + str(signed_query))
+    # return redirect("https://127.0.0.1:5000/?signed_header=" + str(signed_header))
