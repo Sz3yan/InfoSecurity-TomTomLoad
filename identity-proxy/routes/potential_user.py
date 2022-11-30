@@ -1,6 +1,7 @@
 import jwt
 import requests
 import socket
+import json
 import google.auth.transport.requests
 
 from static.classes.config import CONSTANTS
@@ -9,7 +10,7 @@ from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
 
-# from ..static.security.secret_manager import SecretManager
+# from static.security.secret_manager import SecretManager
 
 
 potential_user = Blueprint('potential_user', __name__, template_folder="templates", static_folder='static')
@@ -101,14 +102,26 @@ def signed_header():
 
     print(f"signed_headers {signed_headers}", "\n")
 
-    host = socket.gethostname()  # as both code is running on same pc
-    port = 5001  # socket server port number
 
-    client_socket = socket.socket()  # instantiate
-    client_socket.connect((host, port))  # connect to the server
-    client_socket.send(str(signed_headers).encode())
-    client_socket.close()  # close the connection
+    HEADER = 64
+    PORT = 5050
+    FORMAT = 'utf-8'
+    DISCONNECT_MESSAGE = "!DISCONNECT"
+    SERVER = "127.0.0.1"
+    ADDR = (SERVER, PORT)
 
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect(ADDR)
+
+    def send(msg):
+        message = msg.encode()
+        msg_length = len(message)
+        send_length = str(msg_length).encode()
+        send_length += b' ' * (HEADER - len(send_length))
+        client.send(send_length)
+        client.send(message)
+
+    send(str(signed_headers))
     print("Signed Headers Sent")
 
 
@@ -121,4 +134,4 @@ def signed_header():
     #     return {"error": "User not authorized"}
 
     # else:
-    return redirect("https://127.0.0.1:5000/")
+    return redirect("https://127.0.0.1:5000/hi")
