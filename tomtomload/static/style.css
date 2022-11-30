@@ -4,7 +4,6 @@
 }
 
 .field-type.text input {
-    -webkit-appearance: none;
     background: var(--theme-input-bg);
     border: 1px solid var(--theme-elevation-150);
     border-radius: 0;
@@ -2952,62 +2951,6 @@ form > .form-submit .btn {
     to {
         transform:rotate(1turn)
     }
-}
-
-@font-face {
-    font-family: Suisse Intl;
-    font-style: normal;
-    font-weight: 400;
-    src: url(/admin/51922ceb71da289688d3.woff2) format("woff2"), url(/admin/8b4ddd0d08500553efde.woff) format("woff")
-}
-
-@font-face {
-    font-family: Suisse Intl;
-    font-style: normal;
-    font-weight: 500;
-    src: url(/admin/5b718d9772de251a8c0a.woff2) format("woff2"), url(/admin/d7aeda9e48ce098e7b48.woff) format("woff")
-}
-
-@font-face {
-    font-family: Suisse Intl;
-    font-style: normal;
-    font-weight: 600;
-    src: url(/admin/40ad7515b8674bb854a1.woff2) format("woff2"), url(/admin/e7caa9e17af6ac87d182.woff) format("woff")
-}
-
-@font-face {
-    font-family: Suisse Intl;
-    font-style: normal;
-    font-weight: 700;
-    src: url(/admin/9c7dfd0036f7bd24b053.woff2) format("woff2"), url(/admin/2211c49456cd07331ea9.woff) format("woff")
-}
-
-@font-face {
-    font-family: Merriweather;
-    font-style: normal;
-    font-weight: 400;
-    src: local(""), url(/admin/e009f21405b4d7e89367.woff2) format("woff2"), url(/admin/787999a6af6a17efbc7c.woff) format("woff")
-}
-
-@font-face {
-    font-family: Merriweather;
-    font-style: italic;
-    font-weight: 400;
-    src: local(""), url(/admin/a1cfdc5b5250b7c4b481.woff2) format("woff2"), url(/admin/8f612153248094525d9d.woff) format("woff")
-}
-
-@font-face {
-    font-family: Merriweather;
-    font-style: normal;
-    font-weight: 900;
-    src: local(""), url(/admin/522443364fda49e9e0ed.woff2) format("woff2"), url(/admin/efe8f6a3b46446cc9135.woff) format("woff")
-}
-
-@font-face {
-    font-family: Merriweather;
-    font-style: italic;
-    font-weight: 900;
-    src: local(""), url(/admin/f53bb8d4b29adc903703.woff2) format("woff2"), url(/admin/78b8935fb481e11c92ce.woff) format("woff")
 }
 
 .Toastify .Toastify__toast-container {

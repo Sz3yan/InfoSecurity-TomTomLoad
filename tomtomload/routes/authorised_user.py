@@ -1,6 +1,4 @@
-from flask import Blueprint, render_template, session, redirect
-
-from static.security.server_socket import start_server_socket
+from flask import Blueprint, render_template, session, redirect, request
 
 
 authorised_user = Blueprint('authorised_user', __name__, template_folder="templates", static_folder='static')
@@ -8,14 +6,16 @@ authorised_user = Blueprint('authorised_user', __name__, template_folder="templa
 
 @authorised_user.route('/')
 def home():
-    
-    
+    # get headers from request
+    signed_headers = request.args["signed_headers"]
+    print(signed_headers)
+
+    return redirect("/dashboard")
+
+
+@authorised_user.route('/dashboard')
+def dashboard():
     return render_template('authorised_admin/dashboard.html')
-
-
-@authorised_user.route('/hi')
-def hi():
-    return {'hi': 'hi'}
 
 
 @authorised_user.route("/logout")

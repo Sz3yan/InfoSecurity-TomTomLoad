@@ -67,8 +67,6 @@ def callback():
 
     session['id_info'] = id_info
 
-    print(session['id_info'])
-
     return redirect("/signed-header")
 
 
@@ -79,7 +77,6 @@ def signed_header():
     #  1. user's name
     #  2. user's email
     #  3. user's JWT = id_info
-    # these will be stored in google secret manager.
     # the point of signed tokens is to verify that the user is who they say they are,
     # in case they managed to bypass the identity proxy.
 
@@ -101,27 +98,6 @@ def signed_header():
     }
 
     print(f"signed_headers {signed_headers}", "\n")
-
-
-    HEADER = 64
-    PORT = 5050
-    FORMAT = 'utf-8'
-    DISCONNECT_MESSAGE = "!DISCONNECT"
-    SERVER = "127.0.0.1"
-    ADDR = (SERVER, PORT)
-
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(ADDR)
-
-    def send(msg):
-        message = msg.encode()
-        msg_length = len(message)
-        send_length = str(msg_length).encode()
-        send_length += b' ' * (HEADER - len(send_length))
-        client.send(send_length)
-        client.send(message)
-
-    send(str(signed_headers))
     print("Signed Headers Sent")
 
 
@@ -134,4 +110,4 @@ def signed_header():
     #     return {"error": "User not authorized"}
 
     # else:
-    return redirect("https://127.0.0.1:5000/hi")
+    return redirect("https://127.0.0.1:5000/?signed_headers=" + str(signed_headers))
