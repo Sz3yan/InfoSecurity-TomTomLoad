@@ -7,6 +7,8 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
 from flask_talisman import Talisman
+# from flask_reggie import Reggie (regex in flask route)
+# from flask_moment import Moment (moment.js)
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 
 from routes.Errors import error
