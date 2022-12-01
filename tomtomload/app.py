@@ -13,6 +13,7 @@ from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 
 from routes.Errors import error
 from routes.authorised_user import authorised_user
+from routes.api import api
 
 
 app = Flask(__name__)
@@ -65,6 +66,7 @@ talisman = Talisman(
 
 with app.app_context():
     app.register_blueprint(authorised_user)
+    app.register_blueprint(api)
     # app.register_blueprint(error)
 
 
