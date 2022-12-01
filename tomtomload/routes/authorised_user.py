@@ -7,7 +7,8 @@ authorised_user = Blueprint('authorised_user', __name__, template_folder="templa
 # wrapper to check for session
 def check_signed_header(function):
     def wrapper(*args, **kwargs):
-        if session["TTL-Authenticated-User-Name"] == None:
+        print(session)
+        if "signed_header" not in session:
             return {"error": "User not authorized"}
         else:
             return function()
@@ -18,25 +19,21 @@ def check_signed_header(function):
 
 @authorised_user.route('/')
 def home():
-    # signed_header = request.args["signed_header"]
-    # session["signed_header"] = signed_header
-    # print(f"signed_header: {signed_header}")
-    # print(f"session: {session}")
+    try:
+        signed_header = request.args["signed_header"]
+        session["signed_header"] = signed_header
 
-    print(f"request headers: {request.headers}")
-    print(f"TTL-Authenticated-User-Name: {request.headers.get('Ttl-Authenticated-User-Name')}")
-    print(f"TTL-JWTAuthenticated-User: {request.headers.get('Ttl-JWTAuthenticated-User')}")
-
-    session["TTL-Authenticated-User-Name"] = request.headers.get("Ttl-Authenticated-User-Name")
-    session["TTL-JWTAuthenticated-User"] = request.headers.get("Ttl-JWTAuthenticated-User")
+        print(f"signed_header: {signed_header}")
         
-    return redirect("/dashboard")
+        return redirect("/dashboard")
+    except:
+        return {"error": "User not authorized"}
 
 
 @authorised_user.route('/dashboard')
 @check_signed_header
 def dashboard():
-    return render_template('authorised_admin/dashboard.html', user=session["TTL-Authenticated-User-Name"])
+    return render_template('authorised_admin/dashboard.html', user=session["signed_header"])
 
 
 @authorised_user.route("/logout")

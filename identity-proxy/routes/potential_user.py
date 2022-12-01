@@ -19,7 +19,7 @@ flow = Flow.from_client_secrets_file(
     redirect_uri="https://127.0.0.1:8080/callback"
 )
 
-# wrapper to check for session
+
 def authenticated(function):
     def wrapper(*args, **kwargs):
         if "id_info" in session:
@@ -96,11 +96,6 @@ def signed_header():
         "TTL-JWTAuthenticated-User": JWTAuthenticated,
     }
 
-    # print(f"signed_headers {signed_header}", "\n")
-    # print("Signed Headers Sent")
-
-    return redirect(requests.get("https://127.0.0.1:5000/", headers=signed_header, verify=False).url, Response=requests.get("https://127.0.0.1:5000/", headers=signed_header, verify=False))
-
 
     # Identity proxy will then check for the role and see if the user is allowed to access the page.
     # if the user is allowed to access the page, the identity proxy will then redirect the user to Tom Tom Load.
@@ -111,4 +106,4 @@ def signed_header():
     #     return {"error": "User not authorized"}
 
     # else:
-    # return redirect("https://127.0.0.1:5000/?signed_header=" + str(signed_header))
+    return redirect("https://127.0.0.1:5000/?signed_header=" + str(signed_header))
