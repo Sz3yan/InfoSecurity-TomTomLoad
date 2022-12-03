@@ -5,10 +5,10 @@ authorised_user = Blueprint('authorised_user', __name__, template_folder="templa
 
 
 # wrapper to check for session
-def check_signed_header(function):
+def check_signed_credential(function):
     def wrapper(*args, **kwargs):
         print(session)
-        if "signed_header" not in session:
+        if "signed_credential" not in session:
             return {"error": "User not authorized"}
         else:
             return function()
@@ -20,10 +20,10 @@ def check_signed_header(function):
 @authorised_user.route('/')
 def home():
     try:
-        signed_header = request.args["signed_header"]
-        session["signed_header"] = signed_header
+        signed_credential = request.args["signed_credential"]
+        session["signed_credential"] = signed_credential
 
-        print(f"signed_header: {signed_header}")
+        print(f"signed_credential: {signed_credential}")
         
         return redirect("/dashboard")
     except:
@@ -31,9 +31,9 @@ def home():
 
 
 @authorised_user.route('/dashboard')
-@check_signed_header
+@check_signed_credential
 def dashboard():
-    return render_template('authorised_admin/dashboard.html', user=session["signed_header"])
+    return render_template('authorised_admin/dashboard.html', user=session["signed_credential"])
 
 
 @authorised_user.route("/logout")

@@ -68,7 +68,7 @@ def callback():
 
 @potential_user.route("/signed-header", methods=["GET", "POST"])
 @authenticated
-def signed_header():
+def signed_credential():
     # Signed Query will consist of 
     #  1. user's name
     #  2. user's email
@@ -91,7 +91,7 @@ def signed_header():
         algorithm=CONSTANTS.JWT_ALGORITHM
     )
 
-    signed_header = {
+    signed_credential = {
         "TTL-Authenticated-User-Name": session['id_info'].get("name"),
         "TTL-JWTAuthenticated-User": JWTAuthenticated,
     }
@@ -106,4 +106,4 @@ def signed_header():
     #     return {"error": "User not authorized"}
 
     # else:
-    return redirect("https://127.0.0.1:5000/?signed_header=" + str(signed_header))
+    return redirect("https://127.0.0.1:5000/?signed_credential=" + str(signed_credential))
