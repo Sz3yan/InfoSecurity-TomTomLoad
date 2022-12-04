@@ -64,6 +64,19 @@ talisman = Talisman(
     session_cookie_samesite="Lax"
 )
 
+# prevent caching
+@app.after_request
+def add_header(response):
+    response.cache_control.no_cache = True
+    response.cache_control.no_store = True
+    response.cache_control.must_revalidate = True
+    response.cache_control.max_age = 0
+    response.cache_control.public = False
+    response.cache_control.proxy_revalidate = True
+    response.cache_control.s_maxage = 0
+    return response
+
+
 with app.app_context():
     app.register_blueprint(authorised_user)
     app.register_blueprint(api)
