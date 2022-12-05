@@ -1,5 +1,7 @@
 import jwt
 import requests
+import base64
+from datetime import datetime, timedelta
 import google.auth.transport.requests
 
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
@@ -78,10 +80,22 @@ def signed_credential():
 
     JWTAuthenticated = jwt.encode(
         {
-            "iss": "identity-proxy",                        # issuer (must be identity proxy)
-            "sub": "sub",                                   # subject (The unique, stable identifier for the user.)
-            "exp": "exp",                                   # expiration time (Must be in the future. The time is measured in seconds since the UNIX epoch. Allow 30 seconds for skew. The maximum lifetime of a token is 10 minutes + 2 * skew.)
-            "iat": "iat",                                   # issued at time (Must be in the past. The time is measured in seconds since the UNIX epoch. Allow 30 seconds for skew.)
+            # issuer (must be identity proxy)
+            "iss": "identity-proxy",   
+
+            # subject (The unique, stable identifier for the user.)
+            "sub": "sub",                          
+
+            # expiration time (Must be in the future. 
+            # The time is measured in seconds since the UNIX epoch. 
+            # Allow 30 seconds for skew. 
+            # The maximum lifetime of a token is 10 minutes + 2 * skew.)
+            "exp": datetime.utcnow() + timedelta(minutes=10),      
+
+            # issued at time (Must be in the past. 
+            # The time is measured in seconds since the UNIX epoch. 
+            # Allow 30 seconds for skew.)
+            "iat":  datetime.utcnow() - timedelta(seconds=30),
             "google_id": session['id_info'].get("sub"),
             "name": session['id_info'].get("name"),
             "email": session['id_info'].get("email"),
@@ -91,9 +105,11 @@ def signed_credential():
         algorithm=CONSTANTS.JWT_ALGORITHM
     )
 
+    global signed_credential
+
     signed_credential = {
-        "TTL-Authenticated-User-Name": session['id_info'].get("name"),
-        "TTL-JWTAuthenticated-User": JWTAuthenticated,
+        # "TTL-Authenticated-User-Name": session['id_info'].get("name"),
+        "TTL-JWTAuthenticated-User": JWTAuthenticated
     }
 
 
@@ -106,4 +122,23 @@ def signed_credential():
     #     return {"error": "User not authorized"}
 
     # else:
-    return redirect("https://127.0.0.1:5000/?signed_credential=" + str(signed_credential))
+    return redirect("https://127.0.0.1:5000/", code=302)
+
+
+@potential_user.after_request
+def after_request(response):
+    # response.set_cookie(
+    #     'TTL-Authenticated-User-Name', 
+    #     value= base64.b64encode(str(signed_credential).encode("utf-8")), 
+    #     httponly=True, 
+    #     secure=True
+    # )
+
+    response.set_cookie(
+        'TTL-JWTAuthenticated-User', 
+        value=base64.b64encode(str(signed_credential).encode("utf-8")),
+        httponly=True, 
+        secure=True
+    )
+    
+    return response

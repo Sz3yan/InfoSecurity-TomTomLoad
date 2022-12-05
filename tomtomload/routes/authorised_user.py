@@ -1,4 +1,5 @@
 import json
+import base64
 from flask import Blueprint, render_template, session, redirect, request
 
 
@@ -7,15 +8,14 @@ authorised_user = Blueprint('authorised_user', __name__, template_folder="templa
 
 def check_signed_credential(function):
     def wrapper(*args, **kwargs):
-        cleanup = session["signed_credential"].replace("'", '"')
-        global str_dict
-        str_dict = json.loads(cleanup)
-
-        # need check validity of JWT here
-
-        if "signed_credential" not in session:
+        if "signed_jwt" not in session:
             return {"error": "User not authorized"}
         else:
+            cleanup = session["signed_jwt"].replace("'", '"')
+
+            global str_to_dict
+            str_to_dict = json.loads(cleanup)
+
             return function()
 
     wrapper.__name__ = function.__name__
@@ -24,22 +24,19 @@ def check_signed_credential(function):
 
 @authorised_user.route('/')
 def home():
-    try:
-        signed_credential = request.args["signed_credential"]
-        session["signed_credential"] = signed_credential
-        
-        return redirect("/dashboard")
-    except:
-        return {"error": "User not authorized"}
+    # signed_name = base64.b64decode(request.cookies.get('TTL-Authenticated-User-Name')).decode('utf-8')
+    signed_jwt = base64.b64decode(request.cookies.get('TTL-JWTAuthenticated-User')).decode('utf-8')
 
-
-@authorised_user.route('/dashboard')
-@check_signed_credential
-def dashboard():
-    return render_template('authorised_admin/dashboard.html', user=str_dict["TTL-Authenticated-User-Name"])
+    session["signed_jwt"] = signed_jwt
+    
+    return render_template('authorised_admin/dashboard.html', user=signed_jwt)
 
 
 @authorised_user.route("/logout")
+@check_signed_credential
 def logout():
+    print(str_to_dict)
+    session.pop("signed_credential", None)
     session.clear()
+
     return redirect("https://127.0.0.1:8080/")

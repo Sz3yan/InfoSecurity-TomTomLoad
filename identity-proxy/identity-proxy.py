@@ -14,7 +14,10 @@ app.config["CONSTANTS"] = CONSTANTS
 app.config["SECRET"] = SECRET_CONSTANTS
 app.config["DEBUG_FLAG"] = app.config["CONSTANTS"].DEBUG_MODE
 app.config['SESSION_TYPE'] = 'filesystem'
-app.config["SESSION_FILE_DIR"] = os.path.join(app.config["CONSTANTS"].IP_ROOT_FOLDER, "sessions")
+app.config["SESSION_FILE_DIR"] = os.path.join(
+    app.config["CONSTANTS"].IP_ROOT_FOLDER, 
+    "sessions"
+)
 app.config["SECRET_KEY"] = "SECRET.FLASK_SECRET_KEY"
 
 
