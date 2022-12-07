@@ -14,17 +14,19 @@
                 <div class="nav__scroll">
                     <header>
                         <a class="nav__brand" href="/admin">
-                            <svg width="25" height="25" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg" class="graphic-icon">
+                            <svg width="25" height="25" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg"
+                                class="graphic-icon">
                                 <style>
                                     .graphic-icon path {
                                         fill: var(--theme-elevation-1000);
                                     }
                                 </style>
-                                <path d="M11.5293 0L23 6.90096V19.9978L14.3608 25V11.9032L2.88452 5.00777L11.5293 0Z"></path>
+                                <path d="M11.5293 0L23 6.90096V19.9978L14.3608 25V11.9032L2.88452 5.00777L11.5293 0Z">
+                                </path>
                                 <path d="M10.6559 24.2727V14.0518L2 19.0651L10.6559 24.2727Z"></path>
                             </svg>
                         </a>
-                            
+
                         <button type="button" class="nav__mobile-menu-btn"><svg width="25" height="25"
                                 viewBox="0 0 25 25" fill="none" class="icon icon--menu"
                                 xmlns="http://www.w3.org/2000/svg">
@@ -50,9 +52,9 @@
                                             href="/admin/media"><svg class="icon icon--chevron"
                                                 xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
                                                 <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                            </svg>Media</a><a class="nav__link" id="nav-posts"
-                                            href="/admin/posts"><svg class="icon icon--chevron"
-                                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                            </svg>Media</a><a class="nav__link" id="nav-posts" href="/admin/posts"><svg
+                                                class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 25 25">
                                                 <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
                                             </svg>Posts</a></div>
                                 </div>
@@ -96,8 +98,9 @@
                                     <path
                                         d="M12.5,24a11.44,11.44,0,0,0,7.66-2.94c-.5-2.71-3.73-4.8-7.66-4.8s-7.16,2.09-7.66,4.8A11.44,11.44,0,0,0,12.5,24Z">
                                     </path>
-                                </svg></a><a class="nav__log-out" href="/authorised_user/logout"><svg class="icon icon--logout"
-                                    viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                </svg></a><a class="nav__log-out" href="/admin/logout"><svg
+                                    class="icon icon--logout" viewBox="0 0 25 25" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
                                     <path d="M10 5H18V19H10" class="stroke"></path>
                                     <g>
                                         <path d="M8 8.5L4.46447 12.0355L8 15.5711" class="stroke"></path>
@@ -108,15 +111,15 @@
                     </nav>
                 </div>
             </aside>
-            
+
             <div class="template-default__wrap">
                 <div class="dashboard">
                     <div class="eyebrow">
                         <div class="gutter--left gutter--right eyebrow__wrap">
                             <nav class="step-nav"><span>{{ user }}'s Dashboard</span></nav>
-                            <a href="/logout">logout</a>
+                            <a href="/admin/logout">logout</a>
                         </div>
-                        
+
                     </div>
                     <div class="gutter--left gutter--right dashboard__wrap">
                         <h2 class="dashboard__label">Content</h2>
@@ -134,7 +137,7 @@
                                     <h5>Posts</h5>
                                     <div class="card__actions"><a type="button"
                                             class="btn btn--style-icon-label btn--icon btn--icon-style-with-border btn--icon-only btn--round btn--size-medium btn--icon-position-right"
-                                            href="/admin/collections/posts/create"><span class="btn__content"><span
+                                            href="/admin/posts/llll"><span class="btn__content"><span
                                                     class="btn__icon"><svg class="icon icon--plus"
                                                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
                                                         <line x1="12.4589" y1="16.9175" x2="12.4589" y2="8.50115"
@@ -155,7 +158,7 @@
                                     <h5>Users</h5>
                                     <div class="card__actions"><a type="button"
                                             class="btn btn--style-icon-label btn--icon btn--icon-style-with-border btn--icon-only btn--round btn--size-medium btn--icon-position-right"
-                                            href="/admin/collections/users/create"><span class="btn__content"><span
+                                            href="/admin/users/create"><span class="btn__content"><span
                                                     class="btn__icon"><svg class="icon icon--plus"
                                                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
                                                         <line x1="12.4589" y1="16.9175" x2="12.4589" y2="8.50115"
@@ -170,19 +173,66 @@
                         </ul>
 
                         <div class="after-dashboard">
-                            <h4>Join our Discord</h4>
-                            <p>Every day, developers are actively talking about CMS and helping each other build
-                                awesome things in our Discord community. It can be a great resource to learn about
-                                what's happening with CMS before anyone else and get quick help straight from the
-                                CMS team as well as our community. <a href="https://discord.com/invite/r6sCXqVk3v"
-                                    target="_blank">Click here to join!</a></p>
-                            <h4>GraphQL Playground</h4>
-                            <p>Did you know that CMS gives you a complete GraphQL server too? Try the <a
-                                    href="/api/graphql-playground" target="_blank">GraphQL playground</a> for this demo.
-                            </p>
-                            <h4>Talk with us</h4>
-                            <p>We're here to help! You can <a href="mailto:info@payloadcms.com?subject=CMS Demo"
-                                    target="_blank">email us</a> with any questions.</p>
+                            <readme-toc data-catalyst="">
+
+                                <div id="readme"
+                                    class="Box md js-code-block-container js-code-nav-container js-tagsearch-file Box--responsive"
+                                    data-tagsearch-path="README.md" data-tagsearch-lang="Markdown">
+
+
+
+                                    <div data-target="readme-toc.content" class="Box-body px-5 pb-5">
+                                        <article class="markdown-body entry-content container-lg" itemprop="text">
+                                            <h4 dir="auto">Background</h4>
+                                            <p dir="auto">Building a high-quality web application using web application
+                                                frameworks is not easy, even more so when we are building out from
+                                                scratch.</p>
+                                            <p dir="auto">There is simply too much stuff to consider</p>
+                                            <ul dir="auto">
+                                                <li>authentication of users</li>
+                                                <li>storing of the content</li>
+                                                <li>restricting what users can access, and developing a new admin page.
+                                                </li>
+                                            </ul>
+                                            <p dir="auto">All these require extensive coding time, and it can be quite
+                                                stressful within a short timeframe.
+                                                <br>
+                                            </p>
+                                            <p dir="auto"><img
+                                                src="../../static/images/tomtomload.png"
+                                                alt="Tom Tom Load" style="max-width: 100%;"></p>
+                                            <br>
+                                            <h4 dir="auto">What is Tom Tom Load?</h4>
+                                            <p dir="auto">Tom Tom Load (TTL) is a headless content management system.
+                                                It’s meant to assist your development process, allowing content creators
+                                                to focus on their crafts.</p>
+                                            <p dir="auto">Out of the box, TTL gives you many things that you often need
+                                                when developing a new website or web app, for example:</p>
+                                            <ol>
+                                                <li>Google Cloud Storage database to store your data</li>
+                                                <li>A way to store, retrieve, and manipulate data via REST APIs</li>
+                                                <li>Authentication — registration, email verification, login,password reset</li>
+                                                <li>Access control to your data</li>
+                                                <li>Beautiful admin UI</li>
+                                            </ol>
+                                            <br>
+                                            <p dir="auto"><img
+                                                src="../../static/images/TTL Auth.png"
+                                                alt="Tom Tom Load" style="max-width: 100%;"></p>
+                                            <p dir="auto"><img
+                                                src="../../static/images/Inside TTL.png"
+                                                alt="Tom Tom Load" style="max-width: 100%;"></p>
+                                            <p dir="auto">to view better: <a
+                                                    href="https://excalidraw.com/#json=kHNIBGzY1ThEAcyfjM9XN,s37UlgOKkBxLgnKVrFyBKg"
+                                                    rel="nofollow">https://excalidraw.com/#json=kHNIBGzY1ThEAcyfjM9XN,s37UlgOKkBxLgnKVrFyBKg</a>
+                                            </p>
+                                            <br>
+                                            By: Sze Yan, Yee Ping, Stefanie, Mizuki, Jolin
+                                        </article>
+                                    </div>
+                                </div>
+
+                            </readme-toc>
                         </div>
                     </div>
                 </div>

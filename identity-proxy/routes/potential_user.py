@@ -108,7 +108,7 @@ def signed_credential():
     global signed_credential
 
     signed_credential = {
-        # "TTL-Authenticated-User-Name": session['id_info'].get("name"),
+        "TTL-Authenticated-User-Name": session['id_info'].get("name"),
         "TTL-JWTAuthenticated-User": JWTAuthenticated
     }
 
@@ -122,7 +122,7 @@ def signed_credential():
     #     return {"error": "User not authorized"}
 
     # else:
-    return redirect("https://127.0.0.1:5000/", code=302)
+    return redirect("https://127.0.0.1:5000/admin", code=302)
 
 
 @potential_user.after_request
