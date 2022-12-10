@@ -20,6 +20,10 @@ class Constants:
     GOOGLE_LOCATION_ID: str = "global"
     GOOGLE_KEY_RING_ID: str = "identity-proxy"
 
+    # --- GOOGLE CLOUD STORAGE ---
+    STORAGE_BUCKET_NAME: str = "ttl1234567890"
+    BLACKLISTED_FILE_NAME: str = "blacklisted.json"
+
     # --- GOOGLE SECRET MANAGER ---
     # FLASK_SECRET_KEY_NAME: str = ""
 
@@ -31,10 +35,6 @@ class Constants:
 
     # --- GOOGLE OAUTH ---
     GOOGLE_CLIENT_ID: str = "526204912239-9t2aptlchfeclmkcsegpp69cb690jre3.apps.googleusercontent.com"
-
-    # --- BLACKLISTED ---
-    BLACKLISTED_USERS: str = "blacklisted-users"
-    BLACKLISTED_USERAGENT: str = "blacklisted-useragent"
 
 
 CONSTANTS = Constants()
@@ -56,22 +56,6 @@ class SecretConstants:
             version_id="1"
         )
 
-        # --- RETRIEVING BLACKLISTED USERS ---
-        self.__BLACKLISTED_USERS = GoogleSecretManager.get_secret_payload(
-            self,
-            project_id=Constants.GOOGLE_PROJECT_ID,
-            secret_id=Constants.BLACKLISTED_USERS,
-            version_id="4"
-        )
-
-        # --- RETRIEVING BLACKLISTED USERAGENT ---
-        self.__BLACKLISTED_USERAGENT = GoogleSecretManager.get_secret_payload(
-            self,
-            project_id=Constants.GOOGLE_PROJECT_ID,
-            secret_id=Constants.BLACKLISTED_USERAGENT,
-            version_id="1"
-        )
-
     @property
     def FLASK_SECRET_KEY(self) -> str:
         return self.__FLASK_SECRET_KEY
@@ -79,14 +63,6 @@ class SecretConstants:
     @property
     def JWT_SECRET_KEY(self) -> str:
         return self.__JWT_SECRET_KEY
-
-    @property
-    def BLACKLISTED_USERS(self) -> list:
-        return self.__BLACKLISTED_USERS
-
-    @property
-    def BLACKLISTED_USERAGENT(self) -> list:
-        return self.__BLACKLISTED_USERAGENT
 
 
 SECRET_CONSTANTS = SecretConstants()

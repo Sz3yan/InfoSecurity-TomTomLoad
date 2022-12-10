@@ -18,7 +18,6 @@ class GoogleCloudStorage:
         Create a new bucket in the US region with the coldline storage
         class
         """
-        # bucket_name = "your-new-bucket-name"
 
         storage_client = storage.Client()
 
@@ -93,4 +92,8 @@ class GoogleCloudStorage:
 
         print(f"Blob {blob_name} deleted.")
 
-    
+
+# if __name__ == "__main__":
+#     gcs = GoogleCloudStorage()
+
+#     gcs.download_blob("ttl1234567890", "blacklisted.json", "/Users/sz3yan/Desktop/blacklisted.json")

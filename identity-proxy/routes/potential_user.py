@@ -1,4 +1,5 @@
 import jwt
+import json
 import requests
 import base64
 from datetime import datetime, timedelta
@@ -11,6 +12,8 @@ from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
 from functools import wraps
 
+from static.classes.storage import GoogleCloudStorage
+
 
 potential_user = Blueprint('potential_user', __name__, template_folder="templates", static_folder='static')
 
@@ -22,6 +25,7 @@ flow = Flow.from_client_secrets_file(
 )
 
 # -----------------  START OF WRAPPER ----------------- #
+
 def authenticated(func):
     @wraps(func)
     def decorated_function(*args, **kwargs):
@@ -29,10 +33,12 @@ def authenticated(func):
             return func(*args, **kwargs)
 
     return decorated_function
+
 # -----------------  END OF WRAPPER ----------------- #
 
 
 # -----------------  START OF AUTHENTICATION ----------------- #
+
 @potential_user.route("/")
 def login():
     authorization_url, state = flow.authorization_url(
@@ -67,13 +73,16 @@ def callback():
     print(session['id_info'].get("name"))
 
     return redirect("/authorisation")
+
 # -----------------  END OF AUTHENTICATION ----------------- #
 
 
 # -----------------  START OF AUTHORISATION ----------------- #
+
 @authenticated
 @potential_user.route("/authorisation", methods=["GET", "POST"])
 def authorisation():
+
     # -----------------  START OF CONTEXT-AWARE ACCESS ----------------- #
 
     TTLContextAwareAccessClientIP = request.headers.get('X-Forwarded-For', request.remote_addr)
@@ -81,12 +90,19 @@ def authorisation():
     TTLContextAwareAccessClientCertificate = "request.headers.get('TTL-Certificate')"
 
     # -----------------  END OF CONTEXT-AWARE ACCESS ----------------- #
-    
-    # Identity proxy will then check for the role
-    # If the role is not blacklisted, then the user will be directed to Context Aware Access
-    # print(SECRET_CONSTANTS.BLACKLISTED_USERS, type(SECRET_CONSTANTS.BLACKLISTED_USERS))
-    if (session['id_info'].get("name") not in SECRET_CONSTANTS.BLACKLISTED_USERS) and \
-        (TTLContextAwareAccessClientUserAgent not in SECRET_CONSTANTS.BLACKLISTED_USERAGENT):
+
+    latest_blacklisted = GoogleCloudStorage()
+    latest_blacklisted.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, CONSTANTS.BLACKLISTED_FILE_NAME, CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"))
+
+    # open blacklisted json and convert it into a list
+    with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"), "r") as f:
+        blacklisted = json.load(f)
+        print(blacklisted, type(blacklisted))
+
+
+    if (session['id_info'].get("name") not in blacklisted["blacklisted_users"]) and \
+        (TTLContextAwareAccessClientUserAgent not in blacklisted["blacklisted_useragent"]) and \
+        (TTLContextAwareAccessClientIP not in blacklisted["blacklisted_ip"]):
 
         signed_header = {
             "TTL-Authenticated-User-Name": session['id_info'].get("name"),
@@ -138,4 +154,5 @@ def authorisation():
 
     else:
         return {"message": "You are not authorised to access this page"}
+
 # -----------------  END OF AUTHORISATION ----------------- #
