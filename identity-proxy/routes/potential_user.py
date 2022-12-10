@@ -74,11 +74,19 @@ def callback():
 @authenticated
 @potential_user.route("/authorisation", methods=["GET", "POST"])
 def authorisation():
+    # -----------------  START OF CONTEXT-AWARE ACCESS ----------------- #
+
+    TTLContextAwareAccessClientIP = request.headers.get('X-Forwarded-For', request.remote_addr)
+    TTLContextAwareAccessClientUserAgent = request.headers.get('User-Agent')
+    TTLContextAwareAccessClientCertificate = "request.headers.get('TTL-Certificate')"
+
+    # -----------------  END OF CONTEXT-AWARE ACCESS ----------------- #
+    
     # Identity proxy will then check for the role
     # If the role is not blacklisted, then the user will be directed to Context Aware Access
     # print(SECRET_CONSTANTS.BLACKLISTED_USERS, type(SECRET_CONSTANTS.BLACKLISTED_USERS))
-    if session['id_info'].get("name") not in SECRET_CONSTANTS.BLACKLISTED_USERS:
-        global signed_header
+    if (session['id_info'].get("name") not in SECRET_CONSTANTS.BLACKLISTED_USERS) and \
+        (TTLContextAwareAccessClientUserAgent not in SECRET_CONSTANTS.BLACKLISTED_USER_AGENTS):
 
         signed_header = {
             "TTL-Authenticated-User-Name": session['id_info'].get("name"),
@@ -92,25 +100,18 @@ def authorisation():
                         "name": session['id_info'].get("name"),
                         "email": session['id_info'].get("email"),
                         "picture": session['id_info'].get("picture"),
-                        "role": "admin"
                     },
                 SECRET_CONSTANTS.JWT_SECRET_KEY,
                 algorithm=CONSTANTS.JWT_ALGORITHM
             )
         }
-
-        # -----------------  START OF CONTEXT-AWARE ACCESS ----------------- #
-
-        global context_aware_access 
         
         context_aware_access = {
-            "TTL-Context-Aware-Access-Client-IP": request.headers.get('X-Forwarded-For', request.remote_addr),
-            "TTL-Context-Aware-Access-Client-User-Agent": request.headers.get('User-Agent'),
+            "TTL-Context-Aware-Access-Client-IP": TTLContextAwareAccessClientIP,
+            "TTL-Context-Aware-Access-Client-User-Agent": TTLContextAwareAccessClientUserAgent,
             "TTL-Context-Aware-Access-Client-Certificate": "request.headers.get('TTL-Certificate')"
         }
         
-        # -----------------  END OF CONTEXT-AWARE ACCESS ----------------- #
-
         response = make_response(redirect("https://127.0.0.1:5000/admin", code=302))
 
         response.set_cookie(
