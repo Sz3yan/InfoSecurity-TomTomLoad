@@ -17,6 +17,14 @@ class Constants:
 
     # --- GOOGLE CLOUD ---
     GOOGLE_PROJECT_ID: str = "infosec-62c05"
+    GOOGLE_LOCATION_ID: str = "global"
+    GOOGLE_KEY_RING_ID: str = "identity-proxy"
+
+    # --- JWT ACCESS TOKEN ---
+    JWT_ACCESS_TOKEN_EXPIRATION_TIME: int = 10
+    JWT_ACCESS_TOKEN_SKEW_TIME: int = 30
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_SECRET_KEY: str = "identity-proxy-jwt-key"
 
     # --- GOOGLE KEY MANAGEMENT SYSTEM ---
     # LOCATION_ID: str = ""
@@ -46,6 +54,14 @@ class SecretConstants:
         # --- VIRUSTOTAL API ---
         self.__virus_total_api_key = GoogleSecretManager.get_secret_payload(self, CONSTANTS.GOOGLE_PROJECT_ID, "virustotal", "1")
 
+        # --- RETRIEVING JWT ACCESS TOKEN SECRET KEY ---
+        self.__JWT_SECRET_KEY = GoogleSecretManager.get_secret_payload(
+            self,
+            project_id=Constants.GOOGLE_PROJECT_ID,
+            secret_id=Constants.JWT_ACCESS_TOKEN_SECRET_KEY,
+            version_id="1"
+        )
+
     # @property
     # def POST_SECRET_KEY(self) -> str:
     #     return self.__POST_SECRET_KEY
@@ -53,6 +69,10 @@ class SecretConstants:
     @property
     def virus_total_api_key(self) -> str:
         return self.__virus_total_api_key
+
+    @property
+    def JWT_SECRET_KEY(self) -> str:
+        return self.__JWT_SECRET_KEY
 
 
 SECRET_CONSTANTS = SecretConstants()

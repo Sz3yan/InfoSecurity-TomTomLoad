@@ -24,12 +24,16 @@ class Constants:
     # FLASK_SECRET_KEY_NAME: str = ""
 
     # --- JWT ACCESS TOKEN ---
-    JWT_ACCESS_TOKEN_EXPIRATION_TIME: int = 3600  # 1 hour
+    JWT_ACCESS_TOKEN_EXPIRATION_TIME: int = 10
+    JWT_ACCESS_TOKEN_SKEW_TIME: int = 30
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_SECRET_KEY: str = "identity-proxy-jwt-key"
 
     # --- GOOGLE OAUTH ---
     GOOGLE_CLIENT_ID: str = "526204912239-9t2aptlchfeclmkcsegpp69cb690jre3.apps.googleusercontent.com"
+
+    # --- BLACKLISTED ---
+    BLACKLISTED_USERS: str = "blacklisted-users"
 
 
 CONSTANTS = Constants()
@@ -51,6 +55,14 @@ class SecretConstants:
             version_id="1"
         )
 
+        # --- RETRIEVING BLACKLISTED USERS ---
+        self.__BLACKLISTED_USERS = GoogleSecretManager.get_secret_payload(
+            self,
+            project_id=Constants.GOOGLE_PROJECT_ID,
+            secret_id=Constants.BLACKLISTED_USERS,
+            version_id="4"
+        )
+
     @property
     def FLASK_SECRET_KEY(self) -> str:
         return self.__FLASK_SECRET_KEY
@@ -58,6 +70,10 @@ class SecretConstants:
     @property
     def JWT_SECRET_KEY(self) -> str:
         return self.__JWT_SECRET_KEY
+
+    @property
+    def BLACKLISTED_USERS(self) -> list:
+        return self.__BLACKLISTED_USERS
 
 
 SECRET_CONSTANTS = SecretConstants()
