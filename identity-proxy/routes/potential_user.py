@@ -86,7 +86,7 @@ def authorisation():
     # If the role is not blacklisted, then the user will be directed to Context Aware Access
     # print(SECRET_CONSTANTS.BLACKLISTED_USERS, type(SECRET_CONSTANTS.BLACKLISTED_USERS))
     if (session['id_info'].get("name") not in SECRET_CONSTANTS.BLACKLISTED_USERS) and \
-        (TTLContextAwareAccessClientUserAgent not in SECRET_CONSTANTS.BLACKLISTED_USER_AGENTS):
+        (TTLContextAwareAccessClientUserAgent not in SECRET_CONSTANTS.BLACKLISTED_USERAGENT):
 
         signed_header = {
             "TTL-Authenticated-User-Name": session['id_info'].get("name"),

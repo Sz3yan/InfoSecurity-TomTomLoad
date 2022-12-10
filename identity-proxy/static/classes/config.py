@@ -34,6 +34,7 @@ class Constants:
 
     # --- BLACKLISTED ---
     BLACKLISTED_USERS: str = "blacklisted-users"
+    BLACKLISTED_USERAGENT: str = "blacklisted-useragent"
 
 
 CONSTANTS = Constants()
@@ -63,6 +64,14 @@ class SecretConstants:
             version_id="4"
         )
 
+        # --- RETRIEVING BLACKLISTED USERAGENT ---
+        self.__BLACKLISTED_USERAGENT = GoogleSecretManager.get_secret_payload(
+            self,
+            project_id=Constants.GOOGLE_PROJECT_ID,
+            secret_id=Constants.BLACKLISTED_USERAGENT,
+            version_id="1"
+        )
+
     @property
     def FLASK_SECRET_KEY(self) -> str:
         return self.__FLASK_SECRET_KEY
@@ -74,6 +83,10 @@ class SecretConstants:
     @property
     def BLACKLISTED_USERS(self) -> list:
         return self.__BLACKLISTED_USERS
+
+    @property
+    def BLACKLISTED_USERAGENT(self) -> list:
+        return self.__BLACKLISTED_USERAGENT
 
 
 SECRET_CONSTANTS = SecretConstants()
