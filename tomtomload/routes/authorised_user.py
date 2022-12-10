@@ -11,39 +11,57 @@ authorised_user = Blueprint('authorised_user', __name__, url_prefix="/admin", te
 
 
 # -----------------  START OF WRAPPER ----------------- #
+
 def check_signed_credential(func):
     @wraps(func)
     def decorated_function(*args, **kwargs):
-        if "signed_jwt" not in session:
+        if "TTLJWTAuthenticatedUser" not in session:
             return {"error": "User not authorized"}
         else:
-            cleanup = session["signed_jwt"].replace("'", '"')
+            global decoded
 
-            global str_to_dict
-            str_to_dict = json.loads(cleanup)
-            
+            decoded = jwt.decode(
+                session["TTLJWTAuthenticatedUser"]["TTL-JWTAuthenticated-User"], 
+                algorithms="HS256", 
+                key=SECRET_CONSTANTS.JWT_SECRET_KEY
+            )
+
             return func(*args, **kwargs)
 
     return decorated_function
+
 # -----------------  END OF WRAPPER ----------------- #
 
 
 # -----------------  START OF AUTHENTICATED SIGNED TRAFFIC ----------------- #
+
 @authorised_user.route('/')
 def home():
-    name = base64.b64decode(request.cookies.get('TTL-Authenticated-User-Name')).decode('utf-8')
-    signed_jwt = base64.b64decode(request.cookies.get('TTL-JWTAuthenticated-User')).decode('utf-8')
-    context_aware = base64.b64decode(request.cookies.get('TTL-Context-Aware-Access')).decode('utf-8')
+    TTLAuthenticatedUserName = base64.b64decode(request.cookies.get('TTL-Authenticated-User-Name')).decode('utf-8')
+    TTLJWTAuthenticatedUser_raw = base64.b64decode(request.cookies.get('TTL-JWTAuthenticated-User')).decode('utf-8')
+    TTLContextAwareAccess_raw = base64.b64decode(request.cookies.get('TTL-Context-Aware-Access')).decode('utf-8')
 
-    session["signed_jwt"] = signed_jwt
-    cleanup = session["signed_jwt"].replace("'", '"')
-    str_to_dict = json.loads(cleanup)
+    # -----------------  START OF SESSION (for easy access) ----------------- #
 
-    # decode the JWT
-    print(str_to_dict)
-    decoded = jwt.decode(str_to_dict["TTL-JWTAuthenticated-User"], algorithms=["HS256"], key=SECRET_CONSTANTS.JWT_SECRET_KEY)
+    cleanup_TTLJWTAuthenticatedUser = TTLJWTAuthenticatedUser_raw.replace("'", '"')
+    TTLJWTAuthenticatedUser = json.loads(cleanup_TTLJWTAuthenticatedUser)
+
+    cleanup_TTLContextAwareAccess = TTLContextAwareAccess_raw.replace("'", '"')
+    TTLContextAwareAccess = json.loads(cleanup_TTLContextAwareAccess)
+
+    session["TTLAuthenticatedUserName"] = TTLAuthenticatedUserName
+    session["TTLJWTAuthenticatedUser"] = TTLJWTAuthenticatedUser
+    session["TTLContextAwareAccess"] = TTLContextAwareAccess
+
+    # -----------------  END OF SESSION ----------------- #
+
+    decoded_TTLJWTAuthenticatedUser = jwt.decode(
+        TTLJWTAuthenticatedUser["TTL-JWTAuthenticated-User"], 
+        algorithms="HS256", 
+        key=SECRET_CONSTANTS.JWT_SECRET_KEY
+    )
     
-    return render_template('authorised_admin/dashboard.html', user=name, pic=decoded["picture"])
+    return render_template('authorised_admin/dashboard.html', user=TTLAuthenticatedUserName, pic=decoded_TTLJWTAuthenticatedUser["picture"])
 
 
 @authorised_user.route("/logout")
@@ -51,11 +69,14 @@ def home():
 def logout():
     session.clear()
 
-    # delete cookies
+    # -----------------  START OF REMOVING COOKIE ----------------- #
+
     response = make_response(redirect("https://127.0.0.1:8080/", code=302))
     response.set_cookie("TTL-Authenticated-User-Name", request.cookies.get('TTL-Authenticated-User-Name') ,expires=0)
     response.set_cookie("TTL-JWTAuthenticated-User", request.cookies.get('TTL-JWTAuthenticated-User'), expires=0)
     response.set_cookie("TTL-Context-Aware-Access", request.cookies.get('TTL-Context-Aware-Access'), expires=0)
+
+    # -----------------  END OF REMOVING COOKIE ----------------- #
 
     return response
 
@@ -98,4 +119,5 @@ def create_users(id):
 @authorised_user.route("/account")
 def profile():
     return render_template('authorised_admin/profile.html')
+
 # -----------------  END OF AUTHENTICATED SIGNED TRAFFIC ----------------- #

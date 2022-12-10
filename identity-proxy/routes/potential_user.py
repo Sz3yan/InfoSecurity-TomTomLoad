@@ -87,7 +87,7 @@ def authorisation():
 
     TTLContextAwareAccessClientIP = request.headers.get('X-Forwarded-For', request.remote_addr)
     TTLContextAwareAccessClientUserAgent = request.headers.get('User-Agent')
-    TTLContextAwareAccessClientCertificate = "request.headers.get('TTL-Certificate')"
+    TTLContextAwareAccessClientCertificate = "cert"
 
     # -----------------  END OF CONTEXT-AWARE ACCESS ----------------- #
 
@@ -125,7 +125,7 @@ def authorisation():
         context_aware_access = {
             "TTL-Context-Aware-Access-Client-IP": TTLContextAwareAccessClientIP,
             "TTL-Context-Aware-Access-Client-User-Agent": TTLContextAwareAccessClientUserAgent,
-            "TTL-Context-Aware-Access-Client-Certificate": "request.headers.get('TTL-Certificate')"
+            "TTL-Context-Aware-Access-Client-Certificate": TTLContextAwareAccessClientCertificate
         }
         
         response = make_response(redirect("https://127.0.0.1:5000/admin", code=302))
