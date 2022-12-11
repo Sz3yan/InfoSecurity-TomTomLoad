@@ -1,25 +1,24 @@
-<html>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+        <link href="{{ url_for('static', filename='../static/style.css') }}" rel="stylesheet">
+        <title>Logout - TTL</title>
+    </head>
 
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-    <link href="{{ url_for('static', filename='../static/style.css') }}" rel="stylesheet">
-    <title>Logout - CMS</title>
-</head>
-
-<body>
-    <div id="app">
-        <section class="logout template-minimal template-minimal--width-normal">
-            <div class="template-minimal__wrap">
-                <div class="logout__wrap">
-                    <h2>You have been logged out successfully.</h2><br><a type="button"
-                        class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right"
-                        href="/"><span class="btn__content"><span class="btn__label">Log back
-                                in</span></span></a>
+    <body>
+        <div id="app">
+            <section class="logout template-minimal template-minimal--width-normal">
+                <div class="template-minimal__wrap">
+                    <div class="logout__wrap">
+                        <h2>You have been logged out successfully.</h2>
+                        <br>
+                        <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="https://127.0.0.1:8080">
+                            <span class="btn__content"><span class="btn__label">Log back in</span></span>
+                        </a>
+                    </div>
                 </div>
-            </div>
-        </section>
-    </div>
-</body>
-
+            </section>
+        </div>
+    </body>
 </html>

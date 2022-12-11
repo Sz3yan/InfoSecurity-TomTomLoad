@@ -17,14 +17,24 @@ class Constants:
 
     # --- GOOGLE CLOUD ---
     GOOGLE_PROJECT_ID: str = "infosec-62c05"
+    GOOGLE_LOCATION_ID: str = "global"
+    GOOGLE_KEY_RING_ID: str = "identity-proxy"
 
-    # --- GOOGLE KEY MANAGEMENT SYSTEM ---
-    # LOCATION_ID: str = ""
-    # KEY_RING_ID: str = ""
-    # AVAILABLE_KEY_RINGS: tuple = ()
+    # --- GOOGLE CLOUD STORAGE ---
+    STORAGE_BUCKET_NAME: str = "ttl1234567890"
+    BLACKLISTED_FILE_NAME: str = "blacklisted.json"
 
     # --- GOOGLE SECRET MANAGER ---
     # FLASK_SECRET_KEY_NAME: str = ""
+
+    # --- JWT ACCESS TOKEN ---
+    JWT_ACCESS_TOKEN_EXPIRATION_TIME: int = 10
+    JWT_ACCESS_TOKEN_SKEW_TIME: int = 30
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ACCESS_TOKEN_SECRET_KEY: str = "identity-proxy-jwt-key"
+
+    # --- GOOGLE OAUTH ---
+    GOOGLE_CLIENT_ID: str = "526204912239-9t2aptlchfeclmkcsegpp69cb690jre3.apps.googleusercontent.com"
 
     # --- RATE LIMITING ---
     DEFAULT_REQUEST_LIMIT: str = "600 per minute"
@@ -46,6 +56,14 @@ class SecretConstants:
         # --- VIRUSTOTAL API ---
         self.__virus_total_api_key = GoogleSecretManager.get_secret_payload(self, CONSTANTS.GOOGLE_PROJECT_ID, "virustotal", "1")
 
+        # --- RETRIEVING JWT ACCESS TOKEN SECRET KEY ---
+        self.__JWT_SECRET_KEY = GoogleSecretManager.get_secret_payload(
+            self,
+            project_id=Constants.GOOGLE_PROJECT_ID,
+            secret_id=Constants.JWT_ACCESS_TOKEN_SECRET_KEY,
+            version_id="1"
+        )
+
     # @property
     # def POST_SECRET_KEY(self) -> str:
     #     return self.__POST_SECRET_KEY
@@ -53,6 +71,10 @@ class SecretConstants:
     @property
     def virus_total_api_key(self) -> str:
         return self.__virus_total_api_key
+
+    @property
+    def JWT_SECRET_KEY(self) -> str:
+        return self.__JWT_SECRET_KEY
 
 
 SECRET_CONSTANTS = SecretConstants()

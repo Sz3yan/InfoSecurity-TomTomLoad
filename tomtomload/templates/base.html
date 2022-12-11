@@ -1,0 +1,22 @@
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+        <link href="{{ url_for('static', filename='../static/style.css') }}" rel="stylesheet">
+        <title>{% block title %}{% endblock %} </title>
+    </head>
+
+    <body>
+        <div id="app">
+            <div class="template-default">
+                {% block navbar %}
+                    {% include 'includes/navbar.html' %}
+                {% endblock %}
+
+                <div class="template-default__wrap">
+                    {% block bodyContent %}{% endblock %}
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

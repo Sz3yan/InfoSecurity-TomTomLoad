@@ -20,11 +20,17 @@ class Constants:
     GOOGLE_LOCATION_ID: str = "global"
     GOOGLE_KEY_RING_ID: str = "identity-proxy"
 
+    # --- GOOGLE CLOUD STORAGE ---
+    STORAGE_BUCKET_NAME: str = "ttl1234567890"
+    BLACKLISTED_FILE_NAME: str = "blacklisted.json"
+    ACL_FILE_NAME: str = "acl.json"
+
     # --- GOOGLE SECRET MANAGER ---
     # FLASK_SECRET_KEY_NAME: str = ""
 
     # --- JWT ACCESS TOKEN ---
-    JWT_ACCESS_TOKEN_EXPIRATION_TIME: int = 3600  # 1 hour
+    JWT_ACCESS_TOKEN_EXPIRATION_TIME: int = 10
+    JWT_ACCESS_TOKEN_SKEW_TIME: int = 30
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_SECRET_KEY: str = "identity-proxy-jwt-key"
 
