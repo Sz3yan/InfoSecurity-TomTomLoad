@@ -1,13 +1,16 @@
 from flask_paranoid import Paranoid
-import jwt
+import hashlib
 
 class TTLSession(Paranoid):
     def __init__(self, app=None):
-        self.__flask_paranoid = super().__init__(app)
+        super().__init__(app)
     
-    def write_token_to_session(self, token):
-        return super().write_token_to_session(token)
+    def write_token_to_session(self, Ptoken):
+        pass
+        # return super().write_token_to_session(token)
     
-    def get_token(self, username, password):
-        if username == "" and password == "":
-            return 
+    def get_token(self, jwtToken):
+        if jwtToken != "":
+            super().create_token()
+        else:
+            print("Please provide the JWT Token")

@@ -2,7 +2,7 @@ from static.classes.config import SECRET_CONSTANTS
 
 class adminrole:
     def __init__(self) -> None:
-        if 
+        # if 
         pass
 
     def read(self):
