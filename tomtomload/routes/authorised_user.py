@@ -57,7 +57,7 @@ def home():
     
     except TypeError:
         return abort(403)
-
+    
     # -----------------  START OF SESSION (for easy access) ----------------- #
 
     cleanup_TTLJWTAuthenticatedUser = TTLJWTAuthenticatedUser_raw.replace("'", '"')
@@ -76,11 +76,18 @@ def home():
 
     # -----------------  END OF SESSION ----------------- #
 
-    decoded_TTLJWTAuthenticatedUser = jwt.decode(
-        TTLJWTAuthenticatedUser["TTL-JWTAuthenticated-User"], 
-        algorithms="HS256", 
-        key=SECRET_CONSTANTS.JWT_SECRET_KEY
-    )
+    try:
+        decoded_TTLJWTAuthenticatedUser = jwt.decode(
+            TTLJWTAuthenticatedUser["TTL-JWTAuthenticated-User"], 
+            algorithms="HS256", 
+            key=SECRET_CONSTANTS.JWT_SECRET_KEY
+        )
+
+    except jwt.ExpiredSignatureError:
+        return abort(401)
+
+    except jwt.InvalidTokenError:
+        return abort(403)
 
     media_id = UniqueID()
     post_id = UniqueID()
