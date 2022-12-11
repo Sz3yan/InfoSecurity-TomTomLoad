@@ -12,7 +12,7 @@
                                     class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 25 25">
                                     <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                </svg></a><a href="/admin/collections/users"><span>Users</span><svg
+                                </svg></a><a href="/admin/users"><span>Users</span><svg
                                     class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 25 25">
                                     <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
@@ -21,13 +21,13 @@
                 </div>
                 <div class="gutter--left gutter--right collection-edit__edit">
                     <header class="collection-edit__header">
-                        <h1><span class="render-title">demo@ttlcms.com</span></h1>
+                        <h1><span class="render-title">{{ email }}</span></h1>
                     </header>
                     <div class="auth-fields">
                         <div class="field-type email"><label for="field-email"
                                 class="field-label">Email<span class="required">*</span></label><input
                                 id="field-email" type="email" name="email" autocomplete="email"
-                                value="demo@ttlcms.com"></div><button type="button"
+                                value="{{ email }}"></div><button type="button"
                             class="btn btn--style-secondary btn--icon-style-without-border btn--size-small btn--icon-position-right"><span
                                 class="btn__content"><span class="btn__label">Change
                                     Password</span></span></button><button type="button"
@@ -61,12 +61,8 @@
                 <div class="collection-edit__sidebar">
                     <div class="collection-edit__sidebar-sticky-wrap">
                         <ul class="collection-edit__collection-actions">
-                            <li><a id="action-create" href="/admin/collections/users/create">Create New</a>
+                            <li><a id="action-create" href="/admin/users/create">Create New</a>
                             </li>
-                            <li><button type="button" id="action-duplicate"
-                                    class="btn duplicate btn--style-none btn--icon-style-without-border btn--size-medium btn--icon-position-right"><span
-                                        class="btn__content"><span
-                                            class="btn__label">Duplicate</span></span></button></li>
                             <li><button type="button" id="action-delete"
                                     class="delete-document__toggle">Delete</button></li>
                         </ul>

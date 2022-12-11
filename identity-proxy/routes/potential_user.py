@@ -2,6 +2,7 @@ import jwt
 import json
 import requests
 import base64
+import ipinfo
 from datetime import datetime, timedelta
 import google.auth.transport.requests
 
@@ -85,7 +86,17 @@ def authorisation():
 
     # -----------------  START OF CONTEXT-AWARE ACCESS ----------------- #
 
-    TTLContextAwareAccessClientIP = request.headers.get('X-Forwarded-For', request.remote_addr)
+    handler = ipinfo.getHandler(SECRET_CONSTANTS.IPINFO_TOKEN)
+    details = handler.getDetails().all
+
+    custom_ip = {
+        "ip": details["ip"],
+        "city" : details["city"],
+        "hostname": details["region"],
+        "loc": details["loc"],
+    }
+
+    TTLContextAwareAccessClientIP = custom_ip
     TTLContextAwareAccessClientUserAgent = request.headers.get('User-Agent')
     TTLContextAwareAccessClientCertificate = "cert"
 
@@ -97,15 +108,12 @@ def authorisation():
     # open blacklisted json and convert it into a list
     with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"), "r") as f:
         blacklisted = json.load(f)
-        print(blacklisted, type(blacklisted))
 
     lastest_acl = GoogleCloudStorage()
     lastest_acl.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, CONSTANTS.ACL_FILE_NAME, CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"))
 
     with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
         acl = json.load(s)
-        print(acl, type(acl))
-        print(acl["superadmins"])
 
     if (session['id_info'].get("name") not in blacklisted["blacklisted_users"]) and \
         (TTLContextAwareAccessClientUserAgent not in blacklisted["blacklisted_useragent"]) and \
@@ -160,6 +168,6 @@ def authorisation():
         return response
 
     else:
-        return {"message": "You are not authorised to access this page"}
+        return abort(401)
 
 # -----------------  END OF AUTHORISATION ----------------- #

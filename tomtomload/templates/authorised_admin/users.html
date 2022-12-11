@@ -13,7 +13,7 @@
         <div class="gutter--left gutter--right collection-list__wrap">
             <header class="collection-list__header">
                 <h1>Users</h1><a class="pill pill--style-light pill--has-link pill--has-action"
-                    href="/admin/users/create/l">Create New</a>
+                    href="/admin/users/create/{{ user_id }}">Create New</a>
             </header>
             <div class="list-controls">
                 <div class="list-controls__wrap">
@@ -209,10 +209,8 @@
                     </thead>
                     <tbody>
                         <tr class="row-1">
-                            <td class="cell-email"><a
-                                    href="/admin/users/63909c60eb18a6399e33f560">demo@ttlcms.com</a>
-                            </td>
-                            <td class="cell-id"><span>63909c60eb18a6399e33f560</span></td>
+                            <td class="cell-email"><a href="/admin/users/{{ user_id }}">{{ email }}</a></td>
+                            <td class="cell-id"><span>{{ user_id }}</span></td>
                             <td class="cell-name"><span>Demo User</span></td>
                             <td class="cell-enableAPIKey"><span></span></td>
                         </tr>
