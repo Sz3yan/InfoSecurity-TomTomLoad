@@ -6,14 +6,15 @@ import ipinfo
 from datetime import datetime, timedelta
 import google.auth.transport.requests
 
-from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 from flask import Blueprint, request, session, redirect, abort, make_response
+
+from static.classes.config import CONSTANTS, SECRET_CONSTANTS
+from static.classes.storage import GoogleCloudStorage
+
 from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
 from functools import wraps
-
-from static.classes.storage import GoogleCloudStorage
 
 
 potential_user = Blueprint('potential_user', __name__, template_folder="templates", static_folder='static')
@@ -22,7 +23,7 @@ client_secrets_file = CONSTANTS.IP_CONFIG_FOLDER.joinpath("client_secret.json")
 flow = Flow.from_client_secrets_file(
     client_secrets_file=client_secrets_file,
     scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
-    redirect_uri="https://127.0.0.1:8080/callback"
+    redirect_uri=CONSTANTS.CALLBACK_URL
 )
 
 # -----------------  START OF WRAPPER ----------------- #
@@ -113,7 +114,6 @@ def authorisation():
 
     with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
         acl = json.load(s)
-        print(acl)
 
     if (session['id_info'].get("name") not in blacklisted["blacklisted_users"]) and \
         (TTLContextAwareAccessClientUserAgent not in blacklisted["blacklisted_useragent"]) and \
@@ -168,6 +168,7 @@ def authorisation():
             value=base64.b64encode(str(signed_header).encode("utf-8")),
             httponly=True, 
             secure=True)
+
         response.set_cookie(
             'TTL-Context-Aware-Access',
             value=base64.b64encode(str(context_aware_access).encode("utf-8")),

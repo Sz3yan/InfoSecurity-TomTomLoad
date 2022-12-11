@@ -12,6 +12,8 @@ DEBUG_MODE = True
 class Constants:
     DEBUG_MODE: bool = DEBUG_MODE 
 
+    CALLBACK_URL: str = "https://127.0.0.1:8080/callback" if (DEBUG_MODE) else "https://tomtomload.com/callback"
+
     IP_ROOT_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.parent.absolute()
     IP_CONFIG_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.absolute() / "config_files"
 

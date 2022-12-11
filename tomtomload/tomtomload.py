@@ -7,11 +7,12 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
 from flask_talisman import Talisman
-from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 
 from routes.Errors import error
 from routes.authorised_user import authorised_user
 from routes.api import api
+
+from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 
 
 # -----------------  START OF TOM TOM LOAD  ----------------- #
@@ -105,6 +106,9 @@ with app.app_context():
 
 
 if __name__ == "__main__":
+
+    # maybe add scheduler here
+
     if app.config["DEBUG_FLAG"]:
         SSL_CONTEXT = (
             CONSTANTS.TTL_CONFIG_FOLDER.joinpath("certificate.pem"),
