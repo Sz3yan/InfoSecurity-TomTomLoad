@@ -7,34 +7,52 @@
                 <nav class="step-nav"><span>{{ user }}'s Dashboard</span></nav>
                 <a href="/admin/logout">logout</a>
             </div>
-
         </div>
+
         <div class="gutter--left gutter--right dashboard__wrap">
             <h2 class="dashboard__label">Content</h2>
             <ul class="dashboard__card-list">
                 <li>
-                    <div class="card card-media card--has-onclick" id="card-media">
-                        <h5>Media</h5><button type="button"
-                            class="btn card__click btn--style-none btn--icon-style-without-border btn--size-medium btn--icon-position-right"><span
-                                class="btn__content"></span></button>
+                    <div class="card card-posts card--has-onclick" id="card-posts">
+                        <h5>Media</h5>
+                        <div class="card__actions">
+                            <a type="button" class="btn btn--style-icon-label btn--icon btn--icon-style-with-border btn--icon-only btn--round btn--size-medium btn--icon-position-right" href="/admin/media/upload/{{ media_id }}">
+                                <span class="btn__content">
+                                    <span class="btn__icon">
+                                        <svg class="icon icon--plus" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                            <line x1="12.4589" y1="16.9175" x2="12.4589" y2="8.50115" class="stroke"></line>
+                                            <line x1="8.05164" y1="12.594" x2="16.468" y2="12.594" class="stroke"></line>
+                                        </svg>
+                                    </span>
+                                </span>
+                            </a>
+                        </div>
+                        
+                        <button type="button" class="btn card__click btn--style-none btn--icon-style-without-border btn--size-medium btn--icon-position-right">
+                            <span class="btn__content"></span>
+                        </button>
                     </div>
                 </li>
 
                 <li>
                     <div class="card card-posts card--has-onclick" id="card-posts">
                         <h5>Posts</h5>
-                        <div class="card__actions"><a type="button"
-                                class="btn btn--style-icon-label btn--icon btn--icon-style-with-border btn--icon-only btn--round btn--size-medium btn--icon-position-right"
-                                href="/admin/posts/llll"><span class="btn__content"><span
-                                        class="btn__icon"><svg class="icon icon--plus"
-                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                            <line x1="12.4589" y1="16.9175" x2="12.4589" y2="8.50115"
-                                                class="stroke"></line>
-                                            <line x1="8.05164" y1="12.594" x2="16.468" y2="12.594"
-                                                class="stroke"></line>
-                                        </svg></span></span></a></div><button type="button"
-                            class="btn card__click btn--style-none btn--icon-style-without-border btn--size-medium btn--icon-position-right"><span
-                                class="btn__content"></span></button>
+                        <div class="card__actions">
+                            <a type="button" class="btn btn--style-icon-label btn--icon btn--icon-style-with-border btn--icon-only btn--round btn--size-medium btn--icon-position-right" href="/admin/posts/llll">
+                                <span class="btn__content">
+                                    <span class="btn__icon">
+                                        <svg class="icon icon--plus" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                            <line x1="12.4589" y1="16.9175" x2="12.4589" y2="8.50115" class="stroke"></line>
+                                            <line x1="8.05164" y1="12.594" x2="16.468" y2="12.594" class="stroke"></line>
+                                        </svg>
+                                    </span>
+                                </span>
+                            </a>
+                        </div>
+                        
+                        <button type="button" class="btn card__click btn--style-none btn--icon-style-without-border btn--size-medium btn--icon-position-right">
+                            <span class="btn__content"></span>
+                        </button>
                     </div>
                 </li>
             </ul>
@@ -44,32 +62,30 @@
                 <li>
                     <div class="card card-users card--has-onclick" id="card-users">
                         <h5>Users</h5>
-                        <div class="card__actions"><a type="button"
-                                class="btn btn--style-icon-label btn--icon btn--icon-style-with-border btn--icon-only btn--round btn--size-medium btn--icon-position-right"
-                                href="/admin/users/create"><span class="btn__content"><span
-                                        class="btn__icon"><svg class="icon icon--plus"
-                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                            <line x1="12.4589" y1="16.9175" x2="12.4589" y2="8.50115"
-                                                class="stroke"></line>
-                                            <line x1="8.05164" y1="12.594" x2="16.468" y2="12.594"
-                                                class="stroke"></line>
-                                        </svg></span></span></a></div><button type="button"
-                            class="btn card__click btn--style-none btn--icon-style-without-border btn--size-medium btn--icon-position-right"><span
-                                class="btn__content"></span></button>
+                        <div class="card__actions">
+                            <a type="button" class="btn btn--style-icon-label btn--icon btn--icon-style-with-border btn--icon-only btn--round btn--size-medium btn--icon-position-right" href="/admin/users/create">
+                                <span class="btn__content">
+                                    <span class="btn__icon">
+                                        <svg class="icon icon--plus" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                            <line x1="12.4589" y1="16.9175" x2="12.4589" y2="8.50115" class="stroke"></line>
+                                            <line x1="8.05164" y1="12.594" x2="16.468" y2="12.594" class="stroke"></line>
+                                        </svg>
+                                    </span>
+                                </span>
+                            </a>
+                        </div>
+                        
+                        <button type="button" class="btn card__click btn--style-none btn--icon-style-without-border btn--size-medium btn--icon-position-right">
+                            <span class="btn__content"></span>
+                        </button>
                     </div>
                 </li>
             </ul>
 
             <div class="after-dashboard">
-                <readme-toc data-catalyst="">
-
-                    <div id="readme"
-                        class="Box md js-code-block-container js-code-nav-container js-tagsearch-file Box--responsive"
-                        data-tagsearch-path="README.md" data-tagsearch-lang="Markdown">
-
-
-
-                        <div data-target="readme-toc.content" class="Box-body px-5 pb-5">
+                <readme-toc>
+                    <div id="readme" class="Box md js-code-block-container js-code-nav-container js-tagsearch-file Box--responsive">
+                        <div class="Box-body px-5 pb-5">
                             <article class="markdown-body entry-content container-lg" itemprop="text">
                                 <h4 dir="auto">Background</h4>
                                 <p dir="auto">Building a high-quality web application using web application
@@ -119,7 +135,6 @@
                             </article>
                         </div>
                     </div>
-
                 </readme-toc>
             </div>
         </div>

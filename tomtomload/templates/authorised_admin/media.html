@@ -4,94 +4,72 @@
     <div class="collection-list">
         <div class="eyebrow">
             <div class="gutter--left gutter--right eyebrow__wrap">
-                <nav class="step-nav"><a href="/admin"><span>Dashboard</span><svg class="icon icon--chevron"
-                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                <nav class="step-nav">
+                    <a href="/admin">
+                        <span>Dashboard</span>
+                        <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
                             <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                        </svg></a><span>Media</span></nav>
+                        </svg>
+                    </a>
+                    <span>Media</span>
+                </nav>
             </div>
         </div>
+
         <div class="gutter--left gutter--right collection-list__wrap">
             <header class="collection-list__header">
                 <h1>Media</h1>
             </header>
+
             <div class="list-controls">
                 <div class="list-controls__wrap">
-                    <div class="search-filter"><input class="search-filter__input"
-                            placeholder="Search by Filename" type="text" value=""><svg viewBox="0 0 25 25"
-                            fill="none" xmlns="http://www.w3.org/2000/svg" class="icon icon--search">
+                    <div class="search-filter">
+                        <input class="search-filter__input" placeholder="Search by Filename" type="text" value="">
+                        <svg viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon icon--search">
                             <circle cx="11.2069" cy="10.7069" r="5" class="stroke"></circle>
                             <line x1="14.914" y1="13.9998" x2="20.5002" y2="19.586" class="stroke"></line>
-                        </svg></div>
+                        </svg>
+                    </div>
+
                     <div class="list-controls__buttons">
-                        <div class="list-controls__buttons-wrap"><button type="button"
-                                class="btn list-controls__toggle-where btn--style-secondary btn--icon btn--icon-style-none btn--size-medium btn--icon-position-right"><span
-                                    class="btn__content"><span class="btn__label">Upload</span><span
-                                        class="btn__icon"><svg class="icon icon--chevron"
-                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                        <div class="list-controls__buttons-wrap">
+                            <button type="button" class="btn list-controls__toggle-where btn--style-secondary btn--icon btn--icon-style-none btn--size-medium btn--icon-position-right">
+                                <span class="btn__content"><span class="btn__label"><a href="/admin/media/upload/{{ media_id }}">Upload</span>
+                                    <span class="btn__icon">
+                                        <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
                                             <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                        </svg></span></span></button><button type="button"
-                                class="btn list-controls__toggle-sort btn--style-secondary btn--icon btn--icon-style-none btn--size-medium btn--icon-position-right"><span
-                                    class="btn__content"><span class="btn__label">Export</span><span
-                                        class="btn__icon"><svg class="icon icon--chevron"
-                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                        </svg>
+                                    </span>
+                                </span>
+                            </button>
+                            
+                            <button type="button" class="btn list-controls__toggle-sort btn--style-secondary btn--icon btn--icon-style-none btn--size-medium btn--icon-position-right">
+                                <span class="btn__content">
+                                    <span class="btn__label">Export</span>
+                                    <span class="btn__icon">
+                                        <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
                                             <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                        </svg></span></span></button></div>
+                                        </svg>
+                                    </span>
+                                </span>
+                            </button>
+                        </div>
                     </div>
                 </div>
-
             </div>
+
             <ul class="upload-gallery">
                 <li>
                     <a href="/admin/media/a">
                         <div class="upload-card upload-card--has-on-click">
-                            <div class="thumbnail thumbnail--size-expand"><img
-                                    src="https://source.unsplash.com/random"
-                                    alt="CMS.jpg"></div>
+                            <div class="thumbnail thumbnail--size-expand">
+                                <img src="https://source.unsplash.com/random" alt="CMS.jpg">
+                            </div>
                             <div class="upload-card__filename">CMS.jpg</div>
                         </div>
                     </a>
                 </li>
             </ul>
-            <div class="collection-list__page-controls">
-                <div class="collection-list__page-info">1-1 of 1</div>
-                <div class="per-page">
-                    <div
-                        class="popup popup--size-small popup--color-light popup--v-align-top popup--h-align-right">
-                        <div class="popup__wrapper"><button type="button"
-                                class="popup-button popup-button--default"><strong>Per Page: 10<svg
-                                        class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 25 25">
-                                        <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                    </svg></strong></button></div>
-                        <div class="popup__content">
-                            <div class="popup__wrap">
-                                <div class="popup__scroll">
-                                    <div>
-                                        <ul>
-                                            <li class="per-page-item"><button type="button"
-                                                    class="per-page__button">5</button></li>
-                                            <li class="per-page-item"><button type="button"
-                                                    class="per-page__button per-page__button-active"><svg
-                                                        class="icon icon--chevron"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 25 25">
-                                                        <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5">
-                                                        </path>
-                                                    </svg>10</button></li>
-                                            <li class="per-page-item"><button type="button"
-                                                    class="per-page__button">25</button></li>
-                                            <li class="per-page-item"><button type="button"
-                                                    class="per-page__button">50</button></li>
-                                            <li class="per-page-item"><button type="button"
-                                                    class="per-page__button">100</button></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 {% endblock %}

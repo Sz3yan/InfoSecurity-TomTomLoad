@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block bodyContent %}
+    <div class="collection-edit collection-edit--is-editing">
+        <form novalidate="" method="patch" action="https://demo.ttlcms.com/api/media/6366f90008fff3c0c302902a?locale=en&amp;depth=0&amp;fallback-locale=null" class="collection-edit__form form">
+            <div class="collection-edit__main">
+                <div class="eyebrow">
+                    <div class="gutter--left gutter--right eyebrow__wrap">
+                        <nav class="step-nav">
+                            <a href="/admin">
+                                <span>Dashboard</span>
+                                <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                    <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
+                                </svg>
+                            </a>
+                            
+                            <a href="/admin/media">
+                                <span>Media</span>
+                                <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                    <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
+                                </svg>
+                            </a>
+                            <span>CMS.jpg</span>
+                        </nav>
+                    </div>
+                </div>
+
+                <div class="gutter--left gutter--right collection-edit__edit">
+                    <header class="collection-edit__header">
+                        <h1>
+                            <div class="id-label">ID:&nbsp;&nbsp;{{ upload_id }}</div>
+                        </h1>
+                    </header>
+
+                    <div class="file-field field-type">
+                        <div class="file-field__upload">
+                            <div class="file-field__drop-zone">
+                                <button type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-small btn--icon-position-right">
+                                    <span class="btn__content"><span class="btn__label">Select a file</span></span>
+                                </button>
+                                <span class="file-field__drag-label">or drag and drop a file here</span>
+                            </div>
+                            <input type="file" accept="image/png,image/jpeg">
+                        </div>
+                    </div>
+
+                    <div class="render-fields">
+                        <div class="field-type text read-only">
+                            <label for="field-alt" class="field-label">Alt Text<span class="required">*</span></label>
+                            <input id="field-alt" type="text" name="alt" value="CMS">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="collection-edit__sidebar-wrap">
+                <div class="collection-edit__sidebar">
+                    <div class="collection-edit__sidebar-sticky-wrap">
+                        <ul class="collection-edit__collection-actions"></ul>
+                        <div class="collection-edit__document-actions"></div>
+                        <div class="collection-edit__sidebar-fields">
+                            <div class="render-fields"></div>
+                        </div>
+
+                        <ul class="collection-edit__meta">
+                            <li class="collection-edit__api-url">
+                                <span class="collection-edit__label">API URL 
+                                    <button type="button" class="copy-to-clipboard">
+                                        <svg class="icon icon--copy" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                            <rect x="6.5" y="10" width="8" height="8" class="stroke"></rect>
+                                            <path d="M10 9.98438V6.5H18V14.5H14" class="stroke"></path>
+                                        </svg>
+
+                                        <aside class="tooltip">copy<span></span></aside>
+                                        <textarea readonly="">https://tomtomload.com/api/media/{{ upload_id }}</textarea>
+                                    </button>
+                                </span>
+                                
+                                <a href="https://tomtomload.com/api/media/{{ media_id }}" target="_blank" rel="noopener noreferrer">https://tomtomload.com/api/media/{{ upload_id }}</a>
+                            </li>
+
+                            <li>
+                                <div class="collection-edit__label">Last Modified</div>
+                                <div>November 6th 2022, 8:00 AM</div>
+                            </li>
+                            
+                            <li>
+                                <div class="collection-edit__label">Created</div>
+                                <div>November 6th 2022, 8:00 AM</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
