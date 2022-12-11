@@ -15,8 +15,12 @@ from routes.Errors import error
 from routes.authorised_user import authorised_user
 from routes.api import api
 
+from static.security.session_management import TTLSession
 
 app = Flask(__name__)
+
+print(app)
+TTLSession()
 
 app.config["CONSTANTS"] = CONSTANTS
 app.config["SECRET"] = SECRET_CONSTANTS
