@@ -37,6 +37,9 @@ class Constants:
     # --- GOOGLE OAUTH ---
     GOOGLE_CLIENT_ID: str = "526204912239-9t2aptlchfeclmkcsegpp69cb690jre3.apps.googleusercontent.com"
 
+    # --- IPINFO ---
+    IPINFO: str = "ipinfo"
+
 
 CONSTANTS = Constants()
 
@@ -57,6 +60,14 @@ class SecretConstants:
             version_id="1"
         )
 
+        # --- RETRIEVING IPINFO TOKEN KEY ---
+        self.__IPINFO_TOKEN = GoogleSecretManager.get_secret_payload(
+            self,
+            project_id=Constants.GOOGLE_PROJECT_ID,
+            secret_id=Constants.IPINFO,
+            version_id="1"
+        )
+
     @property
     def FLASK_SECRET_KEY(self) -> str:
         return self.__FLASK_SECRET_KEY
@@ -64,6 +75,10 @@ class SecretConstants:
     @property
     def JWT_SECRET_KEY(self) -> str:
         return self.__JWT_SECRET_KEY
+
+    @property
+    def IPINFO_TOKEN(self) -> str:
+        return self.__IPINFO_TOKEN
 
 
 SECRET_CONSTANTS = SecretConstants()

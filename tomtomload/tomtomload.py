@@ -19,8 +19,8 @@ from static.security.session_management import TTLSession
 
 app = Flask(__name__)
 
-print(app)
-TTLSession()
+# print(app)
+# TTLSession()
 
 app.config["CONSTANTS"] = CONSTANTS
 app.config["SECRET"] = SECRET_CONSTANTS
@@ -84,7 +84,7 @@ def add_header(response):
 with app.app_context():
     app.register_blueprint(authorised_user)
     app.register_blueprint(api)
-    # app.register_blueprint(error)
+    app.register_blueprint(error)
 
 
 if __name__ == "__main__":

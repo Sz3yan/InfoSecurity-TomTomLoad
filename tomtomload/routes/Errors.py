@@ -17,7 +17,7 @@ def error400(e):
 def error401(e):
     return render_template(
         "error_base.html", title="401 Unauthorised", errorNo=401,
-        description="SZ3YAN is unable to authorise your request."
+        description="TomTomLoad is unable to authorise your request, JWT Signature expired"
     ), 401
 
 
@@ -53,7 +53,7 @@ def error405(e):
 def error413(e):
     return render_template(
         "error_base.html", title="413 Payload Too Large", errorNo=413,
-        description="Request entity is larger than limits defined by Sz3yan's server."
+        description="Request entity is larger than limits defined by TomTomLoad's server."
     ), 413
 
 

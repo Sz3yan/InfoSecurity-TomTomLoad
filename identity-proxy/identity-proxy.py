@@ -6,6 +6,7 @@ from flask_paranoid import Paranoid
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 
 from routes.potential_user import potential_user
+from routes.Errors import error
 
 
 app = Flask(__name__)
@@ -29,7 +30,9 @@ paranoid = Paranoid(app)
 paranoid.redirect_view = "/"
 
 
-app.register_blueprint(potential_user)
+with app.app_context():
+    app.register_blueprint(potential_user)
+    app.register_blueprint(error)
 
 
 if __name__ == "__main__":
