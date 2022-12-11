@@ -70,9 +70,9 @@ def home():
     session["TTLJWTAuthenticatedUser"] = TTLJWTAuthenticatedUser
     session["TTLContextAwareAccess"] = TTLContextAwareAccess
 
-    print(session["TTLAuthenticatedUserName"])
-    print(session["TTLJWTAuthenticatedUser"])
-    print(session["TTLContextAwareAccess"])
+    # print(session["TTLAuthenticatedUserName"])
+    # print(session["TTLJWTAuthenticatedUser"])
+    # print(session["TTLContextAwareAccess"])
 
     # -----------------  END OF SESSION ----------------- #
 
@@ -82,6 +82,8 @@ def home():
             algorithms="HS256", 
             key=SECRET_CONSTANTS.JWT_SECRET_KEY
         )
+
+        print(decoded_TTLJWTAuthenticatedUser)
 
     except jwt.ExpiredSignatureError:
         return abort(401)

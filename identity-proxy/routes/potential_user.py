@@ -114,10 +114,22 @@ def authorisation():
 
     with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
         acl = json.load(s)
+        print(acl)
 
     if (session['id_info'].get("name") not in blacklisted["blacklisted_users"]) and \
         (TTLContextAwareAccessClientUserAgent not in blacklisted["blacklisted_useragent"]) and \
         (TTLContextAwareAccessClientIP not in blacklisted["blacklisted_ip"]):
+
+        role = 'user'
+
+        for key, value in acl['superadmin'].items():
+            if session['id_info'].get("email") == value:
+                role = 'superadmin'
+
+        for key, value in acl['admin'].items():    
+            if session['id_info'].get("email") == value:
+                role = 'admin'
+            
 
         signed_header = {
             "TTL-Authenticated-User-Name": session['id_info'].get("name"),
@@ -131,6 +143,7 @@ def authorisation():
                         "name": session['id_info'].get("name"),
                         "email": session['id_info'].get("email"),
                         "picture": session['id_info'].get("picture"),
+                        "role" : role
                     },
                 SECRET_CONSTANTS.JWT_SECRET_KEY,
                 algorithm=CONSTANTS.JWT_ALGORITHM
@@ -157,7 +170,6 @@ def authorisation():
             value=base64.b64encode(str(signed_header).encode("utf-8")),
             httponly=True, 
             secure=True)
-
         response.set_cookie(
             'TTL-Context-Aware-Access',
             value=base64.b64encode(str(context_aware_access).encode("utf-8")),
