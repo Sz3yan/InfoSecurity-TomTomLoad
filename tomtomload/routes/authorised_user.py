@@ -1,9 +1,9 @@
 import json
 import base64
 import jwt
-from uuid import uuid4
 
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
+from static.classes.unique_id import UniqueID
 from flask import Blueprint, render_template, session, redirect, request, make_response, url_for
 from functools import wraps
 
@@ -69,7 +69,7 @@ def home():
         key=SECRET_CONSTANTS.JWT_SECRET_KEY
     )
 
-    unique_id = uuid4()
+    unique_id = UniqueID()
     
     return render_template('authorised_admin/dashboard.html', user=TTLAuthenticatedUserName, media_id=unique_id, pic=decoded_TTLJWTAuthenticatedUser["picture"])
 
@@ -100,7 +100,7 @@ def logout_screen():
 @authorised_user.route("/media")
 @check_signed_credential
 def media():
-    unique_id = uuid4()
+    unique_id = UniqueID()
     return render_template('authorised_admin/media.html', media_id=unique_id, pic=decoded["picture"])
 
 
