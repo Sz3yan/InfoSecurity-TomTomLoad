@@ -99,6 +99,13 @@ def authorisation():
         blacklisted = json.load(f)
         print(blacklisted, type(blacklisted))
 
+    lastest_acl = GoogleCloudStorage()
+    lastest_acl.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, CONSTANTS.ACL_FILE_NAME, CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"))
+
+    with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
+        acl = json.load(s)
+        print(acl, type(acl))
+        print(acl["superadmins"])
 
     if (session['id_info'].get("name") not in blacklisted["blacklisted_users"]) and \
         (TTLContextAwareAccessClientUserAgent not in blacklisted["blacklisted_useragent"]) and \

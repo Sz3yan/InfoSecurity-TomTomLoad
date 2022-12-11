@@ -23,6 +23,7 @@ class Constants:
     # --- GOOGLE CLOUD STORAGE ---
     STORAGE_BUCKET_NAME: str = "ttl1234567890"
     BLACKLISTED_FILE_NAME: str = "blacklisted.json"
+    ACL_FILE_NAME: str = "acl.json"
 
     # --- GOOGLE SECRET MANAGER ---
     # FLASK_SECRET_KEY_NAME: str = ""
