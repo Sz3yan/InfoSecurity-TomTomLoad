@@ -4,7 +4,11 @@ import jwt
 
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 from static.classes.unique_id import UniqueID
+from werkzeug.utils import secure_filename
+
 from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort
+from flask_reggie import Reggie
+from flask_moment import Moment
 from functools import wraps
 
 
@@ -18,6 +22,7 @@ def check_signed_credential(func):
     def decorated_function(*args, **kwargs):
         if "TTLJWTAuthenticatedUser" not in session:
             return {"error": "User not authorized"}
+
         else:
 
             # -----------------  START OF DECODING  ----------------- #
@@ -70,10 +75,6 @@ def home():
     session["TTLJWTAuthenticatedUser"] = TTLJWTAuthenticatedUser
     session["TTLContextAwareAccess"] = TTLContextAwareAccess
 
-    # print(session["TTLAuthenticatedUserName"])
-    # print(session["TTLJWTAuthenticatedUser"])
-    # print(session["TTLContextAwareAccess"])
-
     # -----------------  END OF SESSION ----------------- #
 
     try:
@@ -82,8 +83,6 @@ def home():
             algorithms="HS256", 
             key=SECRET_CONSTANTS.JWT_SECRET_KEY
         )
-
-        print(decoded_TTLJWTAuthenticatedUser)
 
     except jwt.ExpiredSignatureError:
         return abort(401)
@@ -127,12 +126,16 @@ def media():
     return render_template('authorised_admin/media.html', media_id=media_id, pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/media/upload/<string:id>")
+@authorised_user.route("/media/upload/<string:id>", methods=['GET', 'POST'])
 @check_signed_credential
 def media_upload(id):
     media_upload_id = id
 
-    return render_template('authorised_admin/media_upload.html', upload_id=media_upload_id, pic=decoded_jwt["picture"])
+    if request.method == 'POST':
+        f = request.files['file']
+        f.save(secure_filename(f.filename))
+
+    return render_template('authorised_admin/media_upload.html', upload_id=media_upload_id, name="k", pic=decoded_jwt["picture"])
 
 
 @authorised_user.route("/media/<string:id>")

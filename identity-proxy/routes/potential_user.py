@@ -71,7 +71,6 @@ def callback():
     )
 
     session['id_info'] = id_info
-    print(session['id_info'].get("name"))
 
     return redirect("/authorisation")
 
@@ -130,7 +129,6 @@ def authorisation():
             if session['id_info'].get("email") == value:
                 role = 'admin'
             
-
         signed_header = {
             "TTL-Authenticated-User-Name": session['id_info'].get("name"),
             "TTL-JWTAuthenticated-User": 

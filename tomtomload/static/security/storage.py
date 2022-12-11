@@ -70,6 +70,8 @@ class GoogleCloudStorage:
         # The ID of your GCS object
         # destination_blob_name = "storage-object-name"
 
+        # /static/media/IMG_2019.jpg  to  /admin/media/IMG_2019.jpg
+
         storage_client = storage.Client()
         bucket = storage_client.bucket(bucket_name)
         blob = bucket.blob(destination_blob_name)

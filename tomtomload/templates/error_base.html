@@ -14,9 +14,16 @@
                         <h2>{{ title }}</h2>
                         <p>{{ description }}</p>
                         <br>
-                        <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="https://127.0.0.1:8080">
-                            <span class="btn__content"><span class="btn__label">Log back in</span></span>
-                        </a>
+
+                        {% if title == "400 Bad Request" %}
+                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="https://127.0.0.1:5000/admin">
+                                <span class="btn__content"><span class="btn__label">Go Back</span></span>
+                            </a>
+                        {% else %}
+                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="https://127.0.0.1:8080">
+                                <span class="btn__content"><span class="btn__label">Go Back</span></span>
+                            </a>
+                        {% endif %}
                     </div>
                 </div>
             </section>

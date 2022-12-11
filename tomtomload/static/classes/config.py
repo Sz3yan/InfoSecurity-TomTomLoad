@@ -14,6 +14,8 @@ class Constants:
 
     TTL_ROOT_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.parent.absolute()
     TTL_CONFIG_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.absolute() / "config_files"
+    TTL_MEDIA_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.absolute() / "media"
+    TTL_POST_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.absolute() / "posts"
 
     # --- GOOGLE CLOUD ---
     GOOGLE_PROJECT_ID: str = "infosec-62c05"
@@ -23,6 +25,7 @@ class Constants:
     # --- GOOGLE CLOUD STORAGE ---
     STORAGE_BUCKET_NAME: str = "ttl1234567890"
     BLACKLISTED_FILE_NAME: str = "blacklisted.json"
+    ACL_FILE_NAME: str = "acl.json"
 
     # --- GOOGLE SECRET MANAGER ---
     # FLASK_SECRET_KEY_NAME: str = ""
@@ -39,6 +42,10 @@ class Constants:
     # --- RATE LIMITING ---
     DEFAULT_REQUEST_LIMIT: str = "600 per minute"
     SENSITIVE_PAGE_LIMIT: str = "9 per minute"
+
+    # --- MEDIA UPLOAD ---
+    ALLOWED_MEDIA_EXTENSIONS: tuple = (".png", ".jfif", ".jpg", ".jpeg")
+    ALLOWED_POST_EXTENSIONS: tuple = (".md", ".txt", ".3gp")
 
 
 CONSTANTS = Constants()
