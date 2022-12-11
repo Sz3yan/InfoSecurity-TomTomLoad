@@ -25,7 +25,7 @@ def check_signed_credential(function):
 @authorised_user.route('/')
 def home():
     signed_jwt = base64.b64decode(request.cookies.get('TTL-JWTAuthenticated-User')).decode('utf-8')
-
+    print(request.headers.get("Authorization"))
     session["signed_jwt"] = signed_jwt
     cleanup = session["signed_jwt"].replace("'", '"')
     str_to_dict = json.loads(cleanup)
