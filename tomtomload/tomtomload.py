@@ -30,12 +30,6 @@ app.config['SESSION_TYPE'] = 'filesystem'
 app.config["SESSION_FILE_DIR"] = os.path.join(app.config["CONSTANTS"].TTL_ROOT_FOLDER, "sessions")
 app.config["SECRET_KEY"] = "SECRET.FLASK_SECRET_KEY"
 
-app.config["MAX_CONTENT_LENGTH"] = 75 * 1024 * 1024
-app.config["ALLOWED_MEDIA_EXTENSIONS"] = app.config["CONSTANTS"].ALLOWED_MEDIA_EXTENSIONS
-app.config["ALLOWED_POST_EXTENSIONS"] = app.config["CONSTANTS"].ALLOWED_POST_EXTENSIONS
-app.config["MEDIA_FOLDER"] = app.config["CONSTANTS"].TTL_MEDIA_FOLDER
-app.config["POST_FOLDER"] = app.config["CONSTANTS"].TTL_POST_FOLDER
-
 # -----------------  END OF FLASK CONFIGURATION  ----------------- #
 
 

@@ -57,6 +57,15 @@ def error413(e):
     ), 413
 
 
+# Invalid File Format
+@error.app_errorhandler(415)
+def error413(e):
+    return render_template(
+        "error_base.html", title="415 Invalid file format", errorNo=415,
+        description="The request entity has a media type which the server or resource does not support."
+    ), 415
+
+
 # Too Many Requests
 @error.app_errorhandler(429)
 def error429(e):
