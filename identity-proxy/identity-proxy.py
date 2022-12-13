@@ -13,6 +13,7 @@ from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 # -----------------  START OF IDENTITY PROXY  ----------------- #
 
 app = Flask(__name__)
+print(app)
 
 # -----------------  START OF FLASK CONFIGURATION  ----------------- #
 
