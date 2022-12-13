@@ -7,6 +7,7 @@ from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 from static.classes.unique_id import UniqueID
 from static.security.storage import GoogleCloudStorage
 from werkzeug.utils import secure_filename
+from static.security.secure_data import AES_GCM
 
 from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort
 from flask_reggie import Reggie

@@ -102,6 +102,9 @@ with app.app_context():
 if __name__ == "__main__":
 
     # maybe add scheduler here
+    #   |- to auto delete the files in config_folder
+    #   |- to auto delete the files in sessions folder
+    #   |- auto redirect user to identity-proxy if their token is expired
 
     if app.config["DEBUG_FLAG"]:
         SSL_CONTEXT = (
