@@ -169,12 +169,7 @@ def media_upload(id):
         upload_media.upload_blob(
             bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
             source_file_name=temp_file_path,
-            destination_blob_name="Admins/" + session["TTLAuthenticatedUserName"] + "/media/" + f.filename + "." + file_extension,
-        )
-
-        upload_media.blob_metadata(
-            bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
-            blob_name="Admins/" + session["TTLAuthenticatedUserName"] + "/media/" + f.filename + "." + file_extension,
+            destination_blob_name="Admins/" + session["TTLAuthenticatedUserName"] + "/media/" + media_upload_id + "." + file_extension,
         )
 
         # -----------------  END OF UPLOADING TO GCS ----------------- #
@@ -195,18 +190,18 @@ def media_upload(id):
 def media_id(id):
     media_id = id
 
-    # path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "media" , media_id)
-    # path = path + ".png"
+    path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "media" , media_id)
+    path = path + ".png"
 
     # -----------------  START OF RETRIEVING FROM GCS ----------------- #
 
-    # get_media = GoogleCloudStorage()
+    get_media = GoogleCloudStorage()
 
-    # get_media.download_blob(
-    #     bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
-    #     source_blob_name="Admins/" + session["TTLAuthenticatedUserName"] + "/media/" + media_id + ".png",
-    #     destination_file_name=path
-    # )
+    get_media.download_blob(
+        bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+        source_blob_name="Admins/" + session["TTLAuthenticatedUserName"] + "/media/" + media_id + ".png",
+        destination_file_name=path
+    )
 
     # -----------------  END OF RETRIEVING FROM GCS ----------------- #
 
