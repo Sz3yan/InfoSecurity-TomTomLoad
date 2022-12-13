@@ -1,7 +1,7 @@
 from flask_paranoid import Paranoid
-from flask import session
+from flask import session, Flask
+from datetime import datetime
 import hashlib
-from flask import Flask
 
 class TTLSession(Paranoid):
     def __init__(self, location:str=None):
@@ -21,9 +21,9 @@ class TTLSession(Paranoid):
     
     def get_token(self, jwtToken:str=""):
         if self.__server == "tomtomload" and jwtToken != "":
-            createdTTLtoken = str(self.__server) + str(jwtToken) + str(super().create_token())
+            createdTTLtoken = str(self.__server) + str(datetime.utcnow()) + str(super().create_token())
         elif self.__server == "identity-proxy":
-            createdTTLtoken = str(self.__server) + str(super().create_token())
+            createdTTLtoken = str(self.__server) + str(datetime.utcnow()) + str(super().create_token())
         elif jwtToken == "":
             print("Please provide JWT token")
         else:
