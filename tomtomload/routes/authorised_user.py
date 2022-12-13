@@ -1,9 +1,11 @@
 import json
 import base64
 import jwt
+import os
 
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 from static.classes.unique_id import UniqueID
+from static.security.storage import GoogleCloudStorage
 from werkzeug.utils import secure_filename
 
 from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort
@@ -26,6 +28,14 @@ def check_signed_credential(func):
         else:
 
             # -----------------  START OF DECODING  ----------------- #
+
+            try:
+                base64.b64decode(request.cookies.get('TTL-Authenticated-User-Name')).decode('utf-8')
+                base64.b64decode(request.cookies.get('TTL-JWTAuthenticated-User')).decode('utf-8')
+                base64.b64decode(request.cookies.get('TTL-Context-Aware-Access')).decode('utf-8')
+            
+            except TypeError:
+                return abort(403)
 
             global decoded_jwt
 
@@ -92,8 +102,9 @@ def home():
 
     media_id = UniqueID()
     post_id = UniqueID()
+    admin_user_id = UniqueID()
     
-    return render_template('authorised_admin/dashboard.html', user=TTLAuthenticatedUserName, media_id=media_id, post_id=post_id, pic=decoded_TTLJWTAuthenticatedUser["picture"])
+    return render_template('authorised_admin/dashboard.html', user=TTLAuthenticatedUserName, media_id=media_id, post_id=post_id, admin_user_id=admin_user_id, pic=decoded_TTLJWTAuthenticatedUser["picture"])
 
 
 @authorised_user.route("/logout")
@@ -132,8 +143,49 @@ def media_upload(id):
     media_upload_id = id
 
     if request.method == 'POST':
+
+        # -----------------  START OF PRE-PROCESSING DATA ----------------- #
+
         f = request.files['file']
-        f.save(secure_filename(f.filename))
+
+        if f.filename == '':
+            return redirect(request.url)
+
+        file_extension = f.filename.rsplit('.', 1)[1].lower()
+        if file_extension not in CONSTANTS.ALLOWED_MEDIA_EXTENSIONS:
+            abort(415)
+
+        f.save(os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, secure_filename(f.filename)))
+        temp_file_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, secure_filename(f.filename))
+
+        # -----------------  END OF PRE-PROCESSING DATA ----------------- #
+
+        # -----------------  START OF UPLOADING TO GCS ----------------- #
+
+        # can compute hash here
+
+        upload_media = GoogleCloudStorage()
+
+        upload_media.upload_blob(
+            bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+            source_file_name=temp_file_path,
+            destination_blob_name="Admins/" + session["TTLAuthenticatedUserName"] + "/media/" + f.filename + "." + file_extension,
+        )
+
+        upload_media.blob_metadata(
+            bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+            blob_name="Admins/" + session["TTLAuthenticatedUserName"] + "/media/" + f.filename + "." + file_extension,
+        )
+
+        # -----------------  END OF UPLOADING TO GCS ----------------- #
+
+        # -----------------  START OF REMOVING FILE FROM SERVER ----------------- #
+
+        os.remove(temp_file_path)
+
+        # -----------------  END OF REMOVING FILE FROM SERVER ----------------- #
+
+        return redirect(url_for('authorised_user.media_id', id=media_upload_id))
 
     return render_template('authorised_admin/media_upload.html', upload_id=media_upload_id, name="k", pic=decoded_jwt["picture"])
 
@@ -142,6 +194,21 @@ def media_upload(id):
 @check_signed_credential
 def media_id(id):
     media_id = id
+
+    # path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "media" , media_id)
+    # path = path + ".png"
+
+    # -----------------  START OF RETRIEVING FROM GCS ----------------- #
+
+    # get_media = GoogleCloudStorage()
+
+    # get_media.download_blob(
+    #     bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+    #     source_blob_name="Admins/" + session["TTLAuthenticatedUserName"] + "/media/" + media_id + ".png",
+    #     destination_file_name=path
+    # )
+
+    # -----------------  END OF RETRIEVING FROM GCS ----------------- #
 
     return render_template('authorised_admin/media_id.html', media_id=media_id, pic=decoded_jwt["picture"])
 

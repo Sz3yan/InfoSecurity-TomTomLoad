@@ -14,8 +14,6 @@ class Constants:
 
     TTL_ROOT_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.parent.absolute()
     TTL_CONFIG_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.absolute() / "config_files"
-    TTL_MEDIA_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.absolute() / "media"
-    TTL_POST_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.absolute() / "posts"
 
     # --- GOOGLE CLOUD ---
     GOOGLE_PROJECT_ID: str = "infosec-62c05"
@@ -40,12 +38,12 @@ class Constants:
     GOOGLE_CLIENT_ID: str = "526204912239-9t2aptlchfeclmkcsegpp69cb690jre3.apps.googleusercontent.com"
 
     # --- RATE LIMITING ---
-    DEFAULT_REQUEST_LIMIT: str = "600 per minute"
+    DEFAULT_REQUEST_LIMIT: str = "60 per minute"
     SENSITIVE_PAGE_LIMIT: str = "9 per minute"
 
     # --- MEDIA UPLOAD ---
-    ALLOWED_MEDIA_EXTENSIONS: tuple = (".png", ".jfif", ".jpg", ".jpeg")
-    ALLOWED_POST_EXTENSIONS: tuple = (".md", ".txt", ".3gp")
+    ALLOWED_MEDIA_EXTENSIONS: dict = "png", "jpg", "jpeg","mp4", "mov", "quicktime","mpeg", "mp3", "wav", "pdf", "zip"
+    ALLOWED_POST_EXTENSIONS: dict = "md", "txt"
 
 
 CONSTANTS = Constants()
@@ -53,17 +51,13 @@ CONSTANTS = Constants()
 
 class SecretConstants:
     def __init__(self):
-        # --- FIREBASE SDK ---
         service_account = os.path.join(Constants.TTL_CONFIG_FOLDER, "service_account.json")
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = service_account
 
-        # --- RETRIEVING HSM SECRET KEY ---
         # self.__POST_SECRET_KEY = GoogleSecretManager.get_secret_payload(self, CONSTANTS.GOOGLE_PROJECT_ID, CONSTANTS.AVAILABLE_KEY_RINGS[0], "1")
 
-        # --- VIRUSTOTAL API ---
         self.__virus_total_api_key = GoogleSecretManager.get_secret_payload(self, CONSTANTS.GOOGLE_PROJECT_ID, "virustotal", "1")
 
-        # --- RETRIEVING JWT ACCESS TOKEN SECRET KEY ---
         self.__JWT_SECRET_KEY = GoogleSecretManager.get_secret_payload(
             self,
             project_id=Constants.GOOGLE_PROJECT_ID,

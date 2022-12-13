@@ -105,7 +105,6 @@ def authorisation():
     latest_blacklisted = GoogleCloudStorage()
     latest_blacklisted.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, CONSTANTS.BLACKLISTED_FILE_NAME, CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"))
 
-    # open blacklisted json and convert it into a list
     with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"), "r") as f:
         blacklisted = json.load(f)
 
