@@ -10,7 +10,6 @@ from werkzeug.utils import secure_filename
 from static.security.secure_data import AES_GCM
 
 from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort
-from flask_reggie import Reggie
 from flask_moment import Moment
 from functools import wraps
 
