@@ -171,3 +171,58 @@ class GoogleCloudStorage:
         blob.patch()
 
         print(f"The metadata for the blob {blob.name} is {blob.metadata}")
+
+    
+    def list_blobs(self, bucket_name):
+        """Lists all the blobs in the bucket."""
+        # bucket_name = "your-bucket-name"
+
+        storage_client = storage.Client()
+
+        # Note: Client.list_blobs requires at least package version 1.17.0.
+        blobs = storage_client.list_blobs(bucket_name)
+
+        # Note: The call returns a response only when the iterator is consumed.
+        for blob in blobs:
+            print(blob.name)
+
+    def list_blobs_with_prefix(self, bucket_name, prefix, delimiter=None):
+        """Lists all the blobs in the bucket that begin with the prefix.
+
+        This can be used to list all blobs in a "folder", e.g. "public/".
+
+        The delimiter argument can be used to restrict the results to only the
+        "files" in the given "folder". Without the delimiter, the entire tree under
+        the prefix is returned. For example, given these blobs:
+
+            a/1.txt
+            a/b/2.txt
+
+        If you specify prefix ='a/', without a delimiter, you'll get back:
+
+            a/1.txt
+            a/b/2.txt
+
+        However, if you specify prefix='a/' and delimiter='/', you'll get back
+        only the file directly under 'a/':
+
+            a/1.txt
+
+        As part of the response, you'll also get back a blobs.prefixes entity
+        that lists the "subfolders" under `a/`:
+
+            a/b/
+        """
+
+        storage_client = storage.Client()
+
+        # Note: Client.list_blobs requires at least package version 1.17.0.
+        blobs = storage_client.list_blobs(bucket_name, prefix=prefix, delimiter=delimiter)
+
+        # Note: The call returns a response only when the iterator is consumed.
+        blobs_array = []
+
+        for blob in blobs:
+            blobs_array.append(blob.name)
+
+        return blobs_array

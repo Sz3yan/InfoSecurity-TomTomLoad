@@ -21,6 +21,7 @@ authorised_user = Blueprint('authorised_user', __name__, url_prefix="/admin", te
 ttlSession = TTLSession()
 keymanagement = GoogleCloudKeyManagement()
 encryption = Encryption()
+storage = GoogleCloudStorage()
 
 # -----------------  END OF INITIALISATION ----------------- #
 
@@ -152,7 +153,48 @@ def logout_screen():
 def media():
     media_id = UniqueID()
 
-    return render_template('authorised_admin/media.html', media_id=media_id, pic=decoded_jwt["picture"])
+    # -----------------  START OF RETRIEVING MEDIA ----------------- #
+
+    list_media = storage.list_blobs_with_prefix(
+        bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+        prefix = "Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/",
+        delimiter = "/"
+    )
+
+    id_list = []
+
+    for media in list_media:
+        remove_slash = media.split("/")[3]
+        remove_extension = remove_slash.split(".")[0]
+
+        id_list.append(remove_extension)
+
+    print(f"ID LIST: {id_list}")
+
+    # -----------------  START OF CHECKING LOCAL MEDIA ----------------- #
+
+    for id in id_list:
+        temp_Mediafile_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "media", id)
+        temp_Mediafile_path = temp_Mediafile_path + ".png"
+
+        if os.path.isfile(temp_Mediafile_path):
+            print("exists")
+            return render_template('authorised_admin/media.html', media_id=media_id, id_list=id_list, media=list_media, pic=decoded_jwt["picture"])
+
+        else:
+            print(f"Media file {id} not found in local storage. Downloading from Cloud Storage...")
+
+            storage.download_blob(
+                bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+                source_blob_name = "Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + id + ".png",
+                destination_file_name = temp_Mediafile_path
+            )
+
+    # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
+    
+    # -----------------  END OF RETRIEVING MEDIA ----------------- #
+        
+    return render_template('authorised_admin/media.html', media_id=media_id, id_list=id_list, media=list_media, pic=decoded_jwt["picture"])
 
 
 @authorised_user.route("/media/upload/<regex('[0-9a-f]{32}'):id>", methods=['GET', 'POST'])
