@@ -327,7 +327,7 @@ def post_upload(id):
             "post_content": post_content,
         }
 
-        with open(temp_post_path, 'wb') as outfile:
+        with open(temp_post_path, 'w') as outfile:
 
             # -----------------  START OF ENCRYPTION ---------------- #
 
@@ -343,8 +343,8 @@ def post_upload(id):
 
             # -----------------  END OF ENCRYPTION ---------------- #
 
-                # json.dump(str(encrypted_content).encode("utf-8"), outfile)
-                outfile.write(str(encrypted_content).encode('utf-8'))
+                json.dump(str(encrypted_content), outfile)
+                # outfile.write(str(encrypted_content).encode('utf-8'))
 
         # -----------------  END OF SAVING FILE LOCALLY ----------------- #
 
