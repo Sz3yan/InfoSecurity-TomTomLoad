@@ -2,7 +2,6 @@ import os
 import time
 import datetime
 import base64
-import hashlib
 import google_crc32c
 import pathlib
 import crcmod
@@ -11,11 +10,6 @@ import six
 from google.cloud import kms
 from google.cloud import secretmanager
 from google.protobuf import duration_pb2
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import padding
-from Cryptodome.Cipher import AES
-from Cryptodome.Random import get_random_bytes
 
 
 config_file = pathlib.Path(__file__).parent.parent.absolute()
@@ -94,85 +88,6 @@ class GoogleCloudKeyManagement:
         print('Created hsm key: {}'.format(created_key.name))
         return created_key
 
-    def create_key_symmetric_encrypt_decrypt(self, project_id, location_id, key_ring_id, key_id):
-        """
-        Creates a new symmetric encryption/decryption key in Cloud KMS.
-
-        Args:
-            project_id (string): Google Cloud project ID (e.g. 'my-project').
-            location_id (string): Cloud KMS location (e.g. 'us-east1').
-            key_ring_id (string): ID of the Cloud KMS key ring (e.g. 'my-key-ring').
-            key_id (string): ID of the key to create (e.g. 'my-symmetric-key').
-
-        Returns:
-            CryptoKey: Cloud KMS key.
-
-        """
-
-        # Create the client.
-        client = kms.KeyManagementServiceClient()
-
-        # Build the parent key ring name.
-        key_ring_name = client.key_ring_path(project_id, location_id, key_ring_id)
-
-        # Build the key.
-        purpose = kms.CryptoKey.CryptoKeyPurpose.ENCRYPT_DECRYPT
-        algorithm = kms.CryptoKeyVersion.CryptoKeyVersionAlgorithm.GOOGLE_SYMMETRIC_ENCRYPTION
-        key = {
-            'purpose': purpose,
-            'version_template': {
-                'algorithm': algorithm,
-            }
-        }
-
-        # Call the API.
-        created_key = client.create_crypto_key(
-            request={'parent': key_ring_name, 'crypto_key_id': key_id, 'crypto_key': key})
-        print('Created symmetric key: {}'.format(created_key.name))
-        return created_key
-
-    
-    def create_key_asymmetric_decrypt(self, project_id, location_id, key_ring_id, key_id):
-        """
-        Creates a new asymmetric decryption key in Cloud KMS.
-
-        Args:
-            project_id (string): Google Cloud project ID (e.g. 'my-project').
-            location_id (string): Cloud KMS location (e.g. 'us-east1').
-            key_ring_id (string): ID of the Cloud KMS key ring (e.g. 'my-key-ring').
-            key_id (string): ID of the key to create (e.g. 'my-asymmetric-decrypt-key').
-
-        Returns:
-            CryptoKey: Cloud KMS key.
-
-        """
-
-        # Create the client.
-        client = kms.KeyManagementServiceClient()
-
-        # Build the parent key ring name.
-        key_ring_name = client.key_ring_path(project_id, location_id, key_ring_id)
-
-        # Build the key.
-        purpose = kms.CryptoKey.CryptoKeyPurpose.ASYMMETRIC_DECRYPT
-        algorithm = kms.CryptoKeyVersion.CryptoKeyVersionAlgorithm.RSA_DECRYPT_OAEP_2048_SHA256
-        key = {
-            'purpose': purpose,
-            'version_template': {
-                'algorithm': algorithm,
-            },
-
-            # Optional: customize how long key versions should be kept before
-            # destroying.
-            'destroy_scheduled_duration': duration_pb2.Duration().FromTimedelta(datetime.timedelta(days=1))
-        }
-
-        # Call the API.
-        created_key = client.create_crypto_key(
-            request={'parent': key_ring_name, 'crypto_key_id': key_id, 'crypto_key': key})
-        print('Created asymmetric decrypt key: {}'.format(created_key.name))
-        return created_key
-
 
     def retrieve_key(self, project_id, location_id, key_ring_id, key_id):
         client = kms.KeyManagementServiceClient()
@@ -198,95 +113,6 @@ class Encryption:
         
         crc32c_fun = crcmod.predefined.mkPredefinedCrcFun('crc-32c')
         return crc32c_fun(six.ensure_binary(data))
-
-
-    def encrypt_asymmetric(self, project_id, location_id, key_ring_id, key_id, version_id, plaintext):
-        """
-        Encrypt plaintext using the public key portion of an asymmetric key.
-
-        Args:
-            project_id (string): Google Cloud project ID (e.g. 'my-project').
-            location_id (string): Cloud KMS location (e.g. 'us-east1').
-            key_ring_id (string): ID of the Cloud KMS key ring (e.g. 'my-key-ring').
-            key_id (string): ID of the key to use (e.g. 'my-key').
-            version_id (string): ID of the key version to use (e.g. '1').
-            plaintext (string): message to encrypt
-
-        Returns:
-            bytes: Encrypted ciphertext.
-
-        """
-
-        # Convert the plaintext to bytes.
-        plaintext_bytes = plaintext.encode('utf-8')
-        print(plaintext_bytes)
-
-        # Create the client.
-        client = kms.KeyManagementServiceClient()
-
-        # Build the key version name.
-        key_version_name = client.crypto_key_version_path(project_id, location_id, key_ring_id, key_id, version_id)
-
-        # Get the public key.
-        public_key = client.get_public_key(request={'name': key_version_name})
-
-        # Extract and parse the public key as a PEM-encoded RSA key.
-        pem = public_key.pem.encode('utf-8')
-        rsa_key = serialization.load_pem_public_key(pem, default_backend())
-
-        # Construct the padding. Note that the padding differs based on key choice.
-        sha256 = hashes.SHA256()
-        mgf = padding.MGF1(algorithm=sha256)
-        pad = padding.OAEP(mgf=mgf, algorithm=sha256, label=None)
-
-        # Encrypt the data using the public key.
-        ciphertext = rsa_key.encrypt(plaintext_bytes, pad)
-        print('Ciphertext: {}'.format(base64.b64encode(ciphertext)))
-        return ciphertext
-
-
-    def decrypt_asymmetric(self, project_id, location_id, key_ring_id, key_id, version_id, ciphertext):
-        """
-        Decrypt the ciphertext using an asymmetric key.
-
-        Args:
-            project_id (string): Google Cloud project ID (e.g. 'my-project').
-            location_id (string): Cloud KMS location (e.g. 'us-east1').
-            key_ring_id (string): ID of the Cloud KMS key ring (e.g. 'my-key-ring').
-            key_id (string): ID of the key to use (e.g. 'my-key').
-            version_id (string): ID of the key version to use (e.g. '1').
-            ciphertext (bytes): Encrypted bytes to decrypt.
-
-        Returns:
-            DecryptResponse: Response including plaintext.
-
-        """
-
-        # Create the client.
-        client = kms.KeyManagementServiceClient()
-
-        # Build the key version name.
-        key_version_name = client.crypto_key_version_path(project_id, location_id, key_ring_id, key_id, version_id)
-
-        # Optional, but recommended: compute ciphertext's CRC32C.
-        # See crc32c() function defined below.
-        ciphertext_crc32c = self.crc32c(ciphertext)
-
-        # Call the API.
-        decrypt_response = client.asymmetric_decrypt(
-            request={'name': key_version_name, 'ciphertext': ciphertext, 'ciphertext_crc32c': ciphertext_crc32c})
-
-        # Optional, but recommended: perform integrity verification on decrypt_response.
-        # For more details on ensuring E2E in-transit integrity to and from Cloud KMS visit:
-        # https://cloud.google.com/kms/docs/data-integrity-guidelines
-        if not decrypt_response.verified_ciphertext_crc32c:
-            raise Exception('The request sent to the server was corrupted in-transit.')
-        if not decrypt_response.plaintext_crc32c == self.crc32c(decrypt_response.plaintext):
-            raise Exception('The response received from the server was corrupted in-transit.')
-        # End integrity verification
-
-        print('Plaintext: {}'.format(decrypt_response.plaintext))
-        return decrypt_response
 
 
     def encrypt_symmetric(self, project_id, location_id, key_ring_id, key_id, plaintext):
@@ -374,59 +200,6 @@ class Encryption:
 
         print('Plaintext: {}'.format(decrypt_response.plaintext))
         return decrypt_response
-
-
-class AES_GCM:
-    def __init__(self):
-        self.HASH_NAME = "SHA256"
-        self.IV_LENGTH = 12
-        self.ITERATION_COUNT = 65536
-        self.KEY_LENGTH = 32
-        self.SALT_LENGTH = 16
-        self.TAG_LENGTH = 16
-        self.key = None
-
-
-    def get_iv(self):
-        return get_random_bytes(self.IV_LENGTH)
-
-
-    def get_key(self):
-        return self.key
-
-
-    def encrypt(self, password, plain_message):
-        salt = get_random_bytes(self.SALT_LENGTH)
-        key = self.get_secret_key(password, salt)
-        self.key = key
-
-        iv = self.get_iv()
-        cipher = AES.new(key, AES.MODE_GCM, iv)
-
-        encrypted_message_byte, tag = cipher.encrypt_and_digest(plain_message)
-        cipher_byte = iv + salt + encrypted_message_byte + tag
-
-        encoded_cipher_byte = base64.b64encode(cipher_byte)
-        return bytes.decode(encoded_cipher_byte)
-
-
-    def decrypt(self, password, cipher_message):
-        decoded_cipher_byte = base64.b64decode(cipher_message)
-
-        iv = decoded_cipher_byte[:self.IV_LENGTH]
-        salt = decoded_cipher_byte[self.IV_LENGTH:(self.IV_LENGTH + self.SALT_LENGTH)]
-        encrypted_message_byte = decoded_cipher_byte[(self.IV_LENGTH + self.SALT_LENGTH):-self.TAG_LENGTH]
-        tag = decoded_cipher_byte[-self.TAG_LENGTH:]
-
-        key = self.get_secret_key(password, salt)
-        cipher = AES.new(key, AES.MODE_GCM, iv)
-
-        decrypted_message_byte = cipher.decrypt_and_verify(encrypted_message_byte, tag)
-        return decrypted_message_byte.decode("utf-8")
-
-
-    def get_secret_key(self, password, salt):
-        return hashlib.pbkdf2_hmac(self.HASH_NAME, password.encode(), salt, self.ITERATION_COUNT, self.KEY_LENGTH)
 
 
 class GoogleSecretManager:
@@ -525,48 +298,25 @@ class GoogleSecretManager:
         client.delete_secret(request={"name": name})
 
 
-if __name__ == "__main__":
-    keymanagement = GoogleCloudKeyManagement()
+# if __name__ == "__main__":
+#     encryption = Encryption()
 
-    symmetric_key = keymanagement.retrieve_key(
-        project_id="infosec-62c05",
-        location_id="global",
-        key_ring_id="tomtomload",
-        key_id="TTL-SYMMETRIC-KEY",
-    )
+#     envelope_key = encryption.encrypt_symmetric(
+#         project_id="infosec-62c05",
+#         location_id="global",
+#         key_ring_id="tomtomload",
+#         key_id="tomtomload-symmetric-key",
+#         plaintext="SYMMETRICKEY"
+#     )
 
-    print(symmetric_key)
+#     print("Encrypted envelope key: {}".format(envelope_key))
 
-    """
-    
-        Asymmetric key = rsa-decrypt-oaep-4096-sha512
-        Symmetric key = aes256-gcm
+#     decrypt_envelope_key = encryption.decrypt_symmetric(
+#         project_id="infosec-62c05",
+#         location_id="global",
+#         key_ring_id="tomtomload",
+#         key_id="tomtomload-symmetric-key",
+#         ciphertext=b"\n$\000\210B\314\270\270\263\031\271!\364P\r%AC;F\253~\353\333\356\220\246+\331\363b\307(\006;\323f;\022P*N\n\024\n\014\261F\006b<\304\"\347S\361:r\020\262\211\334\263\r\022\034\n\024\224\366\264\230\336\3728\363KZ\377\257\215S\007\021\367)\270\215\020\264\321\260\261\010\032\030\n\020\031\360\2739\334i.\374\234o\344\225T;@\353\020\246\346\374\347\017"
+#     )
 
-        1. Encrypt the symmetric key (HSM) with the asymmetric key
-        2. Encrypt the symmetric key with the asymmetric key (both google generated)
-
-    """
-
-    encryption = Encryption()
-
-    envelope_key = encryption.encrypt_asymmetric(
-        project_id="infosec-62c05",
-        location_id="global",
-        key_ring_id="tomtomload",
-        key_id="TTL-ASYMMETRIC-KEY",
-        version_id="1",
-        plaintext=symmetric_key
-    )
-
-    print("Envelope key: {}".format(envelope_key))
-
-    decrypt_envelope_key = encryption.decrypt_asymmetric(
-        project_id="infosec-62c05",
-        location_id="global",
-        key_ring_id="tomtomload",
-        key_id="TTL-ASYMMETRIC-KEY",
-        version_id="1",
-        ciphertext=envelope_key
-    )
-
-    print("Decrypted envelope key: {}".format(decrypt_envelope_key))
+#     print("Decrypted envelope key: {}".format(decrypt_envelope_key))

@@ -28,7 +28,7 @@
                 <div class="gutter--left gutter--right collection-edit__edit">
                     <header class="collection-edit__header">
                         <h1>
-                            <div class="id-label">ID:&nbsp;&nbsp;6366f90008fff3c0c302902a</div>
+                            <div class="id-label">ID:&nbsp;&nbsp;{{ media_id }}</div>
                         </h1>
                     </header>
 
@@ -42,7 +42,7 @@
                                 <div class="file-details__main-detail">
                                     <div class="file-meta">
                                         <div class="file-meta__url">
-                                            <a href="/admin/media/CMS" target="_blank" rel="noopener noreferrer">CMS.jpg</a>
+                                            <a href="/admin/media/CMS" target="_blank" rel="noopener noreferrer">{{ media_id }}.jpg</a>
                                             <button type="button" class="copy-to-clipboard">
                                                 <svg class="icon icon--copy" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
                                                     <rect x="6.5" y="10" width="8" height="8" class="stroke"></rect>
@@ -50,67 +50,21 @@
                                                 </svg>
 
                                                 <aside class="tooltip">Copy URL<span></span></aside>
-                                                <textarea readonly="">https://source.unsplash.com/random</textarea>
+                                                <textarea readonly=""></textarea>
                                             </button>
                                         </div>
 
-                                        <div class="file-meta__size-type">252KB&nbsp;-&nbsp;1920x1080&nbsp;-&nbsp;image/jpeg</div>
+                                        <div class="file-meta__size-type">{{ metadata["size"] }} bytes&nbsp;-&nbsp;1920x1080&nbsp;-&nbsp;image/jpeg</div>
                                     </div>
-                                    
-                                    <button type="button" class="btn file-details__toggle-more-info open btn--style-none btn--icon-style-without-border btn--size-medium btn--icon-position-right">
-                                        <span class="btn__content">
-                                            <span class="btn__label">Less info
-                                                <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                                    <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                                </svg>
-                                            </span>
-                                        </span>
-                                    </button>
                                 </div>
-                                
-                                <button type="button" class="btn file-details__remove btn--style-icon-label btn--icon btn--icon-style-with-border btn--icon-only btn--round btn--size-medium btn--icon-position-right">
-                                    <span class="btn__content">
-                                        <span class="btn__icon">
-                                            <svg width="25" height="25" class="icon icon--x" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                                <line class="stroke" x1="8.74612" y1="16.347" x2="16.3973" y2="8.69584"></line>
-                                                <line class="stroke" x1="8.6027" y1="8.69585" x2="16.2539" y2="16.3471"></line>
-                                            </svg>
-                                        </span>
-                                    </span>
-                                </button>
                             </header>
-
-                            <div class="rah-static rah-static--height-auto file-details__more-info" aria-hidden="false">
-                                <div>
-                                    <ul class="file-details__sizes">
-                                        <li>
-                                            <div class="file-details__size-label">thumbnail</div>
-                                            <div class="file-meta">
-                                                <div class="file-meta__url">
-                                                    <a href="https://source.unsplash.com/random" target="_blank" rel="noopener noreferrer">CMS-480x320.jpg</a>
-                                                    <button type="button" class="copy-to-clipboard">
-                                                        <svg class="icon icon--copy" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                                            <rect x="6.5" y="10" width="8" height="8" class="stroke"></rect>
-                                                            <path d="M10 9.98438V6.5H18V14.5H14" class="stroke"></path>
-                                                        </svg>
-
-                                                        <aside class="tooltip">Copy URL<span></span></aside>
-                                                        <textarea readonly="">https://demo.ttlcms.com/media/CMS-480x320.jpg</textarea>
-                                                    </button>
-                                                </div>
-                                                <div class="file-meta__size-type">9KB&nbsp;-&nbsp;480x320&nbsp;-&nbsp;image/jpeg</div>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
                     <div class="render-fields">
                         <div class="field-type text read-only">
                             <label for="field-alt" class="field-label">Alt Text<span class="required">*</span></label>
-                            <input id="field-alt" disabled="" type="text" name="alt" value="CMS">
+                            <input id="field-alt" disabled="" type="text" name="alt" value="{{ media_id }}">
                         </div>
                     </div>
                 </div>
@@ -135,21 +89,21 @@
                                         </svg>
 
                                         <aside class="tooltip">copy<span></span></aside>
-                                        <textarea readonly="">https://demo.ttlcms.com/api/media/6366f90008fff3c0c302902a</textarea>
+                                        <textarea readonly="">https://tomtomload.com/api/media/{{ media_id }}</textarea>
                                     </button>
                                 </span>
                                 
-                                <a href="https://demo.ttlcms.com/api/media/6366f90008fff3c0c302902a" target="_blank" rel="noopener noreferrer">https://demo.ttlcms.com/api/media/6366f90008fff3c0c302902a</a>
+                                <a href="https://tomtomload.com/api/media/{{ media_id }}" target="_blank" rel="noopener noreferrer">https://tomtomload.com/api/media/{{ media_id }}</a>
                             </li>
 
                             <li>
                                 <div class="collection-edit__label">Last Modified</div>
-                                <div>November 6th 2022, 8:00 AM</div>
+                                <div>{{ moment(metadata["updated"]).format('MMMM Do YYYY, h:mm:ss a') }}</div>
                             </li>
                             
                             <li>
                                 <div class="collection-edit__label">Created</div>
-                                <div>November 6th 2022, 8:00 AM</div>
+                                <div>{{ moment(metadata["time_created"]).format('MMMM Do YYYY, h:mm:ss a') }}</div>
                             </li>
                         </ul>
                     </div>

@@ -8,6 +8,7 @@ from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
 from flask_talisman import Talisman
 from flask_reggie import Reggie
+from flask_moment import Moment
 
 from routes.Errors import error
 from routes.authorised_user import authorised_user
@@ -47,6 +48,7 @@ Reggie(app)
 
 # -----------------  END OF FLASK REGEX CONFIGURATION  ----------------- #
 
+moment = Moment(app)
 
 # -----------------  START OF SESSION CONFIGURATION  ----------------- #
 

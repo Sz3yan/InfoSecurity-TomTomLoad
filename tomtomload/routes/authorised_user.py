@@ -6,18 +6,23 @@ import os
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 from static.classes.unique_id import UniqueID
 from static.security.storage import GoogleCloudStorage
+from static.security.secure_data import GoogleCloudKeyManagement, Encryption
 from static.security.session_management import TTLSession
 from werkzeug.utils import secure_filename
-from static.security.secure_data import AES_GCM
 
 from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort
-from flask_moment import Moment
 from functools import wraps
 
 
 authorised_user = Blueprint('authorised_user', __name__, url_prefix="/admin", template_folder="templates", static_folder='static')
 
+# -----------------  START OF INITIALISATION ----------------- #
+
 ttlSession = TTLSession()
+keymanagement = GoogleCloudKeyManagement()
+encryption = Encryption()
+
+# -----------------  END OF INITIALISATION ----------------- #
 
 
 # -----------------  START OF WRAPPER ----------------- #
@@ -41,12 +46,17 @@ def check_signed_credential(func):
                 return abort(403)
 
             global decoded_jwt
-            # session["TTLJWTAuthenticatedUser"]["TTL-JWTAuthenticated-User"]
+
             try:
                 decoded_jwt = jwt.decode(
                     ttlSession.get_data_from_session("TTLJWTAuthenticatedUser")["data"]["TTL-JWTAuthenticated-User"], 
-                    algorithms="HS256", 
-                    key=SECRET_CONSTANTS.JWT_SECRET_KEY
+                    algorithms = "HS256", 
+                    key = keymanagement.retrieve_key(
+                        project_id = CONSTANTS.GOOGLE_PROJECT_ID,
+                        location_id = CONSTANTS.GOOGLE_LOCATION_ID,
+                        key_ring_id = CONSTANTS.KMS_IP_KEY_RING_ID,
+                        key_id = CONSTANTS.JWT_ACCESS_TOKEN_SECRET_KEY
+                    )
                 )
 
             except jwt.ExpiredSignatureError:
@@ -94,7 +104,12 @@ def home():
         decoded_TTLJWTAuthenticatedUser = jwt.decode(
             TTLJWTAuthenticatedUser["TTL-JWTAuthenticated-User"], 
             algorithms="HS256", 
-            key=SECRET_CONSTANTS.JWT_SECRET_KEY
+            key = keymanagement.retrieve_key(
+                        project_id = CONSTANTS.GOOGLE_PROJECT_ID,
+                        location_id = CONSTANTS.GOOGLE_LOCATION_ID,
+                        key_ring_id = CONSTANTS.KMS_IP_KEY_RING_ID,
+                        key_id = CONSTANTS.JWT_ACCESS_TOKEN_SECRET_KEY
+                )
         )
 
     except jwt.ExpiredSignatureError:
@@ -147,7 +162,7 @@ def media_upload(id):
 
     if request.method == 'POST':
 
-        # -----------------  START OF PRE-PROCESSING DATA ----------------- #
+        # -----------------  START OF EXTENSION CHECKING ----------------- #
 
         f = request.files['file']
 
@@ -158,31 +173,45 @@ def media_upload(id):
         if file_extension not in CONSTANTS.ALLOWED_MEDIA_EXTENSIONS:
             abort(415)
 
-        f.save(os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, secure_filename(f.filename)))
-        temp_file_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, secure_filename(f.filename))
+        # -----------------  END OF EXTENSION CHECKING ----------------- #
 
-        # -----------------  END OF PRE-PROCESSING DATA ----------------- #
+        # -----------------  START OF MALWARE CHECKING ----------------- #
+
+        # virus total stuff here
+
+        # -----------------  END OF MALWARE CHECKING ----------------- #
+
+        # -----------------  START OF SAVING FILE LOCALLY ----------------- #
+
+        temp_Mediafile_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, secure_filename(f.filename))
+        f.save(os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, secure_filename(f.filename)))
+
+        # -----------------  END OF SAVING FILE LOCALLY ----------------- #
 
         # -----------------  START OF UPLOADING TO GCS ----------------- #
         Ptoken = ttlSession.get_data_from_session("TTLAuthenticatedUserName", Ptoken=True)
 
         if ttlSession.verfiy_Ptoken(Ptoken):
-        # can compute hash here
+            
+            # can compute hash here
+
             upload_media = GoogleCloudStorage()
 
             upload_media.upload_blob(
                 bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
-                source_file_name=temp_file_path,
+                source_file_name=temp_Mediafile_path,
                 destination_blob_name="Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_upload_id + "." + file_extension,
             )
+
         else:
             print("Invalid token")
+            abort(403)
 
         # -----------------  END OF UPLOADING TO GCS ----------------- #
 
         # -----------------  START OF REMOVING FILE FROM SERVER ----------------- #
 
-        os.remove(temp_file_path)
+        os.remove(temp_Mediafile_path)
 
         # -----------------  END OF REMOVING FILE FROM SERVER ----------------- #
 
@@ -206,15 +235,27 @@ def media_id(id):
     if ttlSession.verfiy_Ptoken(Ptoken):
         get_media = GoogleCloudStorage()
 
+        metadata = get_media.blob_metadata(
+            bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+            blob_name="Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_id + ".png"
+        )
+
+        # -----------------  START OF CHECK FILE EXIST ----------------- #
+
+        if os.path.isfile(path):
+            return render_template('authorised_admin/media_id.html', media_id=media_id, metadata=metadata, pic=decoded_jwt["picture"])
+
         get_media.download_blob(
             bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
             source_blob_name="Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_id + ".png",
             destination_file_name=path
         )
 
+        # -----------------  END OF CHECK FILE EXIST ----------------- #
+
     # -----------------  END OF RETRIEVING FROM GCS ----------------- #
 
-    return render_template('authorised_admin/media_id.html', media_id=media_id, pic=decoded_jwt["picture"])
+    return render_template('authorised_admin/media_id.html', media_id=media_id, metadata=metadata, pic=decoded_jwt["picture"])
 
 
 @authorised_user.route("/posts")

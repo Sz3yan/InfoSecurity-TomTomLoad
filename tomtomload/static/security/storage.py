@@ -107,36 +107,41 @@ class GoogleCloudStorage:
         # make an HTTP request.
         blob = bucket.get_blob(blob_name)
 
-        print(f"Blob: {blob.name}")
-        print(f"Bucket: {blob.bucket.name}")
-        print(f"Storage class: {blob.storage_class}")
-        print(f"ID: {blob.id}")
-        print(f"Size: {blob.size} bytes")
-        print(f"Updated: {blob.updated}")
-        print(f"Generation: {blob.generation}")
-        print(f"Metageneration: {blob.metageneration}")
-        print(f"Etag: {blob.etag}")
-        print(f"Owner: {blob.owner}")
-        print(f"Component count: {blob.component_count}")
-        print(f"Crc32c: {blob.crc32c}")
-        print(f"md5_hash: {blob.md5_hash}")
-        print(f"Cache-control: {blob.cache_control}")
-        print(f"Content-type: {blob.content_type}")
-        print(f"Content-disposition: {blob.content_disposition}")
-        print(f"Content-encoding: {blob.content_encoding}")
-        print(f"Content-language: {blob.content_language}")
-        print(f"Metadata: {blob.metadata}")
-        print(f"Medialink: {blob.media_link}")
-        print(f"Custom Time: {blob.custom_time}")
-        print("Temporary hold: ", "enabled" if blob.temporary_hold else "disabled")
-        print(
-            "Event based hold: ",
-            "enabled" if blob.event_based_hold else "disabled",
-        )
+        metadata_dict = {
+            "blob_name": blob.name,
+            "bucket_name": blob.bucket.name,
+            "storage_class": blob.storage_class,    
+            "id": blob.id,
+            "size": blob.size,
+            "updated": blob.updated,
+            "generation": blob.generation,
+            "metageneration": blob.metageneration,
+            "etag": blob.etag,
+            "owner": blob.owner,
+            "component_count": blob.component_count,
+            "crc32c": blob.crc32c,
+            "md5_hash": blob.md5_hash,
+            "cache_control": blob.cache_control,
+            "content_type": blob.content_type,
+            "content_disposition": blob.content_disposition,
+            "content_encoding": blob.content_encoding,
+            "content_language": blob.content_language,
+            "custom_time": blob.custom_time,
+            "temporary_hold": "enabled" if blob.temporary_hold else "disabled",
+            "event_based_hold": "enabled" if blob.event_based_hold else "disabled",
+            "retention_expiration_time": blob.retention_expiration_time,
+            "time_created": blob.time_created,
+            "time_deleted": blob.time_deleted,
+            "updated": blob.updated,
+
+        }
+
         if blob.retention_expiration_time:
             print(
                 f"retentionExpirationTime: {blob.retention_expiration_time}"
             )
+
+        return metadata_dict
 
     def set_blob_metadata(self, bucket_name, blob_name):
         """Set a blob's metadata."""

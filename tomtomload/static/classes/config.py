@@ -18,7 +18,6 @@ class Constants:
     # --- GOOGLE CLOUD ---
     GOOGLE_PROJECT_ID: str = "infosec-62c05"
     GOOGLE_LOCATION_ID: str = "global"
-    GOOGLE_KEY_RING_ID: str = "identity-proxy"
 
     # --- GOOGLE CLOUD STORAGE ---
     STORAGE_BUCKET_NAME: str = "ttl1234567890"
@@ -26,7 +25,8 @@ class Constants:
     ACL_FILE_NAME: str = "acl.json"
 
     # --- GOOGLE CLOUD KMS ---
-    KMS_KEY_RING_ID: str = "tomtomload"
+    KMS_IP_KEY_RING_ID: str = "identity-proxy"
+    KMS_TTL_KEY_RING_ID: str = "tomtomload"
     KMS_KEY_ID: str = "tomtomload-symmetric-key"
 
     # --- GOOGLE SECRET MANAGER ---
@@ -58,15 +58,18 @@ class SecretConstants:
         service_account = os.path.join(Constants.TTL_CONFIG_FOLDER, "service_account.json")
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = service_account
 
-        # self.__POST_SECRET_KEY = GoogleSecretManager.get_secret_payload(self, CONSTANTS.GOOGLE_PROJECT_ID, CONSTANTS.AVAILABLE_KEY_RINGS[0], "1")
+        # self.__POST_SECRET_KEY = GoogleSecretManager.get_secret_payload(
+        #     self, 
+        #     CONSTANTS.GOOGLE_PROJECT_ID, 
+        #     CONSTANTS.AVAILABLE_KEY_RINGS[0], 
+        #     "1"
+        # )
 
-        self.__virus_total_api_key = GoogleSecretManager.get_secret_payload(self, CONSTANTS.GOOGLE_PROJECT_ID, "virustotal", "1")
-
-        self.__JWT_SECRET_KEY = GoogleSecretManager.get_secret_payload(
-            self,
-            project_id=Constants.GOOGLE_PROJECT_ID,
-            secret_id=Constants.JWT_ACCESS_TOKEN_SECRET_KEY,
-            version_id="1"
+        self.__virus_total_api_key = GoogleSecretManager.get_secret_payload(
+            self, 
+            CONSTANTS.GOOGLE_PROJECT_ID, 
+            "virustotal", 
+            "1"
         )
 
     # @property
@@ -77,12 +80,9 @@ class SecretConstants:
     def virus_total_api_key(self) -> str:
         return self.__virus_total_api_key
 
-    @property
-    def JWT_SECRET_KEY(self) -> str:
-        return self.__JWT_SECRET_KEY
-
 
 SECRET_CONSTANTS = SecretConstants()
+
 
 __all__ = [
     "CONSTANTS",
