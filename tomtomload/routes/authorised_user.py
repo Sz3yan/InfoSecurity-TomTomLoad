@@ -299,15 +299,50 @@ def media_upload(id):
 def post():
     post_id = UniqueID()
 
-    return render_template('authorised_admin/post.html', post_id=post_id, pic=decoded_jwt["picture"])
+    # -----------------  START OF RETRIEVING MEDIA ----------------- #
+
+    list_post = storage.list_blobs_with_prefix(
+        bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+        prefix = "Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/",
+        delimiter = "/"
+    )
+
+    id_list = []
+
+    for post in list_post:
+        remove_slash = post.split("/")[3]
+        remove_extension = remove_slash.split(".")[0]
+        id_list.append(remove_extension)
+
+    print(f"ID LIST: {id_list}")
+
+    # -----------------  START OF CHECKING LOCAL MEDIA ----------------- #
+
+    for id in id_list:
+        temp_Postfile_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "post", id)
+        temp_Postfile_path = temp_Postfile_path + ".json"
+
+        if os.path.isfile(temp_Postfile_path):
+            return render_template('authorised_admin/post.html', post_id=post_id, id_list=id_list, post=list_post, pic=decoded_jwt["picture"])
+
+        else:
+            storage.download_blob(
+                bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+                source_blob_name = "Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + id,
+                destination_file_name = temp_Postfile_path
+            )
+
+    return render_template('authorised_admin/post.html', post_id=post_id, id_list=id_list, post=list_post, pic=decoded_jwt["picture"])
 
 
 @authorised_user.route("/posts/<regex('[0-9a-f]{32}'):id>")
 @check_signed_credential
 def post_id(id):
     post_id = id
+    create_new_post_id = UniqueID()
 
     path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "post" , post_id)
+    path = path + ".json"
 
     # -----------------  START OF RETRIEVING FROM GCS ----------------- #
 
@@ -341,9 +376,7 @@ def post_id(id):
 
                 # -----------------  END OF DECRYPTION ----------------- #
 
-            return render_template('authorised_admin/post_id.html', post_id=post_id, metadata=metadata, post_data=post_data, pic=decoded_jwt["picture"])
-
-        print("File not exist")
+            return render_template('authorised_admin/post_id.html', post_id=post_id, metadata=metadata, post_data=post_data, create_new_post_id=create_new_post_id, pic=decoded_jwt["picture"])
 
         get_post.download_blob(
             bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
@@ -366,7 +399,7 @@ def post_id(id):
         print("Invalid token")
         abort(403)
 
-    return render_template('authorised_admin/post_id.html', post_id=post_id, pic=decoded_jwt["picture"])
+    return render_template('authorised_admin/post_id.html', post_id=post_id, create_new_post_id=create_new_post_id, pic=decoded_jwt["picture"])
 
 
 @authorised_user.route("/posts/upload/<regex('[0-9a-f]{32}'):id>", methods=['GET', 'POST'])
@@ -380,6 +413,7 @@ def post_upload(id):
         # -----------------  START OF SAVING FILE LOCALLY ----------------- #
 
         temp_post_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "post", post_upload_id)
+        temp_post_path = temp_post_path + ".json"
 
         post_data = {
             "post_content": post_content,
