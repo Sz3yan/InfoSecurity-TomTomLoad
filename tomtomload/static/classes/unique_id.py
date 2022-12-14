@@ -35,3 +35,4 @@ if __name__ == "__main__":
     a = UniqueID()
 
     print(a.generate_id())
+    print(len(a))

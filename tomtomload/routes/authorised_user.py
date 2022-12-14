@@ -84,10 +84,6 @@ def home():
     cleanup_TTLContextAwareAccess = TTLContextAwareAccess_raw.replace("'", '"')
     TTLContextAwareAccess = json.loads(cleanup_TTLContextAwareAccess)
 
-    # session["TTLAuthenticatedUserName"] = TTLAuthenticatedUserName
-    # session["TTLJWTAuthenticatedUser"] = TTLJWTAuthenticatedUser
-    # session["TTLContextAwareAccess"] = TTLContextAwareAccess
-
     ttlSession.write_data_to_session("TTLAuthenticatedUserName",ttlSession.get_token(),TTLAuthenticatedUserName)
     ttlSession.write_data_to_session("TTLJWTAuthenticatedUser",ttlSession.get_token(),TTLJWTAuthenticatedUser)
     ttlSession.write_data_to_session("TTLContextAwareAccess",ttlSession.get_token(),TTLContextAwareAccess)
@@ -144,7 +140,7 @@ def media():
     return render_template('authorised_admin/media.html', media_id=media_id, pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/media/upload/<regex('[0-9a-f]{42}'):id>", methods=['GET', 'POST'])
+@authorised_user.route("/media/upload/<regex('[0-9a-f]{32}'):id>", methods=['GET', 'POST'])
 @check_signed_credential
 def media_upload(id):
     media_upload_id = id
@@ -195,7 +191,7 @@ def media_upload(id):
     return render_template('authorised_admin/media_upload.html', upload_id=media_upload_id, name="k", pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/media/<regex('[0-9a-f]{42}'):id>")
+@authorised_user.route("/media/<regex('[0-9a-f]{32}'):id>")
 @check_signed_credential
 def media_id(id):
     media_id = id
@@ -229,7 +225,7 @@ def post():
     return render_template('authorised_admin/post.html', post_id=post_id, pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/posts/<regex('[0-9a-f]{42}'):id>")
+@authorised_user.route("/posts/<regex('[0-9a-f]{32}'):id>")
 @check_signed_credential
 def post_id(id):
     post_id = id
@@ -237,7 +233,7 @@ def post_id(id):
     return render_template('authorised_admin/post_id.html', post_id=post_id, pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/posts/upload/<regex('[0-9a-f]{42}'):id>")
+@authorised_user.route("/posts/upload/<regex('[0-9a-f]{32}'):id>")
 @check_signed_credential
 def post_upload(id):
     post_upload_id = id
