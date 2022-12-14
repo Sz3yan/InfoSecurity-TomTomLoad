@@ -298,8 +298,8 @@ class GoogleSecretManager:
         client.delete_secret(request={"name": name})
 
 
-# if __name__ == "__main__":
-#     encryption = Encryption()
+if __name__ == "__main__":
+    encryption = Encryption()
 
 #     envelope_key = encryption.encrypt_symmetric(
 #         project_id="infosec-62c05",
@@ -311,12 +311,12 @@ class GoogleSecretManager:
 
 #     print("Encrypted envelope key: {}".format(envelope_key))
 
-#     decrypt_envelope_key = encryption.decrypt_symmetric(
-#         project_id="infosec-62c05",
-#         location_id="global",
-#         key_ring_id="tomtomload",
-#         key_id="tomtomload-symmetric-key",
-#         ciphertext=b"\n$\000\210B\314\270\270\263\031\271!\364P\r%AC;F\253~\353\333\356\220\246+\331\363b\307(\006;\323f;\022P*N\n\024\n\014\261F\006b<\304\"\347S\361:r\020\262\211\334\263\r\022\034\n\024\224\366\264\230\336\3728\363KZ\377\257\215S\007\021\367)\270\215\020\264\321\260\261\010\032\030\n\020\031\360\2739\334i.\374\234o\344\225T;@\353\020\246\346\374\347\017"
-#     )
+    decrypt_envelope_key = encryption.decrypt_symmetric(
+        project_id="infosec-62c05",
+        location_id="global",
+        key_ring_id="tomtomload",
+        key_id="tomtomload-symmetric-key",
+        ciphertext=b"\n$\000\210B\314\270\326\335\340`\263\3461\237\320\036.n\330\033\023\357_\363RL\247\340\2433\337>\001\377C\236\255\022\270\001*\265\001\n\024\n\014\336\272\266?\207q{.5\247\000y\020\274\333\244\325\002\022\202\001\nzM\355\335?\014Q\214\0043:X0\221\270H\033\251\210\301\026:<\356K\314\314\017\321c\331\'5R\217,*\365\375\333\264\204\024V)\230\214D\276\221o\202\320\3003&\357\014:\255\364\222\272\025\333\037\215\346#\r\313\337\260\237\207\211aj\2366\030,\373\2646\"-\250\274X%\216\204\035Q\326\373o\3331\324.\325\336\304\254f]5\3569\234`\336\230A\325B\262\337\344\006\222\020\213\320\225\363\016\032\030\n\020\n\325\010\211\236\326f\271+\032\351\300\031\337\224q\020\353\251\340\300\014"
+    )
 
-#     print("Decrypted envelope key: {}".format(decrypt_envelope_key))
+    print("Decrypted envelope key: {}".format(decrypt_envelope_key))

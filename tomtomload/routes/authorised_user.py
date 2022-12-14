@@ -178,12 +178,9 @@ def media():
         temp_Mediafile_path = temp_Mediafile_path + ".png"
 
         if os.path.isfile(temp_Mediafile_path):
-            print("exists")
             return render_template('authorised_admin/media.html', media_id=media_id, id_list=id_list, media=list_media, pic=decoded_jwt["picture"])
 
         else:
-            print(f"Media file {id} not found in local storage. Downloading from Cloud Storage...")
-
             storage.download_blob(
                 bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
                 source_blob_name = "Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + id + ".png",
@@ -195,6 +192,47 @@ def media():
     # -----------------  END OF RETRIEVING MEDIA ----------------- #
         
     return render_template('authorised_admin/media.html', media_id=media_id, id_list=id_list, media=list_media, pic=decoded_jwt["picture"])
+
+
+@authorised_user.route("/media/<regex('[0-9a-f]{32}'):id>")
+@check_signed_credential
+def media_id(id):
+    media_id = id
+
+    path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "media" , media_id)
+    path = path + ".png"
+
+    # -----------------  START OF RETRIEVING FROM GCS ----------------- #
+
+    Ptoken = ttlSession.get_data_from_session("TTLAuthenticatedUserName", Ptoken=True)
+
+    if ttlSession.verfiy_Ptoken(Ptoken):
+        get_media = GoogleCloudStorage()
+
+        metadata = get_media.blob_metadata(
+            bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+            blob_name="Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_id + ".png"
+        )
+
+        # -----------------  START OF CHECK FILE EXIST ----------------- #
+
+        if os.path.isfile(path):
+            return render_template('authorised_admin/media_id.html', media_id=media_id, metadata=metadata, pic=decoded_jwt["picture"])
+
+        get_media.download_blob(
+            bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+            source_blob_name="Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_id + ".png",
+            destination_file_name=path
+        )
+        
+    else:
+            print("Invalid token")
+            abort(403)
+        # -----------------  END OF CHECK FILE EXIST ----------------- #
+
+    # -----------------  END OF RETRIEVING FROM GCS ----------------- #
+
+    return render_template('authorised_admin/media_id.html', media_id=media_id, metadata=metadata, pic=decoded_jwt["picture"])
 
 
 @authorised_user.route("/media/upload/<regex('[0-9a-f]{32}'):id>", methods=['GET', 'POST'])
@@ -251,56 +289,9 @@ def media_upload(id):
 
         # -----------------  END OF UPLOADING TO GCS ----------------- #
 
-        # -----------------  START OF REMOVING FILE FROM SERVER ----------------- #
-
-        os.remove(temp_Mediafile_path)
-
-        # -----------------  END OF REMOVING FILE FROM SERVER ----------------- #
-
         return redirect(url_for('authorised_user.media_id', id=media_upload_id))
 
     return render_template('authorised_admin/media_upload.html', upload_id=media_upload_id, name="k", pic=decoded_jwt["picture"])
-
-
-@authorised_user.route("/media/<regex('[0-9a-f]{32}'):id>")
-@check_signed_credential
-def media_id(id):
-    media_id = id
-
-    path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "media" , media_id)
-    path = path + ".png"
-
-    # -----------------  START OF RETRIEVING FROM GCS ----------------- #
-
-    Ptoken = ttlSession.get_data_from_session("TTLAuthenticatedUserName", Ptoken=True)
-
-    if ttlSession.verfiy_Ptoken(Ptoken):
-        get_media = GoogleCloudStorage()
-
-        metadata = get_media.blob_metadata(
-            bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
-            blob_name="Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_id + ".png"
-        )
-
-        # -----------------  START OF CHECK FILE EXIST ----------------- #
-
-        if os.path.isfile(path):
-            return render_template('authorised_admin/media_id.html', media_id=media_id, metadata=metadata, pic=decoded_jwt["picture"])
-
-        get_media.download_blob(
-            bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
-            source_blob_name="Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_id + ".png",
-            destination_file_name=path
-        )
-        
-    else:
-            print("Invalid token")
-            abort(403)
-        # -----------------  END OF CHECK FILE EXIST ----------------- #
-
-    # -----------------  END OF RETRIEVING FROM GCS ----------------- #
-
-    return render_template('authorised_admin/media_id.html', media_id=media_id, metadata=metadata, pic=decoded_jwt["picture"])
 
 
 @authorised_user.route("/posts")
@@ -319,10 +310,64 @@ def post_id(id):
     return render_template('authorised_admin/post_id.html', post_id=post_id, pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/posts/upload/<regex('[0-9a-f]{32}'):id>")
+@authorised_user.route("/posts/upload/<regex('[0-9a-f]{32}'):id>", methods=['GET', 'POST'])
 @check_signed_credential
 def post_upload(id):
     post_upload_id = id
+
+    if request.method == 'POST':
+        post_content = request.form['post_content']
+
+        # -----------------  START OF SAVING FILE LOCALLY ----------------- #
+
+        temp_post_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "post", post_upload_id)
+        temp_post_path = temp_post_path + ".json"
+
+        post_data = {
+            "post_content": post_content,
+        }
+
+        with open(temp_post_path, 'wb') as outfile:
+
+            # -----------------  START OF ENCRYPTION ---------------- #
+
+                encrypted_content = encryption.encrypt_symmetric(
+                    project_id = CONSTANTS.GOOGLE_PROJECT_ID,
+                    location_id = CONSTANTS.GOOGLE_LOCATION_ID,
+                    key_ring_id = CONSTANTS.KMS_TTL_KEY_RING_ID,
+                    key_id = CONSTANTS.KMS_KEY_ID,
+                    plaintext = post_data["post_content"]
+                )
+
+                print("Encrypted envelope key: {}".format(encrypted_content))
+
+            # -----------------  END OF ENCRYPTION ---------------- #
+
+                # json.dump(str(encrypted_content).encode("utf-8"), outfile)
+                outfile.write(str(encrypted_content).encode('utf-8'))
+
+        # -----------------  END OF SAVING FILE LOCALLY ----------------- #
+
+        # -----------------  START OF UPLOADING TO GCS ---------------- #
+
+        Ptoken = ttlSession.get_data_from_session("TTLAuthenticatedUserName", Ptoken=True)
+
+        if ttlSession.verfiy_Ptoken(Ptoken):
+            upload_post = GoogleCloudStorage()
+
+            upload_post.upload_blob(
+                bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+                source_file_name=temp_post_path,
+                destination_blob_name="Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + post_upload_id + ".json",
+            )
+
+        else:
+            print("Invalid token")
+            abort(403)
+
+        # -----------------  END OF UPLOADING TO GCS ----------------- #
+
+        return redirect(url_for('authorised_user.post_id', id=post_upload_id))
     
     return render_template('authorised_admin/post_upload.html', post_id=post_upload_id, pic=decoded_jwt["picture"])
 
