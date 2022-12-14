@@ -6,7 +6,7 @@ import hashlib
 class TTLSession(Paranoid):
     def __init__(self, location:str=None):
 
-        self.__server = ""
+        # self.__server = ""
 
         if location == "1":
             app = Flask('tomtomload')
@@ -42,4 +42,4 @@ class TTLSession(Paranoid):
 
 
     def get_token_from_session(self):
-        return super().get_token_from_session()
+        return session["paranoid_session"]

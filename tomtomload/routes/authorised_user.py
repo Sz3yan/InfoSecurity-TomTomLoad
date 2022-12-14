@@ -138,7 +138,7 @@ def media():
     return render_template('authorised_admin/media.html', media_id=media_id, pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/media/upload/<string:id>", methods=['GET', 'POST'])
+@authorised_user.route("/media/upload/<regex('[0-9a-f]{42}'):id>", methods=['GET', 'POST'])
 @check_signed_credential
 def media_upload(id):
     media_upload_id = id
@@ -186,7 +186,7 @@ def media_upload(id):
     return render_template('authorised_admin/media_upload.html', upload_id=media_upload_id, name="k", pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/media/<string:id>")
+@authorised_user.route("/media/<regex('[0-9a-f]{42}'):id>")
 @check_signed_credential
 def media_id(id):
     media_id = id
