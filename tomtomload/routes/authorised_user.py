@@ -307,6 +307,65 @@ def post():
 def post_id(id):
     post_id = id
 
+    path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "post" , post_id)
+
+    # -----------------  START OF RETRIEVING FROM GCS ----------------- #
+
+    Ptoken = ttlSession.get_data_from_session("TTLAuthenticatedUserName", Ptoken=True)
+
+    if ttlSession.verfiy_Ptoken(Ptoken):
+        get_post = GoogleCloudStorage()
+
+        metadata = get_post.blob_metadata(
+            bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+            blob_name="Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + post_id + ".json"
+        )
+
+        # -----------------  START OF CHECK FILE EXIST ----------------- #
+
+        if os.path.isfile(path):
+            with open(path, 'rb') as f:
+
+                # -----------------  START OF DECRYPTION ----------------- #
+
+                decrypted_content = encryption.decrypt_symmetric(
+                    project_id = CONSTANTS.GOOGLE_PROJECT_ID,
+                    location_id = CONSTANTS.GOOGLE_LOCATION_ID,
+                    key_ring_id = CONSTANTS.KMS_TTL_KEY_RING_ID,
+                    key_id = CONSTANTS.KMS_KEY_ID,
+                    ciphertext = f.read()
+                )
+
+                post_data = decrypted_content.plaintext.decode("utf-8")
+                post_data = json.loads(post_data)
+
+                # -----------------  END OF DECRYPTION ----------------- #
+
+            return render_template('authorised_admin/post_id.html', post_id=post_id, metadata=metadata, post_data=post_data, pic=decoded_jwt["picture"])
+
+        print("File not exist")
+
+        get_post.download_blob(
+            bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+            source_blob_name="Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + post_id + ".json",
+            destination_file_name=path
+        )
+
+        decrypted_content = encryption.decrypt_symmetric(
+            project_id = CONSTANTS.GOOGLE_PROJECT_ID,
+            location_id = CONSTANTS.GOOGLE_LOCATION_ID,
+            key_ring_id = CONSTANTS.KMS_TTL_KEY_RING_ID,
+            key_id = CONSTANTS.KMS_KEY_ID,
+            ciphertext = f.read()
+        )
+
+        post_data = decrypted_content.plaintext.decode("utf-8")
+        post_data = json.loads(post_data)
+
+    else:
+        print("Invalid token")
+        abort(403)
+
     return render_template('authorised_admin/post_id.html', post_id=post_id, pic=decoded_jwt["picture"])
 
 
@@ -321,13 +380,12 @@ def post_upload(id):
         # -----------------  START OF SAVING FILE LOCALLY ----------------- #
 
         temp_post_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "post", post_upload_id)
-        temp_post_path = temp_post_path + ".json"
 
         post_data = {
             "post_content": post_content,
         }
 
-        with open(temp_post_path, 'w') as outfile:
+        with open(temp_post_path, 'wb') as outfile:
 
             # -----------------  START OF ENCRYPTION ---------------- #
 
@@ -339,12 +397,12 @@ def post_upload(id):
                     plaintext = post_data["post_content"]
                 )
 
-                print("Encrypted envelope key: {}".format(encrypted_content))
+                print("encrypted_content.ciphertext: ", encrypted_content.ciphertext)
 
             # -----------------  END OF ENCRYPTION ---------------- #
 
-                json.dump(str(encrypted_content), outfile)
-                # outfile.write(str(encrypted_content).encode('utf-8'))
+                # save encrypted content to file in json format
+                outfile.write(encrypted_content.ciphertext)
 
         # -----------------  END OF SAVING FILE LOCALLY ----------------- #
 

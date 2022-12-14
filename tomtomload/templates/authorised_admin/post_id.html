@@ -1,5 +1,25 @@
 {% extends "base.html" %}
 
+{% block js %}
+    <!-- EditorJs -->
+    <script src="https://cdn.jsdelivr.net/npm/codex.editor.header@2.0.4/dist/bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script><!-- Header -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/simple-image@latest"></script><!-- Image -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@latest"></script><!-- Delimiter -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script><!-- List -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@latest"></script><!-- Checklist -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script><!-- Quote -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script><!-- Code -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/embed@latest"></script><!-- Embed -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script><!-- Table -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/link@latest"></script><!-- Link -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/warning@latest"></script><!-- Warning -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script><!-- Image -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script><!-- Marker -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script><!-- Inline Code -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script><!-- Editor -->
+{% endblock %}
+
 {% block bodyContent %}
     <div class="collection-edit collection-edit--is-editing">
         <form novalidate="" method="patch" action="https://demo.ttlcms.com/api/posts/6367071208fff3c0c30292fa?locale=en&amp;depth=0&amp;fallback-locale=null" class="collection-edit__form form">
@@ -51,7 +71,97 @@
 
                         <div class="field-type text"><label for="field-title" class="field-label">Content</label><input id="field-title" type="text" name="title" value="New Feature - Auto-generate TypeScript Interfaces">
                         </div>
-                        
+
+                        <br/><br/>
+                        <h3>Start Writing</h3>
+                        <div id="editorjs"></div>
+                        <script>
+                            var editor = new EditorJS({
+                                holder: 'editorjs',
+                                readOnly : true,
+
+                                tools: {
+                                    header: {
+                                        class: Header,
+                                        inlineToolbar: ['marker', 'link'],
+                                        config: {
+                                            placeholder: 'Header'
+                                        },
+                                        shortcut: 'CMD+SHIFT+H'
+                                    },
+
+                                    image: SimpleImage,
+
+                                    list: {
+                                        class: List,
+                                        inlineToolbar: true,
+                                        shortcut: 'CMD+SHIFT+L'
+                                    },
+
+                                    checklist: {
+                                        class: Checklist,
+                                        inlineToolbar: true,
+                                    },
+
+                                    quote: {
+                                        class: Quote,
+                                        inlineToolbar: true,
+                                        config: {
+                                            quotePlaceholder: 'Enter a quote',
+                                            captionPlaceholder: 'Quote\'s author',
+                                        },
+                                        shortcut: 'CMD+SHIFT+O'
+                                    },
+
+                                    warning: Warning,
+
+                                    marker: {
+                                        class: Marker,
+                                        shortcut: 'CMD+SHIFT+M'
+                                    },
+
+                                    delimiter: Delimiter,
+
+                                    inlineCode: {
+                                        class: InlineCode,
+                                        shortcut: 'CMD+SHIFT+C'
+                                    },
+
+                                    linkTool: LinkTool,
+
+                                    embed: Embed,
+
+                                    table: {
+                                        class: Table,
+                                        inlineToolbar: true,
+                                        shortcut: 'CMD+ALT+T'
+                                    },
+
+                                },
+
+                                data: {
+                                    blocks: [
+                                    {% for block in post_data["blocks"] %}
+                                        {{ block | tojson | safe }},
+                                    {% endfor %}
+                                ]
+                            },
+
+                            onChange: function(api, event) {
+                                console.log('something changed', event);
+                            }
+                        });
+
+                            function savelah() {
+                                const hihi = document.getElementById('hihi');
+
+                                editor.save().then((outputData) => {
+                                    hihi.value = JSON.stringify(outputData);
+                                }).catch((error) => {
+                                    console.log('Saving failed: ', error)
+                                });
+                            }
+                        </script>
                     </div>
                 </div>
             </div>
@@ -99,6 +209,7 @@
                                 </div>
                             </div>
                         </div>
+
                         <ul class="collection-edit__meta">
                             <li class="collection-edit__api-url"><span class="collection-edit__label">API
                                     URL <button type="button" class="copy-to-clipboard"><svg class="icon icon--copy" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
