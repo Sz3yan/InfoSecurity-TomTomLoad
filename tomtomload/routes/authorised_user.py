@@ -2,14 +2,13 @@ import json
 import base64
 import jwt
 import os
-import io
-from PIL import Image as PillowImage
 
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 from static.classes.unique_id import UniqueID
 from static.security.storage import GoogleCloudStorage
+from static.security.session_management import TTLSession
 from werkzeug.utils import secure_filename
-from static.security.secure_data import Encryption
+from static.security.secure_data import AES_GCM
 
 from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort
 from flask_moment import Moment
@@ -17,6 +16,8 @@ from functools import wraps
 
 
 authorised_user = Blueprint('authorised_user', __name__, url_prefix="/admin", template_folder="templates", static_folder='static')
+
+ttlSession = TTLSession()
 
 
 # -----------------  START OF WRAPPER ----------------- #
@@ -40,10 +41,10 @@ def check_signed_credential(func):
                 return abort(403)
 
             global decoded_jwt
-
+            # session["TTLJWTAuthenticatedUser"]["TTL-JWTAuthenticated-User"]
             try:
                 decoded_jwt = jwt.decode(
-                    session["TTLJWTAuthenticatedUser"]["TTL-JWTAuthenticated-User"], 
+                    ttlSession.get_data_from_session("TTLJWTAuthenticatedUser")["data"]["TTL-JWTAuthenticated-User"], 
                     algorithms="HS256", 
                     key=SECRET_CONSTANTS.JWT_SECRET_KEY
                 )
@@ -83,9 +84,13 @@ def home():
     cleanup_TTLContextAwareAccess = TTLContextAwareAccess_raw.replace("'", '"')
     TTLContextAwareAccess = json.loads(cleanup_TTLContextAwareAccess)
 
-    session["TTLAuthenticatedUserName"] = TTLAuthenticatedUserName
-    session["TTLJWTAuthenticatedUser"] = TTLJWTAuthenticatedUser
-    session["TTLContextAwareAccess"] = TTLContextAwareAccess
+    # session["TTLAuthenticatedUserName"] = TTLAuthenticatedUserName
+    # session["TTLJWTAuthenticatedUser"] = TTLJWTAuthenticatedUser
+    # session["TTLContextAwareAccess"] = TTLContextAwareAccess
+
+    ttlSession.write_data_to_session("TTLAuthenticatedUserName",ttlSession.get_token(),TTLAuthenticatedUserName)
+    ttlSession.write_data_to_session("TTLJWTAuthenticatedUser",ttlSession.get_token(),TTLJWTAuthenticatedUser)
+    ttlSession.write_data_to_session("TTLContextAwareAccess",ttlSession.get_token(),TTLContextAwareAccess)
 
     # -----------------  END OF SESSION ----------------- #
 
@@ -139,14 +144,14 @@ def media():
     return render_template('authorised_admin/media.html', media_id=media_id, pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/media/upload/<regex('[0-9a-f]{32}'):id>", methods=['GET', 'POST'])
+@authorised_user.route("/media/upload/<regex('[0-9a-f]{42}'):id>", methods=['GET', 'POST'])
 @check_signed_credential
 def media_upload(id):
     media_upload_id = id
 
     if request.method == 'POST':
 
-        # -----------------  START OF CHECKING OF EXTENSION ----------------- #
+        # -----------------  START OF PRE-PROCESSING DATA ----------------- #
 
         f = request.files['file']
 
@@ -157,59 +162,29 @@ def media_upload(id):
         if file_extension not in CONSTANTS.ALLOWED_MEDIA_EXTENSIONS:
             abort(415)
 
-        # -----------------  END OF CHECKING OF EXTENSION ----------------- #
+        f.save(os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, secure_filename(f.filename)))
+        temp_file_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, secure_filename(f.filename))
 
-
-        # -----------------  START OF ENCRYPTION ----------------- #
-
-        f.save(os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "media", secure_filename(f.filename)))
-        temp_file_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "media", secure_filename(f.filename))
-
-        # with open(temp_file_path, 'rb') as file:
-        #     file_data = file.read()
-        #     file_to_byte = bytearray(file_data)
-
-        #     print(file_to_byte, type(file_to_byte))
-
-        # encryption = Encryption()
-
-        # encrypted_file = encryption.encrypt_symmetric(
-        #     project_id=CONSTANTS.GOOGLE_PROJECT_ID,
-        #     location_id=CONSTANTS.GOOGLE_LOCATION_ID,
-        #     key_ring_id=CONSTANTS.KMS_KEY_RING_ID,
-        #     key_id=CONSTANTS.KMS_KEY_ID,
-        #     plaintext=str(file_to_byte)
-        # )
-
-        # # overwrite file with its encrypted content
-        # with open(temp_file_path, 'wb') as file:
-        #     file.write(encrypted_file)
-
-        # -----------------  END OF ENCRYPTION ----------------- #
-
+        # -----------------  END OF PRE-PROCESSING DATA ----------------- #
 
         # -----------------  START OF UPLOADING TO GCS ----------------- #
+        Ptoken = ttlSession.get_data_from_session("TTLAuthenticatedUserName", Ptoken=True)
 
+        if ttlSession.verfiy_Ptoken(Ptoken):
         # can compute hash here
+            upload_media = GoogleCloudStorage()
 
-        upload_media = GoogleCloudStorage()
-
-        upload_media.upload_blob(
-            bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
-            source_file_name=temp_file_path,
-            destination_blob_name="Admins/" + session["TTLAuthenticatedUserName"] + "/media/" + media_upload_id + "." + file_extension,
-        )
-
-        upload_media.set_blob_metadata(
-            bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
-            blob_name="Admins/" + session["TTLAuthenticatedUserName"] + "/media/" + media_upload_id + "." + file_extension,
-
-        )
+            upload_media.upload_blob(
+                bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+                source_file_name=temp_file_path,
+                destination_blob_name="Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_upload_id + "." + file_extension,
+            )
+        else:
+            print("Invalid token")
 
         # -----------------  END OF UPLOADING TO GCS ----------------- #
 
-
-        # -----------------  START OF REMOVING UPLOAD FILE FROM TOMTOMLOAD ----------------- #
+        # -----------------  START OF REMOVING FILE FROM SERVER ----------------- #
 
         os.remove(temp_file_path)
 
@@ -217,10 +192,10 @@ def media_upload(id):
 
         return redirect(url_for('authorised_user.media_id', id=media_upload_id))
 
-    return render_template('authorised_admin/media_upload.html', upload_id=media_upload_id, pic=decoded_jwt["picture"])
+    return render_template('authorised_admin/media_upload.html', upload_id=media_upload_id, name="k", pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/media/<regex('[0-9a-f]{32}'):id>")
+@authorised_user.route("/media/<regex('[0-9a-f]{42}'):id>")
 @check_signed_credential
 def media_id(id):
     media_id = id
@@ -230,29 +205,18 @@ def media_id(id):
 
     # -----------------  START OF RETRIEVING FROM GCS ----------------- #
 
-    get_media = GoogleCloudStorage()
+    Ptoken = ttlSession.get_data_from_session("TTLAuthenticatedUserName", Ptoken=True)
 
-    get_media.download_blob(
-        bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
-        source_blob_name="Admins/" + session["TTLAuthenticatedUserName"] + "/media/" + media_id + ".png",
-        destination_file_name=path
-    )
+    if ttlSession.verfiy_Ptoken(Ptoken):
+        get_media = GoogleCloudStorage()
 
-    print(get_media.blob_metadata(bucket_name=CONSTANTS.STORAGE_BUCKET_NAME, blob_name="Admins/" + session["TTLAuthenticatedUserName"] + "/media/" + media_id + ".png"))
-    # check the computed hash during upload and compare with this.
+        get_media.download_blob(
+            bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+            source_blob_name="Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_id + ".png",
+            destination_file_name=path
+        )
 
     # -----------------  END OF RETRIEVING FROM GCS ----------------- #
-
-    # -----------------  START OF DECRYPTION ----------------- #
-
-    # with open(path, 'rb') as file:
-    #     file_data = file.read()
-    #     file_to_byte = bytearray(file_data)
-
-    # hi = PillowImage.open(io.BytesIO(file_to_byte))
-    # hi.save(path)
-
-    # -----------------  END OF DECRYPTION ----------------- #
 
     return render_template('authorised_admin/media_id.html', media_id=media_id, pic=decoded_jwt["picture"])
 
@@ -265,7 +229,7 @@ def post():
     return render_template('authorised_admin/post.html', post_id=post_id, pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/posts/<regex('[0-9a-f]{32}'):id>")
+@authorised_user.route("/posts/<regex('[0-9a-f]{42}'):id>")
 @check_signed_credential
 def post_id(id):
     post_id = id
@@ -273,7 +237,7 @@ def post_id(id):
     return render_template('authorised_admin/post_id.html', post_id=post_id, pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/posts/upload/<regex('[0-9a-f]{32}'):id>")
+@authorised_user.route("/posts/upload/<regex('[0-9a-f]{42}'):id>")
 @check_signed_credential
 def post_upload(id):
     post_upload_id = id
@@ -289,7 +253,7 @@ def users():
     return render_template('authorised_admin/users.html', user_id=user_id, email=decoded_jwt["email"], pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/users/<regex('[0-9a-f]{32}'):id>")
+@authorised_user.route("/users/<regex('[0-9]{21}'):id>")
 @check_signed_credential
 def users_id(id):
     user_id = id
@@ -297,7 +261,7 @@ def users_id(id):
     return render_template('authorised_admin/user_id.html', user_id=user_id, email=decoded_jwt["email"], pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/users/create/<regex('[0-9a-f]{32}'):id>")
+@authorised_user.route("/users/create/<regex('[0-9]{21}'):id>")
 @check_signed_credential
 def create_users(id):
     return render_template('authorised_admin/user_create.html', pic=decoded_jwt["picture"])

@@ -41,11 +41,11 @@ csrf = CSRFProtect(app)
 # -----------------  END OF CSRF CONFIGURATION  ----------------- #
 
 
-# -----------------  START OF REGEX CONFIGURATION  ----------------- #
+# -----------------  START OF FLASK REGEX CONFIGURATION  ----------------- #
 
 Reggie(app)
 
-# -----------------  END OF REGEX CONFIGURATION  ----------------- #
+# -----------------  END OF FLASK REGEX CONFIGURATION  ----------------- #
 
 
 # -----------------  START OF SESSION CONFIGURATION  ----------------- #
