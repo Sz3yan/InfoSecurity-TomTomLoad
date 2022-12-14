@@ -250,7 +250,10 @@ def media_id(id):
             source_blob_name="Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_id + ".png",
             destination_file_name=path
         )
-
+        
+    else:
+            print("Invalid token")
+            abort(403)
         # -----------------  END OF CHECK FILE EXIST ----------------- #
 
     # -----------------  END OF RETRIEVING FROM GCS ----------------- #
