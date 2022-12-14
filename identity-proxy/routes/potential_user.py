@@ -1,37 +1,45 @@
 import jwt
+import json
 import requests
 import base64
+import ipinfo
 from datetime import datetime, timedelta
 import google.auth.transport.requests
 
+from flask import Blueprint, request, session, redirect, abort, make_response
+
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
-from flask import Blueprint, request, session, redirect, abort
+from static.classes.storage import GoogleCloudStorage
+
 from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
+from functools import wraps
 
 
 potential_user = Blueprint('potential_user', __name__, template_folder="templates", static_folder='static')
 
-
 client_secrets_file = CONSTANTS.IP_CONFIG_FOLDER.joinpath("client_secret.json")
 flow = Flow.from_client_secrets_file(
     client_secrets_file=client_secrets_file,
-    scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],  #here we are specifing what do we get after the authorization
-    redirect_uri="https://127.0.0.1:8080/callback"
+    scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
+    redirect_uri=CONSTANTS.CALLBACK_URL
 )
 
+# -----------------  START OF WRAPPER ----------------- #
 
-def authenticated(function):
-    def wrapper(*args, **kwargs):
+def authenticated(func):
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
         if "id_info" in session:
-            return function()
-        else:
-            return {"error": "User not authorized"}
+            return func(*args, **kwargs)
 
-    wrapper.__name__ = function.__name__
-    return wrapper
+    return decorated_function
 
+# -----------------  END OF WRAPPER ----------------- #
+
+
+# -----------------  START OF AUTHENTICATION ----------------- #
 
 @potential_user.route("/")
 def login():
@@ -65,80 +73,111 @@ def callback():
 
     session['id_info'] = id_info
 
-    return redirect("/signed-header")
+    return redirect("/authorisation")
+
+# -----------------  END OF AUTHENTICATION ----------------- #
 
 
-@potential_user.route("/signed-header", methods=["GET", "POST"])
+# -----------------  START OF AUTHORISATION ----------------- #
+
 @authenticated
-def signed_credential():
-    # Signed Query will consist of 
-    #  1. user's name
-    #  2. user's email
-    #  3. user's JWT = id_info
-    # the point of signed tokens is to verify that the user is who they say they are,
-    # in case they managed to bypass the identity proxy.
+@potential_user.route("/authorisation", methods=["GET", "POST"])
+def authorisation():
 
-    JWTAuthenticated = jwt.encode(
-        {
-            # issuer (must be identity proxy)
-            "iss": "identity-proxy",   
+    # -----------------  START OF CONTEXT-AWARE ACCESS ----------------- #
 
-            # subject (The unique, stable identifier for the user.)
-            "sub": "sub",                          
+    handler = ipinfo.getHandler(SECRET_CONSTANTS.IPINFO_TOKEN)
+    details = handler.getDetails().all
 
-            # expiration time (Must be in the future. 
-            # The time is measured in seconds since the UNIX epoch. 
-            # Allow 30 seconds for skew. 
-            # The maximum lifetime of a token is 10 minutes + 2 * skew.)
-            "exp": datetime.utcnow() + timedelta(minutes=10),      
-
-            # issued at time (Must be in the past. 
-            # The time is measured in seconds since the UNIX epoch. 
-            # Allow 30 seconds for skew.)
-            "iat":  datetime.utcnow() - timedelta(seconds=30),
-            "google_id": session['id_info'].get("sub"),
-            "name": session['id_info'].get("name"),
-            "email": session['id_info'].get("email"),
-            "picture": session['id_info'].get("picture")
-        },
-        SECRET_CONSTANTS.JWT_SECRET_KEY,
-        algorithm=CONSTANTS.JWT_ALGORITHM
-    )
-
-    global signed_credential
-
-    signed_credential = {
-        "TTL-Authenticated-User-Name": session['id_info'].get("name"),
-        "TTL-JWTAuthenticated-User": JWTAuthenticated
+    custom_ip = {
+        "ip": details["ip"],
+        "city" : details["city"],
+        "hostname": details["region"],
+        "loc": details["loc"],
     }
 
+    TTLContextAwareAccessClientIP = custom_ip
+    TTLContextAwareAccessClientUserAgent = request.headers.get('User-Agent')
+    TTLContextAwareAccessClientCertificate = "cert"
 
-    # Identity proxy will then check for the role and see if the user is allowed to access the page.
-    # if the user is allowed to access the page, the identity proxy will then redirect the user to Tom Tom Load.
-    # if the user is not allowed to access the page, the identity proxy will then redirect the user to the error page.
-    # only correct authentication and authorisation will ever reach Tom Tom Load.
-    
-    # if session['id_info'].get("name") not in CONSTANTS.AUTHORIZED_USERS:
-    #     return {"error": "User not authorized"}
+    # -----------------  END OF CONTEXT-AWARE ACCESS ----------------- #
 
-    # else:
-    return redirect("https://127.0.0.1:5000/admin", code=302)
+    latest_blacklisted = GoogleCloudStorage()
+    latest_blacklisted.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, CONSTANTS.BLACKLISTED_FILE_NAME, CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"))
 
+    with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"), "r") as f:
+        blacklisted = json.load(f)
 
-@potential_user.after_request
-def after_request(response):
-    # response.set_cookie(
-    #     'TTL-Authenticated-User-Name', 
-    #     value= base64.b64encode(str(signed_credential).encode("utf-8")), 
-    #     httponly=True, 
-    #     secure=True
-    # )
+    lastest_acl = GoogleCloudStorage()
+    lastest_acl.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, CONSTANTS.ACL_FILE_NAME, CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"))
 
-    response.set_cookie(
-        'TTL-JWTAuthenticated-User', 
-        value=base64.b64encode(str(signed_credential).encode("utf-8")),
-        httponly=True, 
-        secure=True
-    )
-    
-    return response
+    with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
+        acl = json.load(s)
+
+    if (session['id_info'].get("name") not in blacklisted["blacklisted_users"]) and \
+        (TTLContextAwareAccessClientUserAgent not in blacklisted["blacklisted_useragent"]) and \
+        (TTLContextAwareAccessClientIP not in blacklisted["blacklisted_ip"]):
+
+        role = 'user'
+
+        for key, value in acl['superadmin'].items():
+            if session['id_info'].get("email") == value:
+                role = 'superadmin'
+
+        for key, value in acl['admin'].items():    
+            if session['id_info'].get("email") == value:
+                role = 'admin'
+            
+        signed_header = {
+            "TTL-Authenticated-User-Name": session['id_info'].get("name"),
+            "TTL-JWTAuthenticated-User": 
+                jwt.encode(
+                    {
+                        "iss": "identity-proxy",
+                        "exp": datetime.utcnow() + timedelta(minutes=CONSTANTS.JWT_ACCESS_TOKEN_EXPIRATION_TIME) + (2 * timedelta(seconds=CONSTANTS.JWT_ACCESS_TOKEN_SKEW_TIME)),      
+                        "iat":  datetime.utcnow() - timedelta(seconds=30) + timedelta(seconds=CONSTANTS.JWT_ACCESS_TOKEN_SKEW_TIME),
+                        "google_id": session['id_info'].get("sub"),
+                        "name": session['id_info'].get("name"),
+                        "email": session['id_info'].get("email"),
+                        "picture": session['id_info'].get("picture"),
+                        "role" : role
+                    },
+                SECRET_CONSTANTS.JWT_SECRET_KEY,
+                algorithm=CONSTANTS.JWT_ALGORITHM
+            )
+        }
+        
+        context_aware_access = {
+            "TTL-Context-Aware-Access-Client-IP": TTLContextAwareAccessClientIP,
+            "TTL-Context-Aware-Access-Client-User-Agent": TTLContextAwareAccessClientUserAgent,
+            "TTL-Context-Aware-Access-Client-Certificate": TTLContextAwareAccessClientCertificate
+        }
+        
+        response = make_response(redirect("https://127.0.0.1:5000/admin", code=302))
+
+        response.set_cookie(
+            'TTL-Authenticated-User-Name',
+            value=base64.b64encode(str(session['id_info'].get("name")).encode("utf-8")),
+            httponly=True,
+            secure=True
+        )
+
+        response.set_cookie(
+            'TTL-JWTAuthenticated-User', 
+            value=base64.b64encode(str(signed_header).encode("utf-8")),
+            httponly=True, 
+            secure=True)
+
+        response.set_cookie(
+            'TTL-Context-Aware-Access',
+            value=base64.b64encode(str(context_aware_access).encode("utf-8")),
+            httponly=True,
+            secure=True
+        )
+
+        return response
+
+    else:
+        return abort(401)
+
+# -----------------  END OF AUTHORISATION ----------------- #

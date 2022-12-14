@@ -1,0 +1,78 @@
+<aside class="nav">
+    <div class="nav__scroll">
+        <header>
+            <a class="nav__brand" href="/admin">
+                <img src="{{ url_for('static', filename='../../../../static/images/tomtomload.png') }}">
+            </a>
+
+            <button type="button" class="nav__mobile-menu-btn"><svg width="25" height="25"
+                    viewBox="0 0 25 25" fill="none" class="icon icon--menu"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3.5" y="4.5" width="18" height="2" class="fill"></rect>
+                    <rect x="3.5" y="11.5" width="18" height="2" class="fill"></rect>
+                    <rect x="3.5" y="18.5" width="18" height="2" class="fill"></rect>
+                </svg>
+            </button>
+        </header>
+
+        <nav class="nav__wrap">
+            <div id="nav-group-Content" class="nav-group Content"><button type="button"
+                    class="nav-group__toggle nav-group__toggle--open">
+                    <div class="nav-group__label">Content {{ session["name"] }}</div><svg
+                        class="icon icon--chevron nav-group__indicator" xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 25 25">
+                        <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
+                    </svg>
+                </button>
+                <div aria-hidden="false" class="rah-static rah-static--height-auto">
+                    <div>
+                        <div class="nav-group__content"><a class="nav__link" id="nav-media"
+                                href="/admin/media"><svg class="icon icon--chevron"
+                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                    <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
+                                </svg>Media</a><a class="nav__link" id="nav-posts" href="/admin/posts"><svg
+                                    class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 25 25">
+                                    <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
+                                </svg>Posts</a></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="nav-group-Admin" class="nav-group Admin"><button type="button"
+                    class="nav-group__toggle nav-group__toggle--open">
+                    <div class="nav-group__label">Admin</div><svg
+                        class="icon icon--chevron nav-group__indicator" xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 25 25">
+                        <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
+                    </svg>
+                </button>
+                <div aria-hidden="false" class="rah-static rah-static--height-auto">
+                    <div>
+                        <div class="nav-group__content"><a class="nav__link" id="nav-users"
+                                href="/admin/users"><svg class="icon icon--chevron"
+                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                    <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
+                                </svg>Users</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="nav__controls">
+                <a class="nav__account" href="/admin/account">
+                    <img src="{{ pic }}" width="25", height="25" style="border-radius: 25px;">
+                </a>
+                    
+                    <a class="nav__log-out" href="/admin/logout"><svg
+                        class="icon icon--logout" viewBox="0 0 25 25" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 5H18V19H10" class="stroke"></path>
+                        <g>
+                            <path d="M8 8.5L4.46447 12.0355L8 15.5711" class="stroke"></path>
+                            <line x1="5" y1="12" x2="13" y2="12" class="stroke"></line>
+                        </g>
+                    </svg></a>
+            </div>
+        </nav>
+    </div>
+</aside>

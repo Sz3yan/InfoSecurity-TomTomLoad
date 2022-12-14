@@ -1,242 +1,125 @@
-<html>
+{% extends "base.html" %}
 
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-    <link href="{{ url_for('static', filename='../static/style.css') }}" rel="stylesheet">
-    <title>Dashboard - CMS</title>
-</head>
-
-<body>
-    <div id="app">
-        <div class="template-default">
-            <aside class="nav">
-                <div class="nav__scroll">
-                    <header>
-                        <a class="nav__brand" href="/admin">
-                            <svg width="25" height="25" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg"
-                                class="graphic-icon">
-                                <style>
-                                    .graphic-icon path {
-                                        fill: var(--theme-elevation-1000);
-                                    }
-                                </style>
-                                <path d="M11.5293 0L23 6.90096V19.9978L14.3608 25V11.9032L2.88452 5.00777L11.5293 0Z">
-                                </path>
-                                <path d="M10.6559 24.2727V14.0518L2 19.0651L10.6559 24.2727Z"></path>
-                            </svg>
-                        </a>
-
-                        <button type="button" class="nav__mobile-menu-btn"><svg width="25" height="25"
-                                viewBox="0 0 25 25" fill="none" class="icon icon--menu"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <rect x="3.5" y="4.5" width="18" height="2" class="fill"></rect>
-                                <rect x="3.5" y="11.5" width="18" height="2" class="fill"></rect>
-                                <rect x="3.5" y="18.5" width="18" height="2" class="fill"></rect>
-                            </svg>
-                        </button>
-                    </header>
-
-                    <nav class="nav__wrap">
-                        <div id="nav-group-Content" class="nav-group Content"><button type="button"
-                                class="nav-group__toggle nav-group__toggle--open">
-                                <div class="nav-group__label">Content</div><svg
-                                    class="icon icon--chevron nav-group__indicator" xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 25 25">
+{% block bodyContent %}
+    <div class="collection-edit collection-edit--is-editing">
+        <form novalidate="" method="patch" action="https://demo.ttlcms.com/api/posts/6367071208fff3c0c30292fa?locale=en&amp;depth=0&amp;fallback-locale=null" class="collection-edit__form form">
+            <div class="collection-edit__main">
+                <div class="eyebrow">
+                    <div class="gutter--left gutter--right eyebrow__wrap">
+                        <nav class="step-nav"><a href="/admin"><span>Dashboard</span><svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
                                     <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                </svg>
-                            </button>
-                            <div aria-hidden="false" class="rah-static rah-static--height-auto">
-                                <div>
-                                    <div class="nav-group__content"><a class="nav__link" id="nav-media"
-                                            href="/admin/media"><svg class="icon icon--chevron"
-                                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                                <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                            </svg>Media</a><a class="nav__link" id="nav-posts" href="/admin/posts"><svg
-                                                class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 25 25">
-                                                <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                            </svg>Posts</a></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="nav-group-Admin" class="nav-group Admin"><button type="button"
-                                class="nav-group__toggle nav-group__toggle--open">
-                                <div class="nav-group__label">Admin</div><svg
-                                    class="icon icon--chevron nav-group__indicator" xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 25 25">
+                                </svg></a><a href="/admin/posts"><span>Posts</span><svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
                                     <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                </svg>
-                            </button>
-                            <div aria-hidden="false" class="rah-static rah-static--height-auto">
-                                <div>
-                                    <div class="nav-group__content"><a class="nav__link" id="nav-users"
-                                            href="/admin/users"><svg class="icon icon--chevron"
-                                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                                <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                            </svg>Users</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="nav__controls">
-                            <a class="nav__account" href="/admin/account"><svg class="graphic-account" width="25"
-                                    height="25" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                    <style>
-                                        .graphic-account .circle1 {
-                                            fill: var(--theme-elevation-100);
-                                        }
-
-                                        .graphic-account .circle2,
-                                        .graphic-account path {
-                                            fill: var(--theme-elevation-300);
-                                        }
-                                    </style>
-                                    <circle class="circle1" cx="12.5" cy="12.5" r="11.5"></circle>
-                                    <circle class="circle2" cx="12.5" cy="10.73" r="3.98"></circle>
-                                    <path
-                                        d="M12.5,24a11.44,11.44,0,0,0,7.66-2.94c-.5-2.71-3.73-4.8-7.66-4.8s-7.16,2.09-7.66,4.8A11.44,11.44,0,0,0,12.5,24Z">
-                                    </path>
-                                </svg></a><a class="nav__log-out" href="/admin/logout"><svg class="icon icon--logout"
-                                    viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M10 5H18V19H10" class="stroke"></path>
-                                    <g>
-                                        <path d="M8 8.5L4.46447 12.0355L8 15.5711" class="stroke"></path>
-                                        <line x1="5" y1="12" x2="13" y2="12" class="stroke"></line>
-                                    </g>
-                                </svg></a>
-                        </div>
-                    </nav>
+                                </svg></a><span>New Feature - Auto-generate TypeScript Interfaces</span>
+                        </nav>
+                    </div>
                 </div>
-            </aside>
-
-            <div class="template-default__wrap">
-                <div class="collection-edit collection-edit--is-editing">
-                    <form novalidate="" method="patch" action="https://demo.ttlcms.com/api/posts/6367071208fff3c0c30292fa?locale=en&amp;depth=0&amp;fallback-locale=null" class="collection-edit__form form">
-                        <div class="collection-edit__main">
-                            <div class="eyebrow">
-                                <div class="gutter--left gutter--right eyebrow__wrap">
-                                    <nav class="step-nav"><a href="/admin"><span>Dashboard</span><svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                                <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                            </svg></a><a href="/admin/posts"><span>Posts</span><svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                                <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                            </svg></a><span>New Feature - Auto-generate TypeScript Interfaces</span>
-                                    </nav>
-                                </div>
-                            </div>
-                            <div class="gutter--left gutter--right collection-edit__edit">
-                                <header class="collection-edit__header">
-                                    <h1><span class="render-title">New Feature - Auto-generate TypeScript
-                                            Interfaces</span></h1>
-                                </header>
-                                <div class="render-fields">
-                                    <div class="field-type text"><label for="field-title" class="field-label">Title</label><input id="field-title" type="text" name="title" value="New Feature - Auto-generate TypeScript Interfaces">
-                                    </div>
-                                    <div id="field-author" class="field-type relationship"><label for="author" class="field-label">Author</label>
-                                        <div class="relationship__wrap">
-                                            <div class="react-select css-2b097c-container">
-                                                <div class="rs__control css-yk16xz-control">
-                                                    <div class="rs__value-container rs__value-container--has-value css-1hwfws3">
-                                                        <div class="rs__single-value css-1uccc91-singleValue">
-                                                            demo@ttlcms.com</div>
-                                                        <div class="css-1g6gooi">
-                                                            <div class="rs__input" style="display: inline-block;"><input autocapitalize="none" autocomplete="off" autocorrect="off" id="react-select-8-input" spellcheck="false" tabindex="0" type="text" aria-autocomplete="list" value="" style="box-sizing: content-box; width: 2px; border: 0px; font-size: inherit; opacity: 1; outline: 0px; padding: 0px; color: inherit; background-position: 0px center;">
-                                                                <div style="position: absolute; top: 0px; left: 0px; visibility: hidden; height: 0px; overflow: scroll; white-space: pre; font-size: 13px; font-family: &quot;Suisse Intl&quot;, system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Ubuntu, Cantarell, &quot;Noto Sans&quot;, sans-serif; font-weight: 400; font-style: normal; letter-spacing: normal; text-transform: none;">
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    
-                                                </div>
-                                            </div>
-                                            <div class="relationship-add-new" id="author-add-new"><button type="button" class="btn relationship-add-new__add-button btn--style-none btn--icon-style-without-border btn--size-medium btn--icon-position-right btn--has-tooltip"><span class="btn__content">
-                                                        <aside class="tooltip btn__tooltip">Add new User<span></span>
-                                                        </aside><span class="btn__label"><svg class="icon icon--plus" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                                                <line x1="12.4589" y1="16.9175" x2="12.4589" y2="8.50115" class="stroke"></line>
-                                                                <line x1="8.05164" y1="12.594" x2="16.468" y2="12.594" class="stroke"></line>
-                                                            </svg></span>
-                                                    </span></button></div>
-                                        </div>
-                                    </div>
-
-                                    <div class="field-type text"><label for="field-title" class="field-label">Content</label><input id="field-title" type="text" name="title" value="New Feature - Auto-generate TypeScript Interfaces">
-                                    </div>
-                                    
-                                </div>
-                            </div>
+                <div class="gutter--left gutter--right collection-edit__edit">
+                    <header class="collection-edit__header">
+                        <h1><span class="render-title">New Feature - Auto-generate TypeScript
+                                Interfaces</span></h1>
+                    </header>
+                    <div class="render-fields">
+                        <div class="field-type text"><label for="field-title" class="field-label">Title</label><input id="field-title" type="text" name="title" value="New Feature - Auto-generate TypeScript Interfaces">
                         </div>
-                        <div class="collection-edit__sidebar-wrap">
-                            <div class="collection-edit__sidebar">
-                                <div class="collection-edit__sidebar-sticky-wrap">
-                                    <ul class="collection-edit__collection-actions">
-                                        <li><a id="action-create" href="/admin/posts/create">Create New</a>
-                                        </li>
-                                        <li><button type="button" id="action-duplicate" class="btn duplicate btn--style-none btn--icon-style-without-border btn--size-medium btn--icon-position-right"><span class="btn__content"><span class="btn__label">Duplicate</span></span></button></li>
-                                        <li><button type="button" id="action-delete" class="delete-document__toggle">Delete</button></li>
-                                    </ul>
-                                    <div class="collection-edit__document-actions collection-edit__document-actions--has-2">
-                                        <div class="form-submit"><button type="button" class="btn save-draft btn--style-secondary btn--icon-style-without-border btn--disabled btn--size-medium btn--icon-position-right" disabled=""><span class="btn__content"><span class="btn__label">Save
-                                                        draft</span></span></button></div>
-                                        <div class="form-submit"><button type="button" class="btn btn--style-primary btn--icon-style-without-border btn--disabled btn--size-medium btn--icon-position-right" disabled=""><span class="btn__content"><span class="btn__label">Publish
-                                                        changes</span></span></button></div>
-                                    </div>
-                                    <div class="collection-edit__sidebar-fields">
-                                        <div class="status">
-                                            <div class="status__value-wrap"><span class="status__value">Published</span>&nbsp;—&nbsp;<button type="button" class="btn status__action btn--style-none btn--icon-style-without-border btn--size-medium btn--icon-position-right"><span class="btn__content"><span class="btn__label">Unpublish</span></span></button></div>
-                                        </div>
-                                        <div class="render-fields">
-                                            <div class="field-type date-time-field">
-                                                <div class="date-time-field__error-wrap"></div><label for="publishDate" class="field-label">Publish Date</label>
-                                                <div id="field-publishDate" class="date-time-field__input-wrapper">
-                                                    <div class="date-time-picker date-time-picker__appearance--dayAndTime">
-                                                        <div class="date-time-picker__icon-wrap"><button type="button" class="date-time-picker__clear-button"><svg width="25" height="25" class="icon icon--x" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                                                    <line class="stroke" x1="8.74612" y1="16.347" x2="16.3973" y2="8.69584"></line>
-                                                                    <line class="stroke" x1="8.6027" y1="8.69585" x2="16.2539" y2="16.3471"></line>
-                                                                </svg></button><svg class="icon icon--calendar" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                                                <rect x="4.5" y="6.11401" width="16" height="14" class="stroke"></rect>
-                                                                <line x1="8.625" y1="8.02026" x2="8.625" y2="3.70776" class="stroke"></line>
-                                                                <line x1="16.375" y1="8.02026" x2="16.375" y2="3.70776" class="stroke"></line>
-                                                                <line x1="4.5" y1="11.114" x2="20.5" y2="11.114" class="stroke"></line>
-                                                            </svg></div>
-                                                        <div class="date-time-picker__input-wrapper">
-                                                            <div class="react-datepicker-wrapper">
-                                                                <div class="react-datepicker__input-container"><input type="text" class="" value="Feb 1, 2022 1:00 PM"></div>
-                                                            </div>
-                                                        </div>
+                        <div id="field-author" class="field-type relationship"><label for="author" class="field-label">Author</label>
+                            <div class="relationship__wrap">
+                                <div class="react-select css-2b097c-container">
+                                    <div class="rs__control css-yk16xz-control">
+                                        <div class="rs__value-container rs__value-container--has-value css-1hwfws3">
+                                            <div class="rs__single-value css-1uccc91-singleValue">
+                                                demo@ttlcms.com</div>
+                                            <div class="css-1g6gooi">
+                                                <div class="rs__input" style="display: inline-block;"><input autocapitalize="none" autocomplete="off" autocorrect="off" id="react-select-8-input" spellcheck="false" tabindex="0" type="text" aria-autocomplete="list" value="" style="box-sizing: content-box; width: 2px; border: 0px; font-size: inherit; opacity: 1; outline: 0px; padding: 0px; color: inherit; background-position: 0px center;">
+                                                    <div style="position: absolute; top: 0px; left: 0px; visibility: hidden; height: 0px; overflow: scroll; white-space: pre; font-size: 13px; font-family: &quot;Suisse Intl&quot;, system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Ubuntu, Cantarell, &quot;Noto Sans&quot;, sans-serif; font-weight: 400; font-style: normal; letter-spacing: normal; text-transform: none;">
                                                     </div>
-                                                </div>
-                                                <div class="field-description">Posts will not be public until this date
                                                 </div>
                                             </div>
                                         </div>
+                                        
                                     </div>
-                                    <ul class="collection-edit__meta">
-                                        <li class="collection-edit__api-url"><span class="collection-edit__label">API
-                                                URL <button type="button" class="copy-to-clipboard"><svg class="icon icon--copy" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                                        <rect x="6.5" y="10" width="8" height="8" class="stroke"></rect>
-                                                        <path d="M10 9.98438V6.5H18V14.5H14" class="stroke"></path>
-                                                    </svg>
-                                                    <aside class="tooltip">copy<span></span></aside><textarea readonly="">https://demo.ttlcms.com/api/posts/6367071208fff3c0c30292fa?draft=true</textarea>
-                                                </button></span><a href="https://demo.ttlcms.com/api/posts/6367071208fff3c0c30292fa?draft=true" target="_blank" rel="noopener noreferrer">https://demo.ttlcms.com/api/posts/6367071208fff3c0c30292fa?draft=true</a>
-                                        </li>
-                                        <li>
-                                            <div class="collection-edit__label">Last Modified</div>
-                                            <div>February 7th 2022, 9:56 AM</div>
-                                        </li>
-                                        <li>
-                                            <div class="collection-edit__label">Created</div>
-                                            <div>February 7th 2022, 9:56 AM</div>
-                                        </li>
-                                    </ul>
                                 </div>
+                                <div class="relationship-add-new" id="author-add-new"><button type="button" class="btn relationship-add-new__add-button btn--style-none btn--icon-style-without-border btn--size-medium btn--icon-position-right btn--has-tooltip"><span class="btn__content">
+                                            <aside class="tooltip btn__tooltip">Add new User<span></span>
+                                            </aside><span class="btn__label"><svg class="icon icon--plus" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                                    <line x1="12.4589" y1="16.9175" x2="12.4589" y2="8.50115" class="stroke"></line>
+                                                    <line x1="8.05164" y1="12.594" x2="16.468" y2="12.594" class="stroke"></line>
+                                                </svg></span>
+                                        </span></button></div>
                             </div>
                         </div>
-                    </form>
+
+                        <div class="field-type text"><label for="field-title" class="field-label">Content</label><input id="field-title" type="text" name="title" value="New Feature - Auto-generate TypeScript Interfaces">
+                        </div>
+                        
+                    </div>
                 </div>
             </div>
-        </div>
+            <div class="collection-edit__sidebar-wrap">
+                <div class="collection-edit__sidebar">
+                    <div class="collection-edit__sidebar-sticky-wrap">
+                        <ul class="collection-edit__collection-actions">
+                            <li><a id="action-create" href="/admin/posts/create">Create New</a>
+                            </li>
+                            <li><button type="button" id="action-delete" class="delete-document__toggle">Delete</button></li>
+                        </ul>
+                        <div class="collection-edit__document-actions collection-edit__document-actions--has-2">
+                            <div class="form-submit"><button type="button" class="btn save-draft btn--style-secondary btn--icon-style-without-border btn--disabled btn--size-medium btn--icon-position-right" disabled=""><span class="btn__content"><span class="btn__label">Save
+                                            draft</span></span></button></div>
+                            <div class="form-submit"><button type="button" class="btn btn--style-primary btn--icon-style-without-border btn--disabled btn--size-medium btn--icon-position-right" disabled=""><span class="btn__content"><span class="btn__label">Publish
+                                            changes</span></span></button></div>
+                        </div>
+                        <div class="collection-edit__sidebar-fields">
+                            <div class="status">
+                                <div class="status__value-wrap"><span class="status__value">Published</span>&nbsp;—&nbsp;<button type="button" class="btn status__action btn--style-none btn--icon-style-without-border btn--size-medium btn--icon-position-right"><span class="btn__content"><span class="btn__label">Unpublish</span></span></button></div>
+                            </div>
+                            <div class="render-fields">
+                                <div class="field-type date-time-field">
+                                    <div class="date-time-field__error-wrap"></div><label for="publishDate" class="field-label">Publish Date</label>
+                                    <div id="field-publishDate" class="date-time-field__input-wrapper">
+                                        <div class="date-time-picker date-time-picker__appearance--dayAndTime">
+                                            <div class="date-time-picker__icon-wrap"><button type="button" class="date-time-picker__clear-button"><svg width="25" height="25" class="icon icon--x" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                                        <line class="stroke" x1="8.74612" y1="16.347" x2="16.3973" y2="8.69584"></line>
+                                                        <line class="stroke" x1="8.6027" y1="8.69585" x2="16.2539" y2="16.3471"></line>
+                                                    </svg></button><svg class="icon icon--calendar" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                                    <rect x="4.5" y="6.11401" width="16" height="14" class="stroke"></rect>
+                                                    <line x1="8.625" y1="8.02026" x2="8.625" y2="3.70776" class="stroke"></line>
+                                                    <line x1="16.375" y1="8.02026" x2="16.375" y2="3.70776" class="stroke"></line>
+                                                    <line x1="4.5" y1="11.114" x2="20.5" y2="11.114" class="stroke"></line>
+                                                </svg></div>
+                                            <div class="date-time-picker__input-wrapper">
+                                                <div class="react-datepicker-wrapper">
+                                                    <div class="react-datepicker__input-container"><input type="text" class="" value="Feb 1, 2022 1:00 PM"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="field-description">Posts will not be public until this date
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <ul class="collection-edit__meta">
+                            <li class="collection-edit__api-url"><span class="collection-edit__label">API
+                                    URL <button type="button" class="copy-to-clipboard"><svg class="icon icon--copy" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                            <rect x="6.5" y="10" width="8" height="8" class="stroke"></rect>
+                                            <path d="M10 9.98438V6.5H18V14.5H14" class="stroke"></path>
+                                        </svg>
+                                        <aside class="tooltip">copy<span></span></aside><textarea readonly="">https://demo.ttlcms.com/api/posts/6367071208fff3c0c30292fa?draft=true</textarea>
+                                    </button></span><a href="https://demo.ttlcms.com/api/posts/6367071208fff3c0c30292fa?draft=true" target="_blank" rel="noopener noreferrer">https://demo.ttlcms.com/api/posts/6367071208fff3c0c30292fa?draft=true</a>
+                            </li>
+                            <li>
+                                <div class="collection-edit__label">Last Modified</div>
+                                <div>February 7th 2022, 9:56 AM</div>
+                            </li>
+                            <li>
+                                <div class="collection-edit__label">Created</div>
+                                <div>February 7th 2022, 9:56 AM</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </form>
     </div>
-</body>
-
-</html>
+{% endblock %}

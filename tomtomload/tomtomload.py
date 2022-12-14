@@ -7,26 +7,43 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
 from flask_talisman import Talisman
-# from flask_reggie import Reggie (regex in flask route)
-# from flask_moment import Moment (moment.js)
-from static.classes.config import CONSTANTS, SECRET_CONSTANTS
+from flask_reggie import Reggie
 
 from routes.Errors import error
 from routes.authorised_user import authorised_user
 from routes.api import api
 
+from static.classes.config import CONSTANTS, SECRET_CONSTANTS
+
+
+# -----------------  START OF TOM TOM LOAD  ----------------- #
 
 app = Flask(__name__)
 
+# -----------------  START OF FLASK CONFIGURATION  ----------------- #
+
 app.config["CONSTANTS"] = CONSTANTS
 app.config["SECRET"] = SECRET_CONSTANTS
+
 app.config["DEBUG_FLAG"] = app.config["CONSTANTS"].DEBUG_MODE
+
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config["SESSION_FILE_DIR"] = os.path.join(app.config["CONSTANTS"].TTL_ROOT_FOLDER, "sessions")
 app.config["SECRET_KEY"] = "SECRET.FLASK_SECRET_KEY"
 
+# -----------------  END OF FLASK CONFIGURATION  ----------------- #
+
+
+# -----------------  START OF CSRF CONFIGURATION  ----------------- #
 
 csrf = CSRFProtect(app)
+
+# -----------------  END OF CSRF CONFIGURATION  ----------------- #
+
+
+Reggie(app)
+
+# -----------------  START OF SESSION CONFIGURATION  ----------------- #
 
 sess = Session(app)
 if app.config["CONSTANTS"].DEBUG_MODE:
@@ -35,6 +52,10 @@ if app.config["CONSTANTS"].DEBUG_MODE:
 paranoid = Paranoid(app)
 paranoid.redirect_view = "/"
 
+# -----------------  END OF SESSION CONFIGURATION  ----------------- #
+
+
+# -----------------  START OF LIMITER CONFIGURATION  ----------------- #
 
 limiter = Limiter(
     app=app,
@@ -42,6 +63,10 @@ limiter = Limiter(
     default_limits=[app.config["CONSTANTS"].DEFAULT_REQUEST_LIMIT],
 )
 
+# -----------------  END OF LIMITER CONFIGURATION  ----------------- #
+
+
+# -----------------  START OF HTST CONFIGURATION  ----------------- #
 
 talisman = Talisman(
     app=app,
@@ -64,26 +89,26 @@ talisman = Talisman(
     session_cookie_samesite="Lax"
 )
 
-# prevent caching
-@app.after_request
-def add_header(response):
-    response.cache_control.no_cache = True
-    response.cache_control.no_store = True
-    response.cache_control.must_revalidate = True
-    response.cache_control.max_age = 0
-    response.cache_control.public = False
-    response.cache_control.proxy_revalidate = True
-    response.cache_control.s_maxage = 0
-    return response
+# -----------------  END OF HSTS CONFIGURATION  ----------------- #
 
+
+# -----------------  START OF BLUEPRINT  ----------------- #
 
 with app.app_context():
     app.register_blueprint(authorised_user)
     app.register_blueprint(api)
-    # app.register_blueprint(error)
+    app.register_blueprint(error)
+
+# -----------------  END OF BLUEPRINT  ----------------- #
 
 
 if __name__ == "__main__":
+
+    # maybe add scheduler here
+    #   |- to auto delete the files in config_folder
+    #   |- to auto delete the files in sessions folder
+    #   |- auto redirect user to identity-proxy if their token is expired
+
     if app.config["DEBUG_FLAG"]:
         SSL_CONTEXT = (
             CONSTANTS.TTL_CONFIG_FOLDER.joinpath("certificate.pem"),
@@ -100,3 +125,5 @@ if __name__ == "__main__":
         port=int(os.environ.get("PORT", 5000)),
         ssl_context=SSL_CONTEXT
     )
+
+# -----------------  END OF TOM TOM LOAD  ----------------- #
