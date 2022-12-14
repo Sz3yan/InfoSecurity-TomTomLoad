@@ -153,4 +153,16 @@ class GoogleCloudStorage:
         print(f"The metadata for the blob {blob.name} is {blob.metadata}")
 
 
-        
+    def set_blob_metadata(self, bucket_name, blob_name):
+        """Set a blob's metadata."""
+        # bucket_name = 'your-bucket-name'
+        # blob_name = 'your-object-name'
+
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.get_blob(blob_name)
+        metadata = {'color': 'Red', 'name': 'Test'}
+        blob.metadata = metadata
+        blob.patch()
+
+        print(f"The metadata for the blob {blob.name} is {blob.metadata}")

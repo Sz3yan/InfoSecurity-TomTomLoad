@@ -68,7 +68,8 @@ def callback():
     id_info = id_token.verify_oauth2_token(
         id_token=credentials._id_token,
         request=token_request,
-        audience=CONSTANTS.GOOGLE_CLIENT_ID
+        audience=CONSTANTS.GOOGLE_CLIENT_ID,
+        clock_skew_in_seconds=CONSTANTS.GOOGLE_OAUTH_SKEW_TIME,
     )
 
     session['id_info'] = id_info

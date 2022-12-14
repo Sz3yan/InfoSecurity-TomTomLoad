@@ -94,13 +94,92 @@ class GoogleCloudKeyManagement:
         print('Created hsm key: {}'.format(created_key.name))
         return created_key
 
+    def create_key_symmetric_encrypt_decrypt(self, project_id, location_id, key_ring_id, key_id):
+        """
+        Creates a new symmetric encryption/decryption key in Cloud KMS.
+
+        Args:
+            project_id (string): Google Cloud project ID (e.g. 'my-project').
+            location_id (string): Cloud KMS location (e.g. 'us-east1').
+            key_ring_id (string): ID of the Cloud KMS key ring (e.g. 'my-key-ring').
+            key_id (string): ID of the key to create (e.g. 'my-symmetric-key').
+
+        Returns:
+            CryptoKey: Cloud KMS key.
+
+        """
+
+        # Create the client.
+        client = kms.KeyManagementServiceClient()
+
+        # Build the parent key ring name.
+        key_ring_name = client.key_ring_path(project_id, location_id, key_ring_id)
+
+        # Build the key.
+        purpose = kms.CryptoKey.CryptoKeyPurpose.ENCRYPT_DECRYPT
+        algorithm = kms.CryptoKeyVersion.CryptoKeyVersionAlgorithm.GOOGLE_SYMMETRIC_ENCRYPTION
+        key = {
+            'purpose': purpose,
+            'version_template': {
+                'algorithm': algorithm,
+            }
+        }
+
+        # Call the API.
+        created_key = client.create_crypto_key(
+            request={'parent': key_ring_name, 'crypto_key_id': key_id, 'crypto_key': key})
+        print('Created symmetric key: {}'.format(created_key.name))
+        return created_key
+
+    
+    def create_key_asymmetric_decrypt(self, project_id, location_id, key_ring_id, key_id):
+        """
+        Creates a new asymmetric decryption key in Cloud KMS.
+
+        Args:
+            project_id (string): Google Cloud project ID (e.g. 'my-project').
+            location_id (string): Cloud KMS location (e.g. 'us-east1').
+            key_ring_id (string): ID of the Cloud KMS key ring (e.g. 'my-key-ring').
+            key_id (string): ID of the key to create (e.g. 'my-asymmetric-decrypt-key').
+
+        Returns:
+            CryptoKey: Cloud KMS key.
+
+        """
+
+        # Create the client.
+        client = kms.KeyManagementServiceClient()
+
+        # Build the parent key ring name.
+        key_ring_name = client.key_ring_path(project_id, location_id, key_ring_id)
+
+        # Build the key.
+        purpose = kms.CryptoKey.CryptoKeyPurpose.ASYMMETRIC_DECRYPT
+        algorithm = kms.CryptoKeyVersion.CryptoKeyVersionAlgorithm.RSA_DECRYPT_OAEP_2048_SHA256
+        key = {
+            'purpose': purpose,
+            'version_template': {
+                'algorithm': algorithm,
+            },
+
+            # Optional: customize how long key versions should be kept before
+            # destroying.
+            'destroy_scheduled_duration': duration_pb2.Duration().FromTimedelta(datetime.timedelta(days=1))
+        }
+
+        # Call the API.
+        created_key = client.create_crypto_key(
+            request={'parent': key_ring_name, 'crypto_key_id': key_id, 'crypto_key': key})
+        print('Created asymmetric decrypt key: {}'.format(created_key.name))
+        return created_key
+
 
     def retrieve_key(self, project_id, location_id, key_ring_id, key_id):
         client = kms.KeyManagementServiceClient()
 
         key_name = client.crypto_key_path(project_id, location_id, key_ring_id, key_id)
         retrieved_key = client.get_crypto_key(request={'name': key_name})
-        return retrieved_key
+        return str(retrieved_key)
 
 
 class Encryption:
@@ -140,6 +219,7 @@ class Encryption:
 
         # Convert the plaintext to bytes.
         plaintext_bytes = plaintext.encode('utf-8')
+        print(plaintext_bytes)
 
         # Create the client.
         client = kms.KeyManagementServiceClient()
@@ -445,47 +525,48 @@ class GoogleSecretManager:
         client.delete_secret(request={"name": name})
 
 
-# if __name__ == "__main__":
-#     keymanagement = GoogleCloudKeyManagement()
+if __name__ == "__main__":
+    keymanagement = GoogleCloudKeyManagement()
 
-#     symmetric_key = keymanagement.retrieve_key(
-#         project_id="infosec-62c05",
-#         location_id="global",
-#         key_ring_id="tomtomload",
-#         key_id="tomtomload-symmetric-key",
-#     )
+    symmetric_key = keymanagement.retrieve_key(
+        project_id="infosec-62c05",
+        location_id="global",
+        key_ring_id="tomtomload",
+        key_id="TTL-SYMMETRIC-KEY",
+    )
 
-#     asymmetric_key = keymanagement.retrieve_key(
-#         project_id="infosec-62c05",
-#         location_id="global",
-#         key_ring_id="tomtomload",
-#         key_id="tomtomload-asymmetric-key",
-#     )
+    print(symmetric_key)
 
-#     # print("Symmetric key: {}".format(symmetric_key))
-#     # print("Asymmetric key: {}".format(asymmetric_key))
+    """
+    
+        Asymmetric key = rsa-decrypt-oaep-4096-sha512
+        Symmetric key = aes256-gcm
 
+        1. Encrypt the symmetric key (HSM) with the asymmetric key
+        2. Encrypt the symmetric key with the asymmetric key (both google generated)
 
-#     encryption = Encryption()
+    """
 
-#     envelope_key = encryption.encrypt_asymmetric(
-#         project_id="infosec-62c05",
-#         location_id="global",
-#         key_ring_id="tomtomload",
-#         key_id="tomtomload-asymmetric-key",
-#         version_id="1",
-#         plaintext=str(symmetric_key)
-#     )
+    encryption = Encryption()
 
-#     print("Envelope key: {}".format(envelope_key))
+    envelope_key = encryption.encrypt_asymmetric(
+        project_id="infosec-62c05",
+        location_id="global",
+        key_ring_id="tomtomload",
+        key_id="TTL-ASYMMETRIC-KEY",
+        version_id="1",
+        plaintext=symmetric_key
+    )
 
-#     decrypt_envelope_key = encryption.decrypt_asymmetric(
-#         project_id="infosec-62c05",
-#         location_id="global",
-#         key_ring_id="tomtomload",
-#         key_id="tomtomload-asymmetric-key",
-#         version_id="1",
-#         ciphertext=envelope_key
-#     )
+    print("Envelope key: {}".format(envelope_key))
 
-#     print("Decrypted envelope key: {}".format(decrypt_envelope_key))
+    decrypt_envelope_key = encryption.decrypt_asymmetric(
+        project_id="infosec-62c05",
+        location_id="global",
+        key_ring_id="tomtomload",
+        key_id="TTL-ASYMMETRIC-KEY",
+        version_id="1",
+        ciphertext=envelope_key
+    )
+
+    print("Decrypted envelope key: {}".format(decrypt_envelope_key))

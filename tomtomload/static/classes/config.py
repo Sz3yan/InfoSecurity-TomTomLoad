@@ -25,6 +25,10 @@ class Constants:
     BLACKLISTED_FILE_NAME: str = "blacklisted.json"
     ACL_FILE_NAME: str = "acl.json"
 
+    # --- GOOGLE CLOUD KMS ---
+    KMS_KEY_RING_ID: str = "tomtomload"
+    KMS_KEY_ID: str = "tomtomload-symmetric-key"
+
     # --- GOOGLE SECRET MANAGER ---
     # FLASK_SECRET_KEY_NAME: str = ""
 
