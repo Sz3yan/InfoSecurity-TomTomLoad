@@ -6,6 +6,7 @@ import os
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 from static.classes.unique_id import UniqueID
 from static.security.storage import GoogleCloudStorage
+from static.security.session_management import TTLSession
 from werkzeug.utils import secure_filename
 from static.security.secure_data import AES_GCM
 
@@ -15,6 +16,8 @@ from functools import wraps
 
 
 authorised_user = Blueprint('authorised_user', __name__, url_prefix="/admin", template_folder="templates", static_folder='static')
+
+ttlSession = TTLSession()
 
 
 # -----------------  START OF WRAPPER ----------------- #
@@ -38,10 +41,10 @@ def check_signed_credential(func):
                 return abort(403)
 
             global decoded_jwt
-
+            # session["TTLJWTAuthenticatedUser"]["TTL-JWTAuthenticated-User"]
             try:
                 decoded_jwt = jwt.decode(
-                    session["TTLJWTAuthenticatedUser"]["TTL-JWTAuthenticated-User"], 
+                    ttlSession.get_data_from_session("TTLJWTAuthenticatedUser")["data"]["TTL-JWTAuthenticated-User"], 
                     algorithms="HS256", 
                     key=SECRET_CONSTANTS.JWT_SECRET_KEY
                 )
@@ -81,9 +84,13 @@ def home():
     cleanup_TTLContextAwareAccess = TTLContextAwareAccess_raw.replace("'", '"')
     TTLContextAwareAccess = json.loads(cleanup_TTLContextAwareAccess)
 
-    session["TTLAuthenticatedUserName"] = TTLAuthenticatedUserName
-    session["TTLJWTAuthenticatedUser"] = TTLJWTAuthenticatedUser
-    session["TTLContextAwareAccess"] = TTLContextAwareAccess
+    # session["TTLAuthenticatedUserName"] = TTLAuthenticatedUserName
+    # session["TTLJWTAuthenticatedUser"] = TTLJWTAuthenticatedUser
+    # session["TTLContextAwareAccess"] = TTLContextAwareAccess
+
+    ttlSession.write_data_to_session("TTLAuthenticatedUserName",ttlSession.get_token(),TTLAuthenticatedUserName)
+    ttlSession.write_data_to_session("TTLJWTAuthenticatedUser",ttlSession.get_token(),TTLJWTAuthenticatedUser)
+    ttlSession.write_data_to_session("TTLContextAwareAccess",ttlSession.get_token(),TTLContextAwareAccess)
 
     # -----------------  END OF SESSION ----------------- #
 
@@ -161,16 +168,19 @@ def media_upload(id):
         # -----------------  END OF PRE-PROCESSING DATA ----------------- #
 
         # -----------------  START OF UPLOADING TO GCS ----------------- #
+        Ptoken = ttlSession.get_data_from_session("TTLAuthenticatedUserName", Ptoken=True)
 
+        if ttlSession.verfiy_Ptoken(Ptoken):
         # can compute hash here
+            upload_media = GoogleCloudStorage()
 
-        upload_media = GoogleCloudStorage()
-
-        upload_media.upload_blob(
-            bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
-            source_file_name=temp_file_path,
-            destination_blob_name="Admins/" + session["TTLAuthenticatedUserName"] + "/media/" + media_upload_id + "." + file_extension,
-        )
+            upload_media.upload_blob(
+                bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+                source_file_name=temp_file_path,
+                destination_blob_name="Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_upload_id + "." + file_extension,
+            )
+        else:
+            print("Invalid token")
 
         # -----------------  END OF UPLOADING TO GCS ----------------- #
 
@@ -195,13 +205,16 @@ def media_id(id):
 
     # -----------------  START OF RETRIEVING FROM GCS ----------------- #
 
-    get_media = GoogleCloudStorage()
+    Ptoken = ttlSession.get_data_from_session("TTLAuthenticatedUserName", Ptoken=True)
 
-    get_media.download_blob(
-        bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
-        source_blob_name="Admins/" + session["TTLAuthenticatedUserName"] + "/media/" + media_id + ".png",
-        destination_file_name=path
-    )
+    if ttlSession.verfiy_Ptoken(Ptoken):
+        get_media = GoogleCloudStorage()
+
+        get_media.download_blob(
+            bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+            source_blob_name="Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_id + ".png",
+            destination_file_name=path
+        )
 
     # -----------------  END OF RETRIEVING FROM GCS ----------------- #
 
@@ -216,7 +229,7 @@ def post():
     return render_template('authorised_admin/post.html', post_id=post_id, pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/posts/<string:id>")
+@authorised_user.route("/posts/<regex('[0-9a-f]{42}'):id>")
 @check_signed_credential
 def post_id(id):
     post_id = id
@@ -224,7 +237,7 @@ def post_id(id):
     return render_template('authorised_admin/post_id.html', post_id=post_id, pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/posts/upload/<string:id>")
+@authorised_user.route("/posts/upload/<regex('[0-9a-f]{42}'):id>")
 @check_signed_credential
 def post_upload(id):
     post_upload_id = id
@@ -240,7 +253,7 @@ def users():
     return render_template('authorised_admin/users.html', user_id=user_id, email=decoded_jwt["email"], pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/users/<string:id>")
+@authorised_user.route("/users/<regex('[0-9]{21}'):id>")
 @check_signed_credential
 def users_id(id):
     user_id = id
@@ -248,7 +261,7 @@ def users_id(id):
     return render_template('authorised_admin/user_id.html', user_id=user_id, email=decoded_jwt["email"], pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/users/create/<string:id>")
+@authorised_user.route("/users/create/<regex('[0-9]{21}'):id>")
 @check_signed_credential
 def create_users(id):
     return render_template('authorised_admin/user_create.html', pic=decoded_jwt["picture"])
