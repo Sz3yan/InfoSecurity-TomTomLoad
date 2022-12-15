@@ -1,10 +1,29 @@
 {% extends "base.html" %}
 
+{% block js %}
+    <!-- EditorJs -->
+    <script src="https://cdn.jsdelivr.net/npm/codex.editor.header@2.0.4/dist/bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script><!-- Header -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/simple-image@latest"></script><!-- Image -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@latest"></script><!-- Delimiter -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script><!-- List -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@latest"></script><!-- Checklist -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script><!-- Quote -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script><!-- Code -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/embed@latest"></script><!-- Embed -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script><!-- Table -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/link@latest"></script><!-- Link -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/warning@latest"></script><!-- Warning -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script><!-- Image -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script><!-- Marker -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script><!-- Inline Code -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script><!-- Editor -->
+{% endblock %}
+
+
 {% block bodyContent %}
 <div class="collection-edit">
-    <form novalidate="" method="post"
-        action="https://demo.ttlcms.com/api/posts?locale=en&amp;depth=0&amp;fallback-locale=null"
-        class="collection-edit__form form">
+    <form id="form" onsubmit="savelah()" method="post" class="collection-edit__form form">
         <div class="collection-edit__main">
             <div class="eyebrow">
                 <div class="gutter--left gutter--right eyebrow__wrap">
@@ -82,8 +101,7 @@
                                     least 1 Layout.</span></div>
                         </div>
                         <div class="blocks-field__add-button-wrap">
-                            <div
-                                class="popup popup--size-large popup--color-light popup--v-align-top popup--h-align-left">
+                            <div class="popup popup--size-large popup--color-light popup--v-align-top popup--h-align-left">
                                 <div class="popup__wrapper">
                                     <div role="button" tabindex="0" class="popup-button popup-button--custom"><button
                                             type="button"
@@ -97,123 +115,104 @@
                                                             class="stroke"></line>
                                                     </svg></span></span></button></div>
                                 </div>
-                                <div class="popup__content">
-                                    <div class="popup__wrap">
-                                        <div class="popup__scroll">
-                                            <div class="block-selector">
-                                                <div class="block-search"><input class="block-search__input"
-                                                        placeholder="Search for a block"><svg width="25" height="26"
-                                                        viewBox="0 0 25 26" fill="none"
-                                                        xmlns="http://www.w3.org/2000/svg" class="search">
-                                                        <circle cx="11.2069" cy="10.9135" r="5" stroke="#333333"
-                                                            stroke-width="2" class="stroke"></circle>
-                                                        <line x1="14.914" y1="14.2063" x2="20.5002" y2="19.7925"
-                                                            stroke="#333333" stroke-width="2" class="stroke"></line>
-                                                    </svg></div>
-                                                <div class="blocks-container"><button class="block-selection"
-                                                        tabindex="0" type="button">
-                                                        <div class="block-selection__image"><svg width="82" height="53"
-                                                                viewBox="0 0 82 53" fill="none">
-                                                                <rect x="0.713013" width="80.574" height="52.7791"
-                                                                    fill="url(#pattern62a702d7-3e08-469c-823f-0ed743ebfc3f)">
-                                                                </rect>
-                                                                <defs>
-                                                                    <pattern
-                                                                        id="pattern62a702d7-3e08-469c-823f-0ed743ebfc3f"
-                                                                        patternContentUnits="objectBoundingBox"
-                                                                        width="1" height="1">
-                                                                        <use xlink:href="#imagef7673eed-4e16-4ae4-aaa2-61f0e782a0c4"
-                                                                            transform="scale(0.00387597 0.00591716)">
-                                                                        </use>
-                                                                    </pattern>
-                                                                    <image
-                                                                        id="imagef7673eed-4e16-4ae4-aaa2-61f0e782a0c4"
-                                                                        width="258" height="169"
-                                                                        xlink:href="data:image/png;base64,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">
-                                                                    </image>
-                                                                </defs>
-                                                            </svg></div>
-                                                        <div class="block-selection__label">Content</div>
-                                                    </button><button class="block-selection" tabindex="0" type="button">
-                                                        <div class="block-selection__image"><svg width="82" height="53"
-                                                                viewBox="0 0 82 53" fill="none">
-                                                                <rect x="0.713013" width="80.574" height="52.7791"
-                                                                    fill="url(#patternee7ef65f-9d02-4e9d-9008-4ed61c9ba58e)">
-                                                                </rect>
-                                                                <defs>
-                                                                    <pattern
-                                                                        id="patternee7ef65f-9d02-4e9d-9008-4ed61c9ba58e"
-                                                                        patternContentUnits="objectBoundingBox"
-                                                                        width="1" height="1">
-                                                                        <use xlink:href="#imagefc6b3157-f7f1-43f3-85b3-23987af8668c"
-                                                                            transform="scale(0.00387597 0.00591716)">
-                                                                        </use>
-                                                                    </pattern>
-                                                                    <image
-                                                                        id="imagefc6b3157-f7f1-43f3-85b3-23987af8668c"
-                                                                        width="258" height="169"
-                                                                        xlink:href="data:image/png;base64,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">
-                                                                    </image>
-                                                                </defs>
-                                                            </svg></div>
-                                                        <div class="block-selection__label">Media Block</div>
-                                                    </button><button class="block-selection" tabindex="0" type="button">
-                                                        <div class="block-selection__image"><svg width="82" height="53"
-                                                                viewBox="0 0 82 53" fill="none">
-                                                                <rect x="0.713013" width="80.574" height="52.7791"
-                                                                    fill="url(#patternbe1f47bc-599d-4307-976f-41f11eda786f)">
-                                                                </rect>
-                                                                <defs>
-                                                                    <pattern
-                                                                        id="patternbe1f47bc-599d-4307-976f-41f11eda786f"
-                                                                        patternContentUnits="objectBoundingBox"
-                                                                        width="1" height="1">
-                                                                        <use xlink:href="#image61644410-fa1b-4898-b4ed-5800a2c8817c"
-                                                                            transform="scale(0.00387597 0.00591716)">
-                                                                        </use>
-                                                                    </pattern>
-                                                                    <image
-                                                                        id="image61644410-fa1b-4898-b4ed-5800a2c8817c"
-                                                                        width="258" height="169"
-                                                                        xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQIAAACpCAYAAADA4zPJAAALpklEQVR4Ae2dSY/UOhSF+///DCSGHQuEgAVI7BBITAI2zCCGZuhmpqEBP53W8yOvK1UdO3Zyr/NFilJdXalyTo4/X984zlZgQQEUWLwCW4tXAAFQAAUCIMAEKIACgAAPoAAKBECACVAABQABHkABFAiAABOgAAoAAjyAAiggBbhqgA9QAAUAAR5AARQgIsADKIACdA3wAAqggBQgR4APUAAFAAEeQAEUICLAAyiAAnQN8AAKoIAUIEeAD1AABQABHkABFCAiwAMogAJ0DfAACqCAFCBHgA9QAAUAAR5AARQgIsADKIACdA3wAAqggBQgR4APUAAFAAEeQAEUICLAAyiAAnQN8AAKoIAUIEeAD1AABQABHkABFCAiwAMogAJ0DfAACqCAFCBHgA9QAAUAAR5AARQgIsADKIACdA3wAAqggBQgR4APUAAFAAEeQAEUICLAAyiAAnQN8AAKoIAUIEeAD1AABQABHkABFCAiwAMLVmB/fz98+/YtfPr0KXz48CHs7u6GnZ2dg+3Hjx/D169fw48fP8KfP3+aV4muQfOnmAPsKqDKr4r/9u3bsL29PXgVKPb29pqFAiDouoTXzSrw8+fPg5Y+pfL3ffbdu3fh+/fvzekECJo7pRxQVwGF9YoA+ir1mPfUhVB00coCCFo5kxzHigKqqGrBx1T4Tfu+efOmmegAEKzYhzdaUEBdAVXUTRW51P+UVPS+AALvZ5DyryigSGAqCESYeIcBIFixEW94VuDXr1/JVwRiZR671VUFrwsg8HrmKPeKAkoMKok3tkLn7q8oRCDyuAACj2eNMvcqoMFBuZW41H4alORxAQQezxplXlHg9+/fk+cF1sHDYxcBEKxYijc8KvDly5fZo4EIhvfv37uTEBC4O2UU+LACyg2kDhmOlbbWVpcvPS2AwNPZoqy9CigUr1Whc79Xoxk9LYDA09mirL0K1BhCnAuAuJ8iFE8LIPB0tihrrwI1hxHHip2z9XQpERD0Wos3vSig/EBOJZ1iH09XDwCBF8dTzl4FNJx4ikqd8xu6kuFlAQRezhTl7FVAMwjlVNIp9vn8+XNvmS2+aR4E6md56mtZPMktl8niFYMIGU9XDkyDQCdZ47e1eupvtVzxrB0bEUGZM2ISBEoAafLISNa4FWH1PxYUiApo4E70h7UtOYJ4ljK2OrGbLgfpfy1NEZUhEbt0FNA9BtYAEMvjaW5DMxGBWnpN7hBFPGrrfSKIjpd5OVIBa8OLo3c9DTM2AQJRXbdvRgGHbrWP9mVZtgKaanyoZ6b6nPJanrqxs4MgJgRzTxCJxGVDQEevEDzXP7X2E5w8LbOBQLQsOUZ8TCLx9evX4fHjx+HRo0esTjW4efNmKL3eu3cvyBs5sPB2lWsWENSaZlr3gacmEi9fvhyOHTvGiga9Hjh79mwyDJSz8NQtUOQyOQhSEoI5JNY+mrJqyPLy5cvekw8YAGPXA7du3UqKCob6b4hHp/rMZCDITQjmwmBIIvH+/fuAgEjgSA9cuXJlMAh0edtbNCDYTAICjf6a4xKPflO/vW4BBLT83ZZ/3esUEHi6ZNitF1VBIDLqxovcVr3UfipDH6UBASBYV/m77w8FgaeRhF0I6HU1EChpp+Rdqco89nv6EomAABB0K/y610NAoCHxfY3N4Qpn9e8qILAwv3wfODTmoJvIef78+ZH9w3Xm4P3lQOTGjRsbGzSNGfAMgeIRgRKCFkd5HYaCyqiyaj1//jwwIGG41gOnT58Ourp02EPx7zHjVyxFB8UigrkSgvGEpG5jIlEw0ECiO3fusDaowe3bt8PVq1eDwvvU9fr162sh0NqI1tEgsJIQTAVB/Py6RKIlWlOWcQrIo+oSlrpypShADUhLyygQaOYgSwnBWLlTtzoGZkFqydb9xxKBkONZQUSNRqs+yQaBbvRQeJRa6ax+Xsfi6f7xfqvz7lAFVKEVJSjbLzCookc/a6uBQcol6ZKgxgZ4TwYepUsyCBQSeUgI5gJHxmgt7DvKBPwfBZJAIDKW6mflVtQp9tMxeh0hhqVRIEeBQSBQWKQQaYpKaOk3dMyth4Q5pmGf9hQ4EgTqS+3s7CwOAhFIOvZWE0Tt2ZkjylVgIwhaSwjGyp26JZGYay/286JALwiULOubTjy1ArX2ee/jyb2YknJOr8AKCJQk06WT1ipxqeORNiQSpzcqv1hXgf9AsNSEYC4gSCTWNSbfPq0CByBYekIwFwYkEqc1K79WT4GtsdOJ51aiVvZTItHbjLX17MQ3e1Vgq5UKOfdxtHI7ajSy7iYlFxLVaH8LCLa3iyVGlUhMnU7dmsWUK+pOL6dZpxlUZe0slS8PICgIghiV6F4M3ct+6dIlV+vFixcPJmo5d+5c6K4XLlwI+p/l47l27RpdtBF8AAQVQHDmzJm1M94wxVm9Kc6kOzeM5dEAEBQGgR6dRmWvV9mP0lbdM5Z0BQBBYRA8ePAAEMw4B6KeVciSrgAgAARNgQsQpENAewACQAAI8upOU3sBgsIgePjwYVMV66g+ubX/ExHk8QkQFAaB5sA/ceIEMJghT3D8+HHmnczjAF2DeO2/5Pbu3bvh1KlTwGBCGJw8eTI8efIksxqwGxFB4YggAuXVq1fh2bNn4enTp0euL168OJj/QaP4Sq26O1JzLw75/Rqf0czApY5lyPcwfmAczABBJRBEIAzd6ual7nMZx5xWK3eTxkfLjTkW9p1GAUBgBAQRGGMrj7W7SRWV6AYmFtsKAAJjIBAQciqPbgyyPL0cj5YDBMXu7out5lK2QyuPl+nleLScXRgQERiMCLqg2zQLkqIAJdK6n7f+mhmhbcIAEBgHgSp2X+VRlnx3d9cVBLqQGpsLsVmd/JYKEDgAQaxA8bmM1hKCsXypWx4tZwccgMARCFTRFB2kVjjrn2dG6PmBAAicgcB6pc4t36ZcyPzVpP0SAAJAYCbC6MuFtF8FbRwhIAAEZkAQowkeLTc9HAABIDAHAgGBR8tNCwNAAAhMgiBGByQSpwECIAAEpkEgIJBIrA8DQAAIzINAMFAikUfL1QMCIAAELkAQuwqtPVquXtVO+2ZAAAhcgUBAaOHRcmnVtP6nAQEgcAeCGB3ohiuWMgoAAkDgFgQCgm68Ypqy8TAABIDANQgEAxKJgMC9iWOYy3b84+lJJOYDgYiAiKApmGoWpP39/fwasdA9AQEgaAoEMbIqNSP0UrgACABBkyAQEEgkDscYIAAEzYJAMMiZEXp49Wnnk4AAEDQNgthVGDojdDtVO+1IAAEgWAQIBAQSievhAAgAwWJAIBhozAGJxFUgAAJAsCgQxK4C06n/HwaAABAsEgQCAonEvzAABIBgsSCI0QGJxBAAASBYPAgEhKU/lxEQAAJA8K8HljydOiAABIDgkAfio+X+9qDbfwUIDpkg9hvZjr8b0LOGS3suIyAABEQEGzywlOnUAcEGE3hu0Sh7uYhmCdOpAwJAQEQwwAOtJxIBwQAT0LqWa129a9nqcxkBASAgIkj0QIvPZQQEiSbw3qJR/nLRTUuJREAACIgIRniglUQiIBhhAlrXcq2rZy1bmE4dEAACIoJCHvA8nTogKGQCzy0aZS8X2Xh9LiMgAAREBBU84O25jICgggloYcu1sJ619DSdOiAABEQEFT3gJZEICCqawHNrRtnLRjXWE4mAABAQEUzkAcvTqQOCiUxAC1u2hfWsp8Xp1AEBICAimMED1hKJgGAGE3huzSh7ucjG0nTqgAAQEBHM7AEL06kDgplNQAtbroX1rOXciURAAAiICIx4QGMO5kokAgIjJvDcmlH2slHNHM9lBASAgIjAoAemTiQCAoMmoIUt28J61nOqRCIgAAREBMY9MMUsSIDAuAk8t2aUvVxkU3s6dUAACIgIHHmg1nMZAYEjE9DClmthPWtZYzp1QAAIiAiceqDkdOqAwKkJPLdolL1cZFMqkbilkUysaIAH/Hpgb28vjF3+AbSb48mcXO9tAAAAAElFTkSuQmCC">
-                                                                    </image>
-                                                                </defs>
-                                                            </svg></div>
-                                                        <div class="block-selection__label">Media + Content</div>
-                                                    </button><button class="block-selection" tabindex="0" type="button">
-                                                        <div class="block-selection__image"><svg width="82" height="53"
-                                                                viewBox="0 0 82 53" fill="none">
-                                                                <rect x="0.713013" width="80.574" height="52.7791"
-                                                                    fill="url(#pattern18d4ea04-50b1-486b-a8ab-76903e81456c)">
-                                                                </rect>
-                                                                <defs>
-                                                                    <pattern
-                                                                        id="pattern18d4ea04-50b1-486b-a8ab-76903e81456c"
-                                                                        patternContentUnits="objectBoundingBox"
-                                                                        width="1" height="1">
-                                                                        <use xlink:href="#image20403ebd-dc7c-4ef7-aa91-3010b38d560a"
-                                                                            transform="scale(0.00387597 0.00591716)">
-                                                                        </use>
-                                                                    </pattern>
-                                                                    <image
-                                                                        id="image20403ebd-dc7c-4ef7-aa91-3010b38d560a"
-                                                                        width="258" height="169"
-                                                                        xlink:href="data:image/png;base64,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">
-                                                                    </image>
-                                                                </defs>
-                                                            </svg></div>
-                                                        <div class="block-selection__label">Media Slider</div>
-                                                    </button></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                
+                                <br/><br/>
+                                <h3>Start Writing</h3>
+                                <div id="editorjs"></div>
+                                <script>
+                                    var editor = new EditorJS({
+                                        holder: 'editorjs',
+                                        autofocus: true,
+
+                                        tools: {
+                                            header: {
+                                                class: Header,
+                                                inlineToolbar: ['marker', 'link'],
+                                                config: {
+                                                    placeholder: 'Header'
+                                                },
+                                                shortcut: 'CMD+SHIFT+H'
+                                            },
+
+                                            image: SimpleImage,
+
+                                            list: {
+                                                class: List,
+                                                inlineToolbar: true,
+                                                shortcut: 'CMD+SHIFT+L'
+                                            },
+
+                                            checklist: {
+                                                class: Checklist,
+                                                inlineToolbar: true,
+                                            },
+
+                                            quote: {
+                                                class: Quote,
+                                                inlineToolbar: true,
+                                                config: {
+                                                    quotePlaceholder: 'Enter a quote',
+                                                    captionPlaceholder: 'Quote\'s author',
+                                                },
+                                                shortcut: 'CMD+SHIFT+O'
+                                            },
+
+                                            warning: Warning,
+
+                                            marker: {
+                                                class: Marker,
+                                                shortcut: 'CMD+SHIFT+M'
+                                            },
+
+                                            delimiter: Delimiter,
+
+                                            inlineCode: {
+                                                class: InlineCode,
+                                                shortcut: 'CMD+SHIFT+C'
+                                            },
+
+                                            linkTool: LinkTool,
+
+                                            embed: Embed,
+
+                                            table: {
+                                                class: Table,
+                                                inlineToolbar: true,
+                                                shortcut: 'CMD+ALT+T'
+                                            },
+
+                                        },
+
+                                        data: {
+                                            blocks: [
+                                                {% for block in data %}
+                                                {{ block | tojson | safe }},
+                                    {% endfor %}
+                                        ]
+                                    },
+
+                                    onChange: function(api, event) {
+                                        console.log('something changed', event);
+                                    }
+                                });
+
+                                    function savelah() {
+                                        const hihi = document.getElementById('hihi');
+
+                                        editor.save().then((outputData) => {
+                                            hihi.value = JSON.stringify(outputData);
+                                        }).catch((error) => {
+                                            console.log('Saving failed: ', error)
+                                        });
+                                    }
+                                </script>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
         <div class="collection-edit__sidebar-wrap">
             <div class="collection-edit__sidebar">
                 <div class="collection-edit__sidebar-sticky-wrap">
@@ -221,13 +220,19 @@
                         <li></li>
                     </ul>
                     <div class="collection-edit__document-actions collection-edit__document-actions--has-2">
-                        <div class="form-submit"><button type="button"
-                                class="btn save-draft btn--style-secondary btn--icon-style-without-border btn--disabled btn--size-medium btn--icon-position-right"
-                                disabled=""><span class="btn__content"><span class="btn__label">Save
-                                        Draft</span></span></button></div>
-                        <div class="form-submit"><button type="button"
-                                class="btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right"><span
-                                    class="btn__content"><span class="btn__label">Publish changes</span></span></button>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                        <input type="hidden" id="hihi" name="post_content" value="" />
+
+                        <div class="form-submit">
+                            <button type="button" class="btn save-draft btn--style-secondary btn--icon-style-without-border btn--disabled btn--size-medium btn--icon-position-right" disabled="">
+                                <span class="btn__content"><span class="btn__label">Save Draft</span></span>
+                            </button>
+                        </div>
+
+                        <div class="form-submit">
+                            <button type="submit" class="btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right">
+                                <span class="btn__content"><span class="btn__label">Publish changes</span></span>
+                            </button>
                         </div>
                     </div>
                     <div class="collection-edit__sidebar-fields">

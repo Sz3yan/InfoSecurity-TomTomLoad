@@ -4,6 +4,9 @@
         <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
         <link href="{{ url_for('static', filename='../static/style.css') }}" rel="stylesheet">
         <title>{% block title %}{% endblock %} </title>
+        {{ moment.include_moment() }}
+
+        {% block js %}{% endblock %}
     </head>
 
     <body>

@@ -10,6 +10,7 @@ from flask import Blueprint, request, session, redirect, abort, make_response
 
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 from static.classes.storage import GoogleCloudStorage
+from static.security.session_management import TTLSession
 
 from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
@@ -18,6 +19,8 @@ from functools import wraps
 
 
 potential_user = Blueprint('potential_user', __name__, template_folder="templates", static_folder='static')
+
+ttlSession = TTLSession()
 
 client_secrets_file = CONSTANTS.IP_CONFIG_FOLDER.joinpath("client_secret.json")
 flow = Flow.from_client_secrets_file(
@@ -68,7 +71,8 @@ def callback():
     id_info = id_token.verify_oauth2_token(
         id_token=credentials._id_token,
         request=token_request,
-        audience=CONSTANTS.GOOGLE_CLIENT_ID
+        audience=CONSTANTS.GOOGLE_CLIENT_ID,
+        clock_skew_in_seconds=CONSTANTS.GOOGLE_OAUTH_SKEW_TIME,
     )
 
     session['id_info'] = id_info

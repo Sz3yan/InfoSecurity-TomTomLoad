@@ -171,91 +171,24 @@
                                                         </path>
                                                     </svg></span></span></button></span></div>
                             </th>
-                            <th id="heading-publishDate">
-                                <div class="sort-column"><span class="sort-column__label">Publish
-                                        Date</span><span class="sort-column__buttons"><button type="button"
-                                            class="btn sort-column__asc btn--style-none btn--icon-style-without-border btn--round btn--size-medium btn--icon-position-right"><span
-                                                class="btn__content"><span class="btn__label"><svg
-                                                        class="icon icon--chevron"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 25 25">
-                                                        <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5">
-                                                        </path>
-                                                    </svg></span></span></button><button type="button"
-                                            class="btn sort-column__desc btn--style-none btn--icon-style-without-border btn--round btn--size-medium btn--icon-position-right"><span
-                                                class="btn__content"><span class="btn__label"><svg
-                                                        class="icon icon--chevron"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 25 25">
-                                                        <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5">
-                                                        </path>
-                                                    </svg></span></span></button></span></div>
-                            </th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="row-1">
-                            <td class="cell-title"><a
-                                    href="/admin/posts/6367071208fff3c0c30292fa">New Feature -
-                                    Auto-generate TypeScript Interfaces</a></td>
-                            <td class="cell-category"><span>
-                                    <div class="relationship-cell">feature</div>
-                                </span></td>
-                            <td class="cell-publishDate"><span><span>February 1st 2022, 1:00
-                                        PM</span></span></td>
-                        </tr>
-                        <tr class="row-2">
-                            <td class="cell-title"><a
-                                    href="/admin/posts/6367071208fff3c0c3029300">White Label the
-                                    Admin UI</a></td>
-                            <td class="cell-category"><span>
-                                    <div class="relationship-cell">tutorial</div>
-                                </span></td>
-                            <td class="cell-publishDate"><span><span>February 4th 2022, 1:00
-                                        PM</span></span></td>
-                        </tr>
+                        {% for content in post %}
+                            <tr class="row-1">
+                                <td class="cell-title">
+                                    <a href="/admin/posts/{{ id_list[loop.index - 1] }}">{{ id_list[loop.index - 1] }}</a>
+                                </td>
+
+                                <td class="cell-category">
+                                    <span>
+                                        <div class="relationship-cell">feature</div>
+                                    </span>
+                                </td>
+                            </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
-            </div>
-            <div class="collection-list__page-controls">
-                <div class="collection-list__page-info">1-5 of 5</div>
-                <div class="per-page">
-                    <div
-                        class="popup popup--size-small popup--color-light popup--v-align-top popup--h-align-right">
-                        <div class="popup__wrapper"><button type="button"
-                                class="popup-button popup-button--default"><strong>Per Page: 10<svg
-                                        class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 25 25">
-                                        <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                    </svg></strong></button></div>
-                        <div class="popup__content">
-                            <div class="popup__wrap">
-                                <div class="popup__scroll">
-                                    <div>
-                                        <ul>
-                                            <li class="per-page-item"><button type="button"
-                                                    class="per-page__button">5</button></li>
-                                            <li class="per-page-item"><button type="button"
-                                                    class="per-page__button per-page__button-active"><svg
-                                                        class="icon icon--chevron"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 25 25">
-                                                        <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5">
-                                                        </path>
-                                                    </svg>10</button></li>
-                                            <li class="per-page-item"><button type="button"
-                                                    class="per-page__button">25</button></li>
-                                            <li class="per-page-item"><button type="button"
-                                                    class="per-page__button">50</button></li>
-                                            <li class="per-page-item"><button type="button"
-                                                    class="per-page__button">100</button></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>

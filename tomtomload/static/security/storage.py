@@ -107,36 +107,41 @@ class GoogleCloudStorage:
         # make an HTTP request.
         blob = bucket.get_blob(blob_name)
 
-        print(f"Blob: {blob.name}")
-        print(f"Bucket: {blob.bucket.name}")
-        print(f"Storage class: {blob.storage_class}")
-        print(f"ID: {blob.id}")
-        print(f"Size: {blob.size} bytes")
-        print(f"Updated: {blob.updated}")
-        print(f"Generation: {blob.generation}")
-        print(f"Metageneration: {blob.metageneration}")
-        print(f"Etag: {blob.etag}")
-        print(f"Owner: {blob.owner}")
-        print(f"Component count: {blob.component_count}")
-        print(f"Crc32c: {blob.crc32c}")
-        print(f"md5_hash: {blob.md5_hash}")
-        print(f"Cache-control: {blob.cache_control}")
-        print(f"Content-type: {blob.content_type}")
-        print(f"Content-disposition: {blob.content_disposition}")
-        print(f"Content-encoding: {blob.content_encoding}")
-        print(f"Content-language: {blob.content_language}")
-        print(f"Metadata: {blob.metadata}")
-        print(f"Medialink: {blob.media_link}")
-        print(f"Custom Time: {blob.custom_time}")
-        print("Temporary hold: ", "enabled" if blob.temporary_hold else "disabled")
-        print(
-            "Event based hold: ",
-            "enabled" if blob.event_based_hold else "disabled",
-        )
+        metadata_dict = {
+            "blob_name": blob.name,
+            "bucket_name": blob.bucket.name,
+            "storage_class": blob.storage_class,    
+            "id": blob.id,
+            "size": blob.size,
+            "updated": blob.updated,
+            "generation": blob.generation,
+            "metageneration": blob.metageneration,
+            "etag": blob.etag,
+            "owner": blob.owner,
+            "component_count": blob.component_count,
+            "crc32c": blob.crc32c,
+            "md5_hash": blob.md5_hash,
+            "cache_control": blob.cache_control,
+            "content_type": blob.content_type,
+            "content_disposition": blob.content_disposition,
+            "content_encoding": blob.content_encoding,
+            "content_language": blob.content_language,
+            "custom_time": blob.custom_time,
+            "temporary_hold": "enabled" if blob.temporary_hold else "disabled",
+            "event_based_hold": "enabled" if blob.event_based_hold else "disabled",
+            "retention_expiration_time": blob.retention_expiration_time,
+            "time_created": blob.time_created,
+            "time_deleted": blob.time_deleted,
+            "updated": blob.updated,
+
+        }
+
         if blob.retention_expiration_time:
             print(
                 f"retentionExpirationTime: {blob.retention_expiration_time}"
             )
+
+        return metadata_dict
 
     def set_blob_metadata(self, bucket_name, blob_name):
         """Set a blob's metadata."""
@@ -153,4 +158,71 @@ class GoogleCloudStorage:
         print(f"The metadata for the blob {blob.name} is {blob.metadata}")
 
 
-        
+    def set_blob_metadata(self, bucket_name, blob_name):
+        """Set a blob's metadata."""
+        # bucket_name = 'your-bucket-name'
+        # blob_name = 'your-object-name'
+
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.get_blob(blob_name)
+        metadata = {'color': 'Red', 'name': 'Test'}
+        blob.metadata = metadata
+        blob.patch()
+
+        print(f"The metadata for the blob {blob.name} is {blob.metadata}")
+
+    
+    def list_blobs(self, bucket_name):
+        """Lists all the blobs in the bucket."""
+        # bucket_name = "your-bucket-name"
+
+        storage_client = storage.Client()
+
+        # Note: Client.list_blobs requires at least package version 1.17.0.
+        blobs = storage_client.list_blobs(bucket_name)
+
+        # Note: The call returns a response only when the iterator is consumed.
+        for blob in blobs:
+            print(blob.name)
+
+    def list_blobs_with_prefix(self, bucket_name, prefix, delimiter=None):
+        """Lists all the blobs in the bucket that begin with the prefix.
+
+        This can be used to list all blobs in a "folder", e.g. "public/".
+
+        The delimiter argument can be used to restrict the results to only the
+        "files" in the given "folder". Without the delimiter, the entire tree under
+        the prefix is returned. For example, given these blobs:
+
+            a/1.txt
+            a/b/2.txt
+
+        If you specify prefix ='a/', without a delimiter, you'll get back:
+
+            a/1.txt
+            a/b/2.txt
+
+        However, if you specify prefix='a/' and delimiter='/', you'll get back
+        only the file directly under 'a/':
+
+            a/1.txt
+
+        As part of the response, you'll also get back a blobs.prefixes entity
+        that lists the "subfolders" under `a/`:
+
+            a/b/
+        """
+
+        storage_client = storage.Client()
+
+        # Note: Client.list_blobs requires at least package version 1.17.0.
+        blobs = storage_client.list_blobs(bucket_name, prefix=prefix, delimiter=delimiter)
+
+        # Note: The call returns a response only when the iterator is consumed.
+        blobs_array = []
+
+        for blob in blobs:
+            blobs_array.append(blob.name)
+
+        return blobs_array

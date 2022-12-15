@@ -34,7 +34,7 @@
                     <div class="list-controls__buttons">
                         <div class="list-controls__buttons-wrap">
                             <button type="button" class="btn list-controls__toggle-where btn--style-secondary btn--icon btn--icon-style-none btn--size-medium btn--icon-position-right">
-                                <span class="btn__content"><span class="btn__label"><a href="/admin/media/upload/{{ media_id }}">Upload</a>/</span>
+                                <span class="btn__content"><span class="btn__label"><a href="/admin/media/upload/{{ media_id }}">Upload</a></span>
                                     <span class="btn__icon">
                                         <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
                                             <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
@@ -59,16 +59,18 @@
             </div>
 
             <ul class="upload-gallery">
-                <li>
-                    <a href="/admin/media/a">
-                        <div class="upload-card upload-card--has-on-click">
-                            <div class="thumbnail thumbnail--size-expand">
-                                <img src="https://source.unsplash.com/random" alt="CMS.jpg">
+                {% for media in media %}
+                    <li>
+                        <a href="/admin/media/{{ id_list[loop.index - 1] }}">
+                            <div class="upload-card upload-card--has-on-click">
+                                <div class="thumbnail thumbnail--size-expand">
+                                    <img src="./../static/config_files/media/{{ id_list[loop.index - 1] }}.png" alt="{{ media.filename }}">
+                                </div>
+                                <div class="upload-card__filename">{{ id_list[loop.index - 1] }}</div>
                             </div>
-                            <div class="upload-card__filename">CMS.jpg</div>
-                        </div>
-                    </a>
-                </li>
+                        </a>
+                    </li>
+                {% endfor %}
             </ul>
         </div>
     </div>

@@ -2,12 +2,13 @@ import os
 
 from flask import Flask
 from flask_session import Session
-from flask_paranoid import Paranoid
+# from flask_paranoid import Paranoid
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
 from flask_talisman import Talisman
 from flask_reggie import Reggie
+from flask_moment import Moment
 
 from routes.Errors import error
 from routes.authorised_user import authorised_user
@@ -41,7 +42,13 @@ csrf = CSRFProtect(app)
 # -----------------  END OF CSRF CONFIGURATION  ----------------- #
 
 
+# -----------------  START OF FLASK REGEX CONFIGURATION  ----------------- #
+
 Reggie(app)
+
+# -----------------  END OF FLASK REGEX CONFIGURATION  ----------------- #
+
+moment = Moment(app)
 
 # -----------------  START OF SESSION CONFIGURATION  ----------------- #
 
@@ -49,8 +56,8 @@ sess = Session(app)
 if app.config["CONSTANTS"].DEBUG_MODE:
     app.config["SESSION_COOKIE_SECURE"] = True
 
-paranoid = Paranoid(app)
-paranoid.redirect_view = "/"
+# paranoid = Paranoid(app)
+# paranoid.redirect_view = "/"
 
 # -----------------  END OF SESSION CONFIGURATION  ----------------- #
 

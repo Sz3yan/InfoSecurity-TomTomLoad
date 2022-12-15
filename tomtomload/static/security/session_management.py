@@ -2,44 +2,39 @@ from flask_paranoid import Paranoid
 from flask import session, Flask
 from datetime import datetime
 import hashlib
+import json
 
 class TTLSession(Paranoid):
-    def __init__(self, location:str=None):
-
-        # self.__server = ""
-
-        if location == "1":
-            app = Flask('tomtomload')
-            self.__server = 'tomtomload'
-        elif location == "2":
-            app = Flask('identity-proxy')
-            self.__server = 'identity-proxy'
-        else:
-            print("Uknown location supplied")
-        
+    def __init__(self):
+        # session.pop("TTLAuthenticatedUserName")
+        # session.pop("TTLJWTAuthenticatedUser")
+        print("ttlsession")
+        app = Flask('tomtomload')
+        self.__server = 'tomtomload'
         super().__init__(app)
     
-    def get_token(self, jwtToken:str=""):
-        if self.__server == "tomtomload" and jwtToken != "":
-            createdTTLtoken = str(self.__server) + str(datetime.utcnow()) + str(super().create_token())
-        elif self.__server == "identity-proxy":
-            createdTTLtoken = str(self.__server) + str(datetime.utcnow()) + str(super().create_token())
-        elif jwtToken == "":
-            print("Please provide JWT token")
-        else:
-            print("Please provide server location")
+    def get_token(self):
+
+        createdTTLtoken = str(self.__server) + str(super().create_token())
         
         encoded_session = hashlib.sha384(createdTTLtoken.encode()).hexdigest()
         return encoded_session
 
-    def write_token_to_session(self, Ptoken):
-        if "paranoid_session" not in session or session["paranoid_session"] == "":
-            session["paranoid_session"] = Ptoken
-            return False
+    def write_data_to_session(self, session_name:str, Ptoken:str, data):
 
-        elif Ptoken == session["paranoid_session"]:
-            return True
+        value = {"Ptoken": Ptoken, "data": data}
+        session[session_name] = json.dumps(value)
 
 
-    def get_token_from_session(self):
-        return session["paranoid_session"]
+    def get_data_from_session(self, session_name:str, Ptoken:bool=False, data:bool = False):
+        
+        if session_name != "" and Ptoken:
+            return json.loads(session[session_name])["Ptoken"]
+        elif session_name != "" and data:
+            return json.loads(session[session_name])["data"]
+        else:
+            return json.loads(session[session_name])
+    
+    def verfiy_Ptoken(self, current_token:str):
+        return self.get_token() == current_token
+        

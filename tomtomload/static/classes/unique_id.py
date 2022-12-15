@@ -31,7 +31,8 @@ class UniqueID:
         return len(self.generate_id())
 
 
-if __name__ == "__main__":
-    a = UniqueID()
+# if __name__ == "__main__":
+#     a = UniqueID()
 
-    print(a.generate_id())
+#     print(a.generate_id())
+#     print(len(a))
