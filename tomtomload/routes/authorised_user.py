@@ -32,7 +32,7 @@ def check_signed_credential(func):
     @wraps(func)
     def decorated_function(*args, **kwargs):
         if "TTLJWTAuthenticatedUser" not in session:
-            return {"error": "User not authorized"}
+            return abort(401)
 
         else:
 
