@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="06dc3cc2-f1ac-42c3-951c-c95c838c256a" name="Default Changelist" comment="i have done 1 (one) thing">
-      <change beforePath="$PROJECT_DIR$/identity-proxy/sessions/74ca2b1e5e9ba30c5b5e513240d7071a" beforeDir="false" afterPath="$PROJECT_DIR$/identity-proxy/sessions/74ca2b1e5e9ba30c5b5e513240d7071a" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomtomload/routes/authorised_user.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomtomload/routes/authorised_user.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomtomload/sessions/74ca2b1e5e9ba30c5b5e513240d7071a" beforeDir="false" afterPath="$PROJECT_DIR$/tomtomload/sessions/74ca2b1e5e9ba30c5b5e513240d7071a" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tomtomload/static/classes/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomtomload/static/classes/config.py" afterDir="false" />
+    <list default="true" id="06dc3cc2-f1ac-42c3-951c-c95c838c256a" name="Default Changelist" comment="i forgot to commit and i messed up">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tomtomload/static/security/malware_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/tomtomload/static/security/malware_analysis.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -167,6 +164,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="virustotal script thing" />
     <MESSAGE value="i have done 1 (one) thing" />
-    <option name="LAST_COMMIT_MESSAGE" value="i have done 1 (one) thing" />
+    <MESSAGE value="i forgot to commit and i messed up" />
+    <option name="LAST_COMMIT_MESSAGE" value="i forgot to commit and i messed up" />
   </component>
 </project>

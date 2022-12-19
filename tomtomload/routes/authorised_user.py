@@ -8,6 +8,7 @@ from static.classes.unique_id import UniqueID
 from static.security.storage import GoogleCloudStorage
 from static.security.secure_data import GoogleCloudKeyManagement, Encryption
 from static.security.session_management import TTLSession
+from static.security.malware_analysis import malwareAnalysis
 from werkzeug.utils import secure_filename
 
 from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort
@@ -261,35 +262,38 @@ def media_upload(id):
 
         # -----------------  END OF MALWARE CHECKING ----------------- #
 
-        # -----------------  START OF SAVING FILE LOCALLY ----------------- #
+        malwareAnalysis()
+        if not malwareAnalysis:
 
-        temp_Mediafile_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, secure_filename(f.filename))
-        f.save(os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, secure_filename(f.filename)))
+            # -----------------  START OF SAVING FILE LOCALLY ----------------- #
 
-        # -----------------  END OF SAVING FILE LOCALLY ----------------- #
+            temp_Mediafile_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, secure_filename(f.filename))
+            f.save(os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, secure_filename(f.filename)))
 
-        # -----------------  START OF UPLOADING TO GCS ----------------- #
-        Ptoken = ttlSession.get_data_from_session("TTLAuthenticatedUserName", Ptoken=True)
+            # -----------------  END OF SAVING FILE LOCALLY ----------------- #
 
-        if ttlSession.verfiy_Ptoken(Ptoken):
-            
-            # can compute hash here
+            # -----------------  START OF UPLOADING TO GCS ----------------- #
+            Ptoken = ttlSession.get_data_from_session("TTLAuthenticatedUserName", Ptoken=True)
 
-            upload_media = GoogleCloudStorage()
+            if ttlSession.verfiy_Ptoken(Ptoken):
 
-            upload_media.upload_blob(
-                bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
-                source_file_name=temp_Mediafile_path,
-                destination_blob_name="Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_upload_id + "." + file_extension,
-            )
+                # can compute hash here
 
-        else:
-            print("Invalid token")
-            abort(403)
+                upload_media = GoogleCloudStorage()
 
-        # -----------------  END OF UPLOADING TO GCS ----------------- #
+                upload_media.upload_blob(
+                    bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+                    source_file_name=temp_Mediafile_path,
+                    destination_blob_name="Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_upload_id + "." + file_extension,
+                )
 
-        return redirect(url_for('authorised_user.media_id', id=media_upload_id))
+            else:
+                print("Invalid token")
+                abort(403)
+
+            # -----------------  END OF UPLOADING TO GCS ----------------- #
+
+            return redirect(url_for('authorised_user.media_id', id=media_upload_id))
 
     return render_template('authorised_admin/media_upload.html', upload_id=media_upload_id, name="k", pic=decoded_jwt["picture"])
 
