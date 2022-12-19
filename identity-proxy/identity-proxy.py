@@ -9,6 +9,7 @@ from routes.Errors import error
 
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 
+from routes.api import api
 
 # -----------------  START OF IDENTITY PROXY  ----------------- #
 
@@ -43,6 +44,7 @@ paranoid.redirect_view = "/"
 with app.app_context():
     app.register_blueprint(potential_user)
     app.register_blueprint(error)
+    app.register_blueprint(api)
 
 # -----------------  END OF BLUEPRINT  ----------------- #
 
