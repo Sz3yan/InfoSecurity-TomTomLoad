@@ -6,13 +6,23 @@ from flask import Blueprint, request, session, redirect, abort
 from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
+#from static.classes.form import login 
+from flask import Blueprint, render_template, request
 
-api = Blueprint('api', __name__, template_folder="templates", static_folder='static')
+api = Blueprint('api', __name__, url_prefix="/user", template_folder="templates", static_folder='static')
 
 # ------ Login API ------
 @api.route("/login")
 def api_login():
-    pass
+    return render_template('api/login.html')
+
+@api.route("/signup")
+def api_signup():
+    return render_template('api/signup.html')
+
+@api.route("/forget")
+def api_forget():
+    return render_template('api/forget.html')
 
 
 # ------ User API ------

@@ -50,6 +50,10 @@ class Constants:
     ALLOWED_MEDIA_EXTENSIONS: dict = "png", "jpg", "jpeg","mp4", "mov", "quicktime","mpeg", "mp3", "wav", "pdf", "zip"
     ALLOWED_POST_EXTENSIONS: dict = "md", "txt"
 
+    # --- RECAPTCHA KEYS --- 
+    SITE_KEY: str = "6LcmXogjAAAAAOTMJEaOmWBAxklTmmUQdtEK0mMr"
+    SECRET_KEY: str = "6LcmXogjAAAAAGKB8VcHGjB3g4mPhWfxAvsSwn7e"
+
 
 CONSTANTS = Constants()
 
