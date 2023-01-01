@@ -14,6 +14,7 @@ class Constants:
 
     TTL_ROOT_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.parent.absolute()
     TTL_CONFIG_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.absolute() / "config_files"
+    TTL_MALWARELOGS_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.absolute() / "malwarelogs"
 
     # --- GOOGLE CLOUD ---
     GOOGLE_PROJECT_ID: str = "infosec-62c05"
