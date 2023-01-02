@@ -3,7 +3,7 @@ import base64
 import jwt
 import os
 
-from static.classes.config import CONSTANTS, SECRET_CONSTANTS
+from static.classes.config import CONSTANTS
 from static.classes.unique_id import UniqueID
 from static.security.storage import GoogleCloudStorage
 from static.security.secure_data import GoogleCloudKeyManagement, Encryption

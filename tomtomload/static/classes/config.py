@@ -50,10 +50,6 @@ class Constants:
     ALLOWED_MEDIA_EXTENSIONS: dict = "png", "jpg", "jpeg","mp4", "mov", "quicktime","mpeg", "mp3", "wav", "pdf", "zip"
     ALLOWED_POST_EXTENSIONS: dict = "md", "txt"
 
-    # --- RECAPTCHA KEYS --- 
-    SITE_KEY: str = "6LcmXogjAAAAAOTMJEaOmWBAxklTmmUQdtEK0mMr"
-    SECRET_KEY: str = "6LcmXogjAAAAAGKB8VcHGjB3g4mPhWfxAvsSwn7e"
-
 
 CONSTANTS = Constants()
 
@@ -63,13 +59,6 @@ class SecretConstants:
         service_account = os.path.join(Constants.TTL_CONFIG_FOLDER, "service_account.json")
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = service_account
 
-        # self.__POST_SECRET_KEY = GoogleSecretManager.get_secret_payload(
-        #     self, 
-        #     CONSTANTS.GOOGLE_PROJECT_ID, 
-        #     CONSTANTS.AVAILABLE_KEY_RINGS[0], 
-        #     "1"
-        # )
-
         self.__virus_total_api_key = GoogleSecretManager.get_secret_payload(
             self, 
             CONSTANTS.GOOGLE_PROJECT_ID, 
@@ -77,13 +66,31 @@ class SecretConstants:
             "1"
         )
 
-    # @property
-    # def POST_SECRET_KEY(self) -> str:
-    #     return self.__POST_SECRET_KEY
+        self.__recaptcha_secret_key = GoogleSecretManager.get_secret_payload(
+            self,
+            CONSTANTS.GOOGLE_PROJECT_ID,
+            "RECAPTCHA_SECRET_KEY",
+            "1"
+        )
+
+        self.__recaptcha_site_key = GoogleSecretManager.get_secret_payload(
+            self,
+            CONSTANTS.GOOGLE_PROJECT_ID,
+            "RECAPTCHA_SITE_KEY",
+            "1"
+        )
 
     @property
     def virus_total_api_key(self) -> str:
         return self.__virus_total_api_key
+
+    @property
+    def recaptcha_secret_key(self) -> str:
+        return self.__recaptcha_secret_key
+
+    @property
+    def recaptcha_site_key(self) -> str:
+        return self.__recaptcha_site_key
 
 
 SECRET_CONSTANTS = SecretConstants()

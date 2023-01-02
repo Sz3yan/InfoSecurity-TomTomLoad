@@ -1,11 +1,5 @@
-import requests
-import google.auth.transport.requests
-
-from static.classes.config import CONSTANTS, SECRET_CONSTANTS
+from static.classes.config import CONSTANTS
 from flask import Blueprint, request, session, redirect, abort
-from google.oauth2 import id_token
-from google_auth_oauthlib.flow import Flow
-from pip._vendor import cachecontrol
 #from static.classes.form import login 
 from flask import Blueprint, render_template, request
 
