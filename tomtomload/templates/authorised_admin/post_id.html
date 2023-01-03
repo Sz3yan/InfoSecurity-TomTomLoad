@@ -22,7 +22,7 @@
 
 {% block bodyContent %}
     <div class="collection-edit collection-edit--is-editing">
-        <form id="form" onsubmit="savelah()" method="post" class="collection-edit__form form">
+        <form id="form" action="/admin/posts/update/{{ post_id }}" onsubmit="savelah()" method="post" class="collection-edit__form form">
             <div class="collection-edit__main">
                 <div class="eyebrow">
                     <div class="gutter--left gutter--right eyebrow__wrap">
@@ -145,9 +145,9 @@
                                 </a>
                             </div>
                             <div class="form-submit">
-                                <a href="/admin/posts/update/{{ post_id }}" class="btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right">
+                                <button type="submit" class="btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right">
                                     <span class="btn__content"><span class="btn__label">Publish changes</span></span>
-                                </a>
+                                </button>
                             </div>
                         </div><br/>
                         <div class="collection-edit__sidebar-fields">

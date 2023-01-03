@@ -170,8 +170,6 @@ def media():
 
         id_list.append(remove_extension)
 
-    print(f"ID LIST: {id_list}")
-
     # -----------------  START OF CHECKING LOCAL MEDIA ----------------- #
 
     for id in id_list:
@@ -227,8 +225,7 @@ def media_id(id):
         )
         
     else:
-            print("Invalid token")
-            abort(403)
+        abort(403)
         # -----------------  END OF CHECK FILE EXIST ----------------- #
 
     # -----------------  END OF RETRIEVING FROM GCS ----------------- #
@@ -288,7 +285,6 @@ def media_upload(id):
                 )
 
             else:
-                print("Invalid token")
                 abort(403)
 
             # -----------------  END OF UPLOADING TO GCS ----------------- #
@@ -318,8 +314,6 @@ def post():
         remove_extension = remove_slash.split(".")[0]
         id_list.append(remove_extension)
 
-    print(f"ID LIST: {id_list}")
-
     # -----------------  START OF CHECKING LOCAL MEDIA ----------------- #
 
     for id in id_list:
@@ -327,11 +321,9 @@ def post():
         temp_Postfile_path = temp_Postfile_path + ".json"
 
         if os.path.isfile(temp_Postfile_path):
-            print("File exist")
             return render_template('authorised_admin/post.html', post_id=post_id, id_list=id_list, post=list_post, pic=decoded_jwt["picture"])
 
         else:
-            print("File does not exist")
 
             storage.download_blob(
                 bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
@@ -399,7 +391,6 @@ def post_id(id):
         return redirect(url_for('authorised_user.post_id'))
 
     else:
-        print("Invalid token")
         abort(403)
 
     return render_template('authorised_admin/post_id.html', post_id=post_id, create_new_post_id=create_new_post_id, pic=decoded_jwt["picture"])
@@ -434,8 +425,6 @@ def post_upload(id):
                 plaintext = post_data["post_content"]
             )
 
-            print("encrypted_content.ciphertext: ", encrypted_content.ciphertext)
-
             # -----------------  END OF ENCRYPTION ---------------- #
 
             # save encrypted content to file in json format
@@ -456,7 +445,6 @@ def post_upload(id):
             )
 
         else:
-            print("Invalid token")
             abort(403)
 
         # -----------------  END OF UPLOADING TO GCS ----------------- #
@@ -491,7 +479,6 @@ def post_delete(id):
         # -----------------  END OF DELETING FILE LOCALLY ----------------- #
 
     else:
-        print("Invalid token")
         abort(403)
 
     return redirect(url_for('authorised_user.post'))
@@ -502,7 +489,10 @@ def post_delete(id):
 def post_update(id):
     post_update_id = id
 
+    print(f"post_update_id: {post_update_id}")
+
     if request.method == 'POST':
+        print("hi")
         post_content = request.form['post_content']
 
         # -----------------  START OF SAVING FILE LOCALLY ----------------- #
@@ -528,8 +518,6 @@ def post_update(id):
                 plaintext = post_data["post_content"]
             )
 
-            print("encrypted_content.ciphertext: ", encrypted_content.ciphertext)
-
             # -----------------  END OF ENCRYPTION ---------------- #
 
             # save encrypted content to file in json format
@@ -550,12 +538,13 @@ def post_update(id):
             )
 
         else:
-            print("Invalid token")
             abort(403)
 
         # -----------------  END OF UPLOADING TO GCS ----------------- #
 
         return redirect(url_for('authorised_user.post_id', id=post_update_id))
+
+    return redirect(url_for('authorised_user.post_id', id=post_update_id))
 
 
 @authorised_user.route("/users")
