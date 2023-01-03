@@ -37,87 +37,11 @@
                 </div>
             </div>
             <div class="gutter--left gutter--right collection-edit__edit">
-                <header class="collection-edit__header">
-                    <h1><span class="render-title">[Untitled]</span></h1>
-                </header>
+                
                 <div class="render-fields">
-                    <div class="field-type text"><label for="field-title" class="field-label">Title</label><input
-                            id="field-title" type="text" name="title" value=""></div>
-                    <div id="field-category" class="field-type relationship"><label for="category"
-                            class="field-label">Category</label>
-                        <div class="relationship__wrap">
-                            <div class="react-select css-2b097c-container">
-                                <div class="rs__control css-yk16xz-control">
-                                    <div class="rs__value-container rs__value-container--is-multi css-1hwfws3">
-                                        <div class="rs__placeholder css-1wa3eu0-placeholder">Select a value</div>
-                                        <div class="css-1g6gooi">
-                                            <div class="rs__input" style="display: inline-block;"><input
-                                                    autocapitalize="none" autocomplete="off" autocorrect="off"
-                                                    id="react-select-2-input" spellcheck="false" tabindex="0"
-                                                    type="text" aria-autocomplete="list" value=""
-                                                    style="box-sizing: content-box; width: 2px; border: 0px; font-size: inherit; opacity: 1; outline: 0px; padding: 0px; color: inherit; background-position: 0px center;">
-                                                <div
-                                                    style="position: absolute; top: 0px; left: 0px; visibility: hidden; height: 0px; overflow: scroll; white-space: pre; font-size: 13px; font-family: &quot;Suisse Intl&quot;, system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Ubuntu, Cantarell, &quot;Noto Sans&quot;, sans-serif; font-weight: 400; font-style: normal; letter-spacing: normal; text-transform: none;">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="rs__indicators css-1wy0on6"><span
-                                            class="rs__indicator-separator css-1okebmr-indicatorSeparator"></span><svg
-                                            class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 25 25">
-                                            <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                        </svg></div>
-                                </div>
-                            </div>
-                            <div class="relationship-add-new" id="category-add-new"><button type="button"
-                                    class="btn relationship-add-new__add-button btn--style-none btn--icon-style-without-border btn--size-medium btn--icon-position-right btn--has-tooltip"><span
-                                        class="btn__content">
-                                        <aside class="tooltip btn__tooltip">Add new Category<span></span></aside><span
-                                            class="btn__label"><svg class="icon icon--plus"
-                                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                                <line x1="12.4589" y1="16.9175" x2="12.4589" y2="8.50115"
-                                                    class="stroke"></line>
-                                                <line x1="8.05164" y1="12.594" x2="16.468" y2="12.594" class="stroke">
-                                                </line>
-                                            </svg></span>
-                                    </span></button></div>
-                        </div>
-                    </div>
                     <div id="field-layout" class="field-type blocks-field">
-                        <div class="blocks-field__error-wrap"></div>
-                        <header class="blocks-field__header">
-                            <div class="blocks-field__header-wrap">
-                                <h3>Page Layout</h3>
-                                <ul class="blocks-field__header-actions">
-                                    <li><button type="button" class="blocks-field__header-action">Collapse All</button>
-                                    </li>
-                                    <li><button type="button" class="blocks-field__header-action">Show All</button></li>
-                                </ul>
-                            </div>
-                        </header>
+                        <div class="blocks-field__error-wrap"></div><br/>
                         <div data-rbd-droppable-id="blocks-drop" data-rbd-droppable-context-id="0">
-                            <div class="banner banner--type-error"><span class="banner__content">This field requires at
-                                    least 1 Layout.</span></div>
-                        </div>
-                        <div class="blocks-field__add-button-wrap">
-                            <div class="popup popup--size-large popup--color-light popup--v-align-top popup--h-align-left">
-                                <div class="popup__wrapper">
-                                    <div role="button" tabindex="0" class="popup-button popup-button--custom"><button
-                                            type="button"
-                                            class="btn btn--style-icon-label btn--icon btn--icon-style-with-border btn--size-medium btn--icon-position-left"><span
-                                                class="btn__content"><span class="btn__label">Add Layout</span><span
-                                                    class="btn__icon"><svg class="icon icon--plus"
-                                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                                        <line x1="12.4589" y1="16.9175" x2="12.4589" y2="8.50115"
-                                                            class="stroke"></line>
-                                                        <line x1="8.05164" y1="12.594" x2="16.468" y2="12.594"
-                                                            class="stroke"></line>
-                                                    </svg></span></span></button></div>
-                                </div>
-                                
-                                <br/><br/>
-                                <h3>Start Writing</h3>
                                 <div id="editorjs"></div>
                                 <script>
                                     var editor = new EditorJS({
@@ -260,21 +184,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="rs__indicators css-1wy0on6">
-                                                <div aria-hidden="true"
-                                                    class="rs__indicator rs__clear-indicator css-tlfecz-indicatorContainer">
-                                                    <svg height="20" width="20" viewBox="0 0 20 20" aria-hidden="true"
-                                                        focusable="false" class="css-19bqh2r">
-                                                        <path
-                                                            d="M14.348 14.849c-0.469 0.469-1.229 0.469-1.697 0l-2.651-3.030-2.651 3.029c-0.469 0.469-1.229 0.469-1.697 0-0.469-0.469-0.469-1.229 0-1.697l2.758-3.15-2.759-3.152c-0.469-0.469-0.469-1.228 0-1.697s1.228-0.469 1.697 0l2.652 3.031 2.651-3.031c0.469-0.469 1.228-0.469 1.697 0s0.469 1.229 0 1.697l-2.758 3.152 2.758 3.15c0.469 0.469 0.469 1.229 0 1.698z">
-                                                        </path>
-                                                    </svg></div><span
-                                                    class="rs__indicator-separator css-1okebmr-indicatorSeparator"></span><svg
-                                                    class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 25 25">
-                                                    <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                                </svg>
-                                            </div>
+
                                         </div>
                                     </div>
                                     <div class="relationship-add-new" id="author-add-new"><button type="button"

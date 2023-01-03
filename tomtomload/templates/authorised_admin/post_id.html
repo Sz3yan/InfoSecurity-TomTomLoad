@@ -22,7 +22,7 @@
 
 {% block bodyContent %}
     <div class="collection-edit collection-edit--is-editing">
-        <form novalidate="" method="patch" action="https://demo.ttlcms.com/api/posts/6367071208fff3c0c30292fa?locale=en&amp;depth=0&amp;fallback-locale=null" class="collection-edit__form form">
+        <form id="form" onsubmit="savelah()" method="post" class="collection-edit__form form">
             <div class="collection-edit__main">
                 <div class="eyebrow">
                     <div class="gutter--left gutter--right eyebrow__wrap">
@@ -30,55 +30,17 @@
                                     <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
                                 </svg></a><a href="/admin/posts"><span>Posts</span><svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
                                     <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                </svg></a><span>New Feature - Auto-generate TypeScript Interfaces</span>
+                                </svg></a><span>{{ post_id }}</span>
                         </nav>
                     </div>
                 </div>
                 <div class="gutter--left gutter--right collection-edit__edit">
-                    <header class="collection-edit__header">
-                        <h1><span class="render-title">New Feature - Auto-generate TypeScript
-                                Interfaces</span></h1>
-                    </header>
                     <div class="render-fields">
-                        <div class="field-type text"><label for="field-title" class="field-label">Title</label><input id="field-title" type="text" name="title" value="New Feature - Auto-generate TypeScript Interfaces">
-                        </div>
-                        <div id="field-author" class="field-type relationship"><label for="author" class="field-label">Author</label>
-                            <div class="relationship__wrap">
-                                <div class="react-select css-2b097c-container">
-                                    <div class="rs__control css-yk16xz-control">
-                                        <div class="rs__value-container rs__value-container--has-value css-1hwfws3">
-                                            <div class="rs__single-value css-1uccc91-singleValue">
-                                                demo@ttlcms.com</div>
-                                            <div class="css-1g6gooi">
-                                                <div class="rs__input" style="display: inline-block;"><input autocapitalize="none" autocomplete="off" autocorrect="off" id="react-select-8-input" spellcheck="false" tabindex="0" type="text" aria-autocomplete="list" value="" style="box-sizing: content-box; width: 2px; border: 0px; font-size: inherit; opacity: 1; outline: 0px; padding: 0px; color: inherit; background-position: 0px center;">
-                                                    <div style="position: absolute; top: 0px; left: 0px; visibility: hidden; height: 0px; overflow: scroll; white-space: pre; font-size: 13px; font-family: &quot;Suisse Intl&quot;, system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Ubuntu, Cantarell, &quot;Noto Sans&quot;, sans-serif; font-weight: 400; font-style: normal; letter-spacing: normal; text-transform: none;">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                    </div>
-                                </div>
-                                <div class="relationship-add-new" id="author-add-new"><button type="button" class="btn relationship-add-new__add-button btn--style-none btn--icon-style-without-border btn--size-medium btn--icon-position-right btn--has-tooltip"><span class="btn__content">
-                                            <aside class="tooltip btn__tooltip">Add new User<span></span>
-                                            </aside><span class="btn__label"><svg class="icon icon--plus" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                                    <line x1="12.4589" y1="16.9175" x2="12.4589" y2="8.50115" class="stroke"></line>
-                                                    <line x1="8.05164" y1="12.594" x2="16.468" y2="12.594" class="stroke"></line>
-                                                </svg></span>
-                                        </span></button></div>
-                            </div>
-                        </div>
-
-                        <div class="field-type text"><label for="field-title" class="field-label">Content</label><input id="field-title" type="text" name="title" value="New Feature - Auto-generate TypeScript Interfaces">
-                        </div>
-
-                        <br/><br/>
-                        <h3>Start Writing</h3>
+                        <br/>
                         <div id="editorjs"></div>
                         <script>
                             var editor = new EditorJS({
                                 holder: 'editorjs',
-                                readOnly : true,
 
                                 tools: {
                                     header: {
@@ -167,18 +129,27 @@
             </div>
             <div class="collection-edit__sidebar-wrap">
                 <div class="collection-edit__sidebar">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                    <input type="hidden" id="hihi" name="post_content" value="" />
+
                     <div class="collection-edit__sidebar-sticky-wrap">
                         <ul class="collection-edit__collection-actions">
                             <li><a id="action-create" href="/admin/posts/upload/{{ create_new_post_id }}">Create New</a>
                             </li>
-                            <li><button type="button" id="action-delete" class="delete-document__toggle">Delete</button></li>
+                            <li><a href="/admin/posts/delete/{{ post_id }}" class="delete-document__toggle">Delete</a></li>
                         </ul>
                         <div class="collection-edit__document-actions collection-edit__document-actions--has-2">
-                            <div class="form-submit"><button type="button" class="btn save-draft btn--style-secondary btn--icon-style-without-border btn--disabled btn--size-medium btn--icon-position-right" disabled=""><span class="btn__content"><span class="btn__label">Save
-                                            draft</span></span></button></div>
-                            <div class="form-submit"><button type="button" class="btn btn--style-primary btn--icon-style-without-border btn--disabled btn--size-medium btn--icon-position-right" disabled=""><span class="btn__content"><span class="btn__label">Publish
-                                            changes</span></span></button></div>
-                        </div>
+                            <div class="form-submit">
+                                <a href="" class="btn save-draft btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" >
+                                    <span class="btn__content"><span class="btn__label">Save draft</span></span>
+                                </a>
+                            </div>
+                            <div class="form-submit">
+                                <a href="/admin/posts/update/{{ post_id }}" class="btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right">
+                                    <span class="btn__content"><span class="btn__label">Publish changes</span></span>
+                                </a>
+                            </div>
+                        </div><br/>
                         <div class="collection-edit__sidebar-fields">
                             <div class="status">
                                 <div class="status__value-wrap"><span class="status__value">Published</span>&nbsp;—&nbsp;<button type="button" class="btn status__action btn--style-none btn--icon-style-without-border btn--size-medium btn--icon-position-right"><span class="btn__content"><span class="btn__label">Unpublish</span></span></button></div>

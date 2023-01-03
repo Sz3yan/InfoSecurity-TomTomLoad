@@ -12,8 +12,7 @@
         </div>
         <div class="gutter--left gutter--right collection-list__wrap">
             <header class="collection-list__header">
-                <h1>Posts</h1><a class="pill pill--style-light pill--has-link pill--has-action"
-                    href="/admin/posts/upload/{{ post_id }}">Create New</a>
+                <h1>Posts</h1>
             </header>
             <div class="list-controls">
                 <div class="list-controls__wrap">
@@ -23,20 +22,30 @@
                             <circle cx="11.2069" cy="10.7069" r="5" class="stroke"></circle>
                             <line x1="14.914" y1="13.9998" x2="20.5002" y2="19.586" class="stroke"></line>
                         </svg></div>
+
                     <div class="list-controls__buttons">
-                        <div class="list-controls__buttons-wrap"><button type="button"
-                                class="btn list-controls__toggle-columns btn--style-secondary btn--icon btn--icon-style-none btn--size-medium btn--icon-position-right"><span
-                                    class="btn__content"><span class="btn__label">Columns</span><span
-                                        class="btn__icon"><svg class="icon icon--chevron"
-                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                        <div class="list-controls__buttons-wrap">
+                            <button type="button" class="btn list-controls__toggle-where btn--style-secondary btn--icon btn--icon-style-none btn--size-medium btn--icon-position-right">
+                                <span class="btn__content"><span class="btn__label"><a href="/admin/posts/upload/{{ post_id }}">Create New</a></span>
+                                    <span class="btn__icon">
+                                        <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
                                             <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                        </svg></span></span></button><button type="button"
-                                class="btn list-controls__toggle-where btn--style-secondary btn--icon btn--icon-style-none btn--size-medium btn--icon-position-right"><span
-                                    class="btn__content"><span class="btn__label">Filters</span><span
-                                        class="btn__icon"><svg class="icon icon--chevron"
-                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                        </svg>
+                                    </span>
+                                </span>
+                            </button>
+
+                            <button type="button" class="btn list-controls__toggle-sort btn--style-secondary btn--icon btn--icon-style-none btn--size-medium btn--icon-position-right">
+                                <span class="btn__content">
+                                    <span class="btn__label">Export</span>
+                                    <span class="btn__icon">
+                                        <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
                                             <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                        </svg></span></span></button></div>
+                                        </svg>
+                                    </span>
+                                </span>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="rah-static rah-static--height-zero list-controls__columns" aria-hidden="true"
