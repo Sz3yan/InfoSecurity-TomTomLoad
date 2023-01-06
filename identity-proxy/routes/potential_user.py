@@ -11,6 +11,7 @@ from flask import Blueprint, request, session, redirect, abort, make_response
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 from static.classes.storage import GoogleCloudStorage
 from static.security.session_management import TTLSession
+from static.security.certificate_authority import GoogleCertificateAuthority
 
 from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
@@ -21,6 +22,8 @@ from functools import wraps
 potential_user = Blueprint('potential_user', __name__, template_folder="templates", static_folder='static')
 
 ttlSession = TTLSession()
+storage = GoogleCloudStorage()
+CertificateAuthority = GoogleCertificateAuthority()
 
 client_secrets_file = CONSTANTS.IP_CONFIG_FOLDER.joinpath("client_secret.json")
 flow = Flow.from_client_secrets_file(
@@ -52,7 +55,7 @@ def login():
     )
 
     session["state"] = state
-    
+
     return redirect(authorization_url)
 
 
@@ -106,14 +109,12 @@ def authorisation():
 
     # -----------------  END OF CONTEXT-AWARE ACCESS ----------------- #
 
-    latest_blacklisted = GoogleCloudStorage()
-    latest_blacklisted.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, CONSTANTS.BLACKLISTED_FILE_NAME, CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"))
+    storage.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, CONSTANTS.BLACKLISTED_FILE_NAME, CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"))
 
     with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"), "r") as f:
         blacklisted = json.load(f)
 
-    lastest_acl = GoogleCloudStorage()
-    lastest_acl.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, CONSTANTS.ACL_FILE_NAME, CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"))
+    storage.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, CONSTANTS.ACL_FILE_NAME, CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"))
 
     with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
         acl = json.load(s)
@@ -128,17 +129,17 @@ def authorisation():
             if session['id_info'].get("email") == value:
                 role = 'superadmin'
 
-        for key, value in acl['admin'].items():    
+        for key, value in acl['admin'].items():
             if session['id_info'].get("email") == value:
                 role = 'admin'
-            
+
         signed_header = {
             "TTL-Authenticated-User-Name": session['id_info'].get("name"),
-            "TTL-JWTAuthenticated-User": 
+            "TTL-JWTAuthenticated-User":
                 jwt.encode(
                     {
                         "iss": "identity-proxy",
-                        "exp": datetime.utcnow() + timedelta(minutes=CONSTANTS.JWT_ACCESS_TOKEN_EXPIRATION_TIME) + (2 * timedelta(seconds=CONSTANTS.JWT_ACCESS_TOKEN_SKEW_TIME)),      
+                        "exp": datetime.utcnow() + timedelta(minutes=CONSTANTS.JWT_ACCESS_TOKEN_EXPIRATION_TIME) + (2 * timedelta(seconds=CONSTANTS.JWT_ACCESS_TOKEN_SKEW_TIME)),
                         "iat":  datetime.utcnow() - timedelta(seconds=30) + timedelta(seconds=CONSTANTS.JWT_ACCESS_TOKEN_SKEW_TIME),
                         "google_id": session['id_info'].get("sub"),
                         "name": session['id_info'].get("name"),
@@ -150,14 +151,14 @@ def authorisation():
                 algorithm=CONSTANTS.JWT_ALGORITHM
             )
         }
-        
+
         context_aware_access = {
             "TTL-Context-Aware-Access-Client-IP": TTLContextAwareAccessClientIP,
             "TTL-Context-Aware-Access-Client-User-Agent": TTLContextAwareAccessClientUserAgent,
             "TTL-Context-Aware-Access-Client-Certificate": TTLContextAwareAccessClientCertificate
         }
-        
-        response = make_response(redirect("https://127.0.0.1:5000/admin", code=302))
+
+        response = make_response(redirect(CONSTANTS.ADMIN_URL, code=302))
 
         response.set_cookie(
             'TTL-Authenticated-User-Name',
@@ -167,10 +168,11 @@ def authorisation():
         )
 
         response.set_cookie(
-            'TTL-JWTAuthenticated-User', 
+            'TTL-JWTAuthenticated-User',
             value=base64.b64encode(str(signed_header).encode("utf-8")),
-            httponly=True, 
-            secure=True)
+            httponly=True,
+            secure=True
+        )
 
         response.set_cookie(
             'TTL-Context-Aware-Access',

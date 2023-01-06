@@ -43,7 +43,7 @@ def check_signed_credential(func):
                 base64.b64decode(request.cookies.get('TTL-Authenticated-User-Name')).decode('utf-8')
                 base64.b64decode(request.cookies.get('TTL-JWTAuthenticated-User')).decode('utf-8')
                 base64.b64decode(request.cookies.get('TTL-Context-Aware-Access')).decode('utf-8')
-            
+
             except TypeError:
                 return abort(403)
 
@@ -276,9 +276,7 @@ def media_upload(id):
 
                 # can compute hash here
 
-                upload_media = GoogleCloudStorage()
-
-                upload_media.upload_blob(
+                storage.upload_blob(
                     bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
                     source_file_name=temp_Mediafile_path,
                     destination_blob_name="Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_upload_id + "." + file_extension,
@@ -489,10 +487,7 @@ def post_delete(id):
 def post_update(id):
     post_update_id = id
 
-    print(f"post_update_id: {post_update_id}")
-
     if request.method == 'POST':
-        print("hi")
         post_content = request.form['post_content']
 
         # -----------------  START OF SAVING FILE LOCALLY ----------------- #
@@ -503,8 +498,6 @@ def post_update(id):
         post_data = {
             "post_content": post_content,
         }
-
-        print("post_data: ", post_data)
 
         with open(temp_post_path, 'wb') as outfile:
 
