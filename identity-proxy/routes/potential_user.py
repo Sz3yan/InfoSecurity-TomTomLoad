@@ -52,7 +52,7 @@ def login():
     )
 
     session["state"] = state
-    
+
     return redirect(authorization_url)
 
 
@@ -124,21 +124,53 @@ def authorisation():
 
         role = 'user'
 
-        for key, value in acl['superadmin'].items():
-            if session['id_info'].get("email") == value:
+        for user, value in acl['superadmin'].items():
+            if session['id_info'].get("email") == user:
                 role = 'superadmin'
 
-        for key, value in acl['admin'].items():    
-            if session['id_info'].get("email") == value:
+        for user, value in acl['admin'].items():
+            if session['id_info'].get("email") == user:
                 role = 'admin'
-            
+
+        # append new to acl
+        if session['id_info'].get("email") not in acl['superadmin']:
+            if session['id_info'].get("email") not in acl['admin']:
+                # with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r+") as w:
+                #     dict_acl = json.loads(w.read())
+                #     dict_acl[session['id_info'].get("email")] = ["read", "write", "delete"]
+                #     w.write(json.dumps(dict_acl))
+
+                w = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r")
+                dict_acl = json.loads(w.read())
+                dict_acl[session['id_info'].get("email")] = ["read", "write", "delete"]
+                w.close()
+
+                r = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "w")
+                r.write(json.dumps(dict_acl))
+                r.close()
+
+
+                updated_acl = GoogleCloudStorage()
+                updated_acl.upload_blob(
+                    bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+                    source_file_name=CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"),
+                    destination_blob_name="acl.json"
+                )
+
+            else:
+                print("You are already admin.")
+
+        else:
+            print("You are already superadmin.")
+
+
         signed_header = {
             "TTL-Authenticated-User-Name": session['id_info'].get("name"),
-            "TTL-JWTAuthenticated-User": 
+            "TTL-JWTAuthenticated-User":
                 jwt.encode(
                     {
                         "iss": "identity-proxy",
-                        "exp": datetime.utcnow() + timedelta(minutes=CONSTANTS.JWT_ACCESS_TOKEN_EXPIRATION_TIME) + (2 * timedelta(seconds=CONSTANTS.JWT_ACCESS_TOKEN_SKEW_TIME)),      
+                        "exp": datetime.utcnow() + timedelta(minutes=CONSTANTS.JWT_ACCESS_TOKEN_EXPIRATION_TIME) + (2 * timedelta(seconds=CONSTANTS.JWT_ACCESS_TOKEN_SKEW_TIME)),
                         "iat":  datetime.utcnow() - timedelta(seconds=30) + timedelta(seconds=CONSTANTS.JWT_ACCESS_TOKEN_SKEW_TIME),
                         "google_id": session['id_info'].get("sub"),
                         "name": session['id_info'].get("name"),
@@ -150,13 +182,13 @@ def authorisation():
                 algorithm=CONSTANTS.JWT_ALGORITHM
             )
         }
-        
+
         context_aware_access = {
             "TTL-Context-Aware-Access-Client-IP": TTLContextAwareAccessClientIP,
             "TTL-Context-Aware-Access-Client-User-Agent": TTLContextAwareAccessClientUserAgent,
             "TTL-Context-Aware-Access-Client-Certificate": TTLContextAwareAccessClientCertificate
         }
-        
+
         response = make_response(redirect("https://127.0.0.1:5000/admin", code=302))
 
         response.set_cookie(
@@ -167,9 +199,9 @@ def authorisation():
         )
 
         response.set_cookie(
-            'TTL-JWTAuthenticated-User', 
+            'TTL-JWTAuthenticated-User',
             value=base64.b64encode(str(signed_header).encode("utf-8")),
-            httponly=True, 
+            httponly=True,
             secure=True)
 
         response.set_cookie(
@@ -184,4 +216,4 @@ def authorisation():
     else:
         return abort(401)
 
-# -----------------  END OF AUTHORISATION ----------------- #
+# -----------------  END OF AUTHORISATION ----------------- #

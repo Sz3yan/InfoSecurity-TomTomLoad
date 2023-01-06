@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block bodyContent %}
+    <div class="collection-edit">
+        <form novalidate="" method="post"
+            action=""
+            class="collection-edit__form form">
+            <div class="collection-edit__main">
+                <div class="eyebrow">
+                    <div class="gutter--left gutter--right eyebrow__wrap">
+                        <nav class="step-nav"><a href="/admin"><span>Dashboard</span><svg
+                                    class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 25 25">
+                                    <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
+                                </svg></a><a href="/admin/users"><span>Users</span><svg
+                                    class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 25 25">
+                                    <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
+                                </svg></a><span>Edit Access</span></nav>
+                    </div>
+                </div>
+                <div class="gutter--left gutter--right collection-edit__edit">
+                    <header class="collection-edit__header">
+                        <h2><span class="render-title">{{ email }}</span></h2>
+                    </header>
+                    <div class="auth-fields">
+                        <h3>Access:</h3>
+                        <div class="auth-fields__api-key">
+                            <div class="field-type checkbox">
+                                <div class="checkbox__error-wrap"></div><input id="field-readAccess"
+                                    type="checkbox" name="readAccess"><button
+                                    type="button"><span class="checkbox__input"><svg
+                                            class="icon icon--check" xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 25 25">
+                                            <path d="M10.6092 16.0192L17.6477 8.98076" class="stroke"
+                                                stroke-linecap="square" stroke-linejoin="bevel"></path>
+                                            <path d="M7.35229 12.7623L10.6092 16.0192" class="stroke"
+                                                stroke-linecap="square" stroke-linejoin="bevel"></path>
+                                        </svg></span><span class="checkbox__label">Read Access</span></button>
+                            </div>
+                            <div class="field-type checkbox">
+                                <div class="checkbox__error-wrap"></div><input id="field-writeAccess"
+                                    type="checkbox" name="writeAccess"><button
+                                    type="button"><span class="checkbox__input"><svg
+                                            class="icon icon--check" xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 25 25">
+                                            <path d="M10.6092 16.0192L17.6477 8.98076" class="stroke"
+                                                stroke-linecap="square" stroke-linejoin="bevel"></path>
+                                            <path d="M7.35229 12.7623L10.6092 16.0192" class="stroke"
+                                                stroke-linecap="square" stroke-linejoin="bevel"></path>
+                                        </svg></span><span class="checkbox__label">Write Access</span></button>
+                            </div>
+                            <div class="field-type checkbox">
+                                <div class="checkbox__error-wrap"></div><input id="field-deleteAccess"
+                                    type="checkbox" name="deleteAccess"><button
+                                    type="button"><span class="checkbox__input"><svg
+                                            class="icon icon--check" xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 25 25">
+                                            <path d="M10.6092 16.0192L17.6477 8.98076" class="stroke"
+                                                stroke-linecap="square" stroke-linejoin="bevel"></path>
+                                            <path d="M7.35229 12.7623L10.6092 16.0192" class="stroke"
+                                                stroke-linecap="square" stroke-linejoin="bevel"></path>
+                                        </svg></span><span class="checkbox__label">Delete Access</span></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="collection-edit__sidebar-wrap">
+                <div class="collection-edit__sidebar">
+                    <div class="collection-edit__sidebar-sticky-wrap">
+                        <ul class="collection-edit__collection-actions">
+                            <li><a id="action-create" href="/admin/collections/users/create">Create New</a>
+                            </li>
+                            <li></li>
+                        </ul>
+                        <div class="collection-edit__document-actions">
+                            <div class="form-submit"><button type="submit" id="action-save"
+                                    class="btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right"><span
+                                        class="btn__content"><span
+                                            class="btn__label">Save</span></span></button></div>
+                        </div>
+                        <div class="collection-edit__sidebar-fields">
+                            <div class="render-fields"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

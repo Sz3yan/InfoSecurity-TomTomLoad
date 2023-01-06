@@ -73,6 +73,60 @@ def check_signed_credential(func):
 
     return decorated_function
 
+
+def check_role_read(func):
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
+        with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
+            acl = json.load(s)
+
+        role = decoded_jwt["role"]
+        user = decoded_jwt["email"]
+
+        if "read" in acl[role][user]:
+            return func(*args, **kwargs)
+
+        else:
+            return abort(403)
+
+    return decorated_function
+
+
+def check_role_write(func):
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
+        with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
+            acl = json.load(s)
+
+        role = decoded_jwt["role"]
+        user = decoded_jwt["email"]
+
+        if "write" in acl[role][user]:
+            return func(*args, **kwargs)
+
+        else:
+            return abort(403)
+
+    return decorated_function
+
+
+def check_role_delete(func):
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
+        with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
+            acl = json.load(s)
+
+        role = decoded_jwt["role"]
+        user = decoded_jwt["email"]
+
+        if "delete" in acl[role][user]:
+            return func(*args, **kwargs)
+
+        else:
+            return abort(403)
+
+    return decorated_function
+
 # -----------------  END OF WRAPPER ----------------- #
 
 
@@ -151,6 +205,7 @@ def logout_screen():
 
 @authorised_user.route("/media")
 @check_signed_credential
+@check_role_read
 def media():
     media_id = UniqueID()
 
@@ -238,6 +293,7 @@ def media_id(id):
 
 @authorised_user.route("/media/upload/<regex('[0-9a-f]{32}'):id>", methods=['GET', 'POST'])
 @check_signed_credential
+@check_role_write
 def media_upload(id):
     media_upload_id = id
 
@@ -300,6 +356,7 @@ def media_upload(id):
 
 @authorised_user.route("/posts")
 @check_signed_credential
+@check_role_read
 def post():
     post_id = UniqueID()
 
@@ -407,6 +464,7 @@ def post_id(id):
 
 @authorised_user.route("/posts/upload/<regex('[0-9a-f]{32}'):id>", methods=['GET', 'POST'])
 @check_signed_credential
+@check_role_write
 def post_upload(id):
     post_upload_id = id
 
@@ -468,6 +526,7 @@ def post_upload(id):
 
 @authorised_user.route("/posts/delete/<regex('[0-9a-f]{32}'):id>", methods=['GET', 'POST'])
 @check_signed_credential
+@check_role_delete
 def post_delete(id):
     post_delete_id = id
 
@@ -499,6 +558,7 @@ def post_delete(id):
 
 @authorised_user.route("/posts/update/<regex('[0-9a-f]{32}'):id>", methods=['GET', 'POST'])
 @check_signed_credential
+@check_role_write
 def post_update(id):
     post_update_id = id
 
@@ -576,6 +636,7 @@ def users_id(id):
 
 @authorised_user.route("/users/create/<regex('[0-9]{21}'):id>")
 @check_signed_credential
+@check_role_write
 def create_users(id):
     return render_template('authorised_admin/user_create.html', pic=decoded_jwt["picture"])
 
@@ -586,3 +647,10 @@ def profile():
     return render_template('authorised_admin/profile.html', pic=decoded_jwt["picture"])
 
 # -----------------  END OF AUTHENTICATED SIGNED TRAFFIC ----------------- #
+
+
+@authorised_user.route("/users/edit_access")
+@check_signed_credential
+def edit_access():
+    return render_template('authorised_admin/user_access.html', pic=decoded_jwt["picture"], email=decoded_jwt["email"])
+
