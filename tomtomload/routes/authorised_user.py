@@ -520,7 +520,6 @@ def post_update(id):
 
             # -----------------  END OF ENCRYPTION ---------------- #
 
-            # save encrypted content to file in json format
             outfile.write(encrypted_content.ciphertext)
 
         # -----------------  END OF SAVING FILE LOCALLY ----------------- #

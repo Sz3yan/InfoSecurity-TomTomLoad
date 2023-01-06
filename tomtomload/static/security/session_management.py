@@ -8,7 +8,7 @@ class TTLSession(Paranoid):
     def __init__(self):
         # session.pop("TTLAuthenticatedUserName")
         # session.pop("TTLJWTAuthenticatedUser")
-        print("ttlsession")
+        # print("ttlsession")
         app = Flask('tomtomload')
         self.__server = 'tomtomload'
         super().__init__(app)

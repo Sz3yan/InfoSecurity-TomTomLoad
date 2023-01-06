@@ -16,6 +16,9 @@ class Constants:
     TTL_CONFIG_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.absolute() / "config_files"
     TTL_MALWARELOGS_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.absolute() / "malwarelogs"
 
+    TTL_CONFIG_MEDIA_FOLDER: pathlib.Path = TTL_CONFIG_FOLDER / "media"
+    TTL_CONFIG_POSTS_FOLDER: pathlib.Path = TTL_CONFIG_FOLDER / "post"
+
     # --- GOOGLE CLOUD ---
     GOOGLE_PROJECT_ID: str = "infosec-62c05"
     GOOGLE_LOCATION_ID: str = "global"
@@ -30,12 +33,9 @@ class Constants:
     KMS_TTL_KEY_RING_ID: str = "tomtomload"
     KMS_KEY_ID: str = "tomtomload-symmetric-key"
 
-    # --- GOOGLE SECRET MANAGER ---
-    # FLASK_SECRET_KEY_NAME: str = ""
-
     # --- JWT ACCESS TOKEN ---
-    JWT_ACCESS_TOKEN_EXPIRATION_TIME: int = 10
-    JWT_ACCESS_TOKEN_SKEW_TIME: int = 30
+    JWT_ACCESS_TOKEN_EXPIRATION_TIME: int = 10 if DEBUG_MODE else 60
+    JWT_ACCESS_TOKEN_SKEW_TIME: int = 30 if DEBUG_MODE else 60
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_SECRET_KEY: str = "identity-proxy-jwt-key"
 
@@ -49,6 +49,10 @@ class Constants:
     # --- MEDIA UPLOAD ---
     ALLOWED_MEDIA_EXTENSIONS: dict = "png", "jpg", "jpeg","mp4", "mov", "quicktime","mpeg", "mp3", "wav", "pdf", "zip"
     ALLOWED_POST_EXTENSIONS: dict = "md", "txt"
+
+    def __post_init__(self) -> None:
+        self.TTL_CONFIG_MEDIA_FOLDER.mkdir(parents=True, exist_ok=True)
+        self.TTL_CONFIG_POSTS_FOLDER.mkdir(parents=True, exist_ok=True)
 
 
 CONSTANTS = Constants()
