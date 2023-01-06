@@ -1,7 +1,9 @@
 from flask_paranoid import Paranoid
-from flask import session, Flask
+from flask import session, Flask, request
 from datetime import datetime
+# import requests
 import hashlib
+import socket
 import json
 
 class TTLSession(Paranoid):
@@ -14,10 +16,12 @@ class TTLSession(Paranoid):
         super().__init__(app)
     
     def get_token(self):
-
-        createdTTLtoken = str(self.__server) + str(super().create_token())
+        # print(requests.get("https://api64.ipify.org?format=json").text)
+        device_ip_addr = socket.gethostbyname(socket.gethostname())
+        createdTTLtoken = str(self.__server) + str(super().create_token()) + str(device_ip_addr)
         
-        encoded_session = hashlib.sha384(createdTTLtoken.encode()).hexdigest()
+        encoded_session = hashlib.sha384(createdTTLtoken.encode("utf-8")).hexdigest()
+        
         return encoded_session
 
     def write_data_to_session(self, session_name:str, Ptoken:str, data):

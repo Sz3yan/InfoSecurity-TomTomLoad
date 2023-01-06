@@ -12,6 +12,7 @@ from flask_moment import Moment
 from routes.Errors import error
 from routes.authorised_user import authorised_user
 from routes.api import api
+from routes.admin_user import admin_user
 
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 
@@ -100,6 +101,7 @@ talisman = Talisman(
 with app.app_context():
     app.register_blueprint(authorised_user)
     app.register_blueprint(api)
+    app.register_blueprint(admin_user)
     app.register_blueprint(error)
 
 # -----------------  END OF BLUEPRINT  ----------------- #

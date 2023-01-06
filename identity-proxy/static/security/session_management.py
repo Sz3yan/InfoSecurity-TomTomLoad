@@ -2,6 +2,7 @@ from flask_paranoid import Paranoid
 from flask import session, Flask
 from datetime import datetime
 import hashlib
+import socket
 import json
 
 class TTLSession(Paranoid):
@@ -13,7 +14,8 @@ class TTLSession(Paranoid):
     
     def get_token(self, jwtToken:str=""):
 
-        createdTTLtoken = str(self.__server) + str(super().create_token())
+        device_ip_addr = socket.gethostbyname(socket.gethostname())
+        createdTTLtoken = str(self.__server) + str(super().create_token()) + str(device_ip_addr)
         
         encoded_session = hashlib.sha384(createdTTLtoken.encode()).hexdigest()
         return encoded_session
