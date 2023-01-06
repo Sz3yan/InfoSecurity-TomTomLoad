@@ -24,6 +24,8 @@ keymanagement = GoogleCloudKeyManagement()
 encryption = Encryption()
 storage = GoogleCloudStorage()
 
+storage.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, CONSTANTS.ACL_FILE_NAME, CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"))
+
 # -----------------  END OF INITIALISATION ----------------- #
 
 
@@ -38,14 +40,6 @@ def check_signed_credential(func):
         else:
 
             # -----------------  START OF DECODING  ----------------- #
-
-            try:
-                base64.b64decode(request.cookies.get('TTL-Authenticated-User-Name')).decode('utf-8')
-                base64.b64decode(request.cookies.get('TTL-JWTAuthenticated-User')).decode('utf-8')
-                base64.b64decode(request.cookies.get('TTL-Context-Aware-Access')).decode('utf-8')
-
-            except TypeError:
-                return abort(403)
 
             global decoded_jwt
 
@@ -161,10 +155,10 @@ def home():
             TTLJWTAuthenticatedUser["TTL-JWTAuthenticated-User"], 
             algorithms="HS256", 
             key = keymanagement.retrieve_key(
-                        project_id = CONSTANTS.GOOGLE_PROJECT_ID,
-                        location_id = CONSTANTS.GOOGLE_LOCATION_ID,
-                        key_ring_id = CONSTANTS.KMS_IP_KEY_RING_ID,
-                        key_id = CONSTANTS.JWT_ACCESS_TOKEN_SECRET_KEY
+                    project_id = CONSTANTS.GOOGLE_PROJECT_ID,
+                    location_id = CONSTANTS.GOOGLE_LOCATION_ID,
+                    key_ring_id = CONSTANTS.KMS_IP_KEY_RING_ID,
+                    key_id = CONSTANTS.JWT_ACCESS_TOKEN_SECRET_KEY
                 )
         )
 
@@ -208,6 +202,8 @@ def logout_screen():
 @check_role_read
 def media():
     media_id = UniqueID()
+
+    print(decoded_jwt["role"])
 
     # -----------------  START OF RETRIEVING MEDIA ----------------- #
 

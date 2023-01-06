@@ -21,6 +21,7 @@ from functools import wraps
 potential_user = Blueprint('potential_user', __name__, template_folder="templates", static_folder='static')
 
 ttlSession = TTLSession()
+storage = GoogleCloudStorage()
 
 client_secrets_file = CONSTANTS.IP_CONFIG_FOLDER.joinpath("client_secret.json")
 flow = Flow.from_client_secrets_file(
@@ -106,14 +107,12 @@ def authorisation():
 
     # -----------------  END OF CONTEXT-AWARE ACCESS ----------------- #
 
-    latest_blacklisted = GoogleCloudStorage()
-    latest_blacklisted.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, CONSTANTS.BLACKLISTED_FILE_NAME, CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"))
+    storage.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, CONSTANTS.BLACKLISTED_FILE_NAME, CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"))
 
     with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"), "r") as f:
         blacklisted = json.load(f)
 
-    lastest_acl = GoogleCloudStorage()
-    lastest_acl.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, CONSTANTS.ACL_FILE_NAME, CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"))
+    storage.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, CONSTANTS.ACL_FILE_NAME, CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"))
 
     with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
         acl = json.load(s)
@@ -135,10 +134,6 @@ def authorisation():
         # append new to acl
         if session['id_info'].get("email") not in acl['superadmin']:
             if session['id_info'].get("email") not in acl['admin']:
-                # with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r+") as w:
-                #     dict_acl = json.loads(w.read())
-                #     dict_acl[session['id_info'].get("email")] = ["read", "write", "delete"]
-                #     w.write(json.dumps(dict_acl))
 
                 w = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r")
                 dict_acl = json.loads(w.read())
@@ -149,9 +144,7 @@ def authorisation():
                 r.write(json.dumps(dict_acl))
                 r.close()
 
-
-                updated_acl = GoogleCloudStorage()
-                updated_acl.upload_blob(
+                storage.upload_blob(
                     bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
                     source_file_name=CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"),
                     destination_blob_name="acl.json"
@@ -162,7 +155,6 @@ def authorisation():
 
         else:
             print("You are already superadmin.")
-
 
         signed_header = {
             "TTL-Authenticated-User-Name": session['id_info'].get("name"),
@@ -202,7 +194,8 @@ def authorisation():
             'TTL-JWTAuthenticated-User',
             value=base64.b64encode(str(signed_header).encode("utf-8")),
             httponly=True,
-            secure=True)
+            secure=True
+        )
 
         response.set_cookie(
             'TTL-Context-Aware-Access',
@@ -216,4 +209,4 @@ def authorisation():
     else:
         return abort(401)
 
-# -----------------  END OF AUTHORISATION ----------------- #
+# -----------------  END OF AUTHORISATION ----------------- #

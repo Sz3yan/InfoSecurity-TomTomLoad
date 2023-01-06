@@ -28,11 +28,8 @@ class Constants:
     BLACKLISTED_FILE_NAME: str = "blacklisted.json"
     ACL_FILE_NAME: str = "acl.json"
 
-    # --- GOOGLE SECRET MANAGER ---
-    # FLASK_SECRET_KEY_NAME: str = ""
-
     # --- JWT ACCESS TOKEN ---
-    JWT_ACCESS_TOKEN_EXPIRATION_TIME: int = 10
+    JWT_ACCESS_TOKEN_EXPIRATION_TIME: int = 60 if (DEBUG_MODE) else 10
     JWT_ACCESS_TOKEN_SKEW_TIME: int = 30
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_SECRET_KEY: str = "identity-proxy-jwt-key"
