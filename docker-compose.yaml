@@ -1,5 +1,5 @@
 services:
-  app:
+  web:
     build: .
     container_name: identity-proxy
     command: uvicorn main:app --host 0.0.0.0 --port 80 --reload
@@ -8,11 +8,11 @@ services:
     volumes:
       - .:/app
 
-  app:
+  web:
     build: .
     container_name: tomtomload
     command: uvicorn main:app --host 0.0.0.0 --port 80 --reload
     ports:
-      - 8080:80
+      - 5000:80
     volumes:
       - .:/app
