@@ -1,0 +1,12 @@
+# Common
+README.md
+LICENSE
+docker-compose.yml
+identity-proxy/Dockerfile
+tomtomload/Dockerfile
+
+*.pyc
+*.pyo
+*.pyd
+__pycache__
+.pytest_cache

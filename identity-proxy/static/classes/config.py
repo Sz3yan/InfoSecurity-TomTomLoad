@@ -12,8 +12,8 @@ DEBUG_MODE = True
 class Constants:
     DEBUG_MODE: bool = DEBUG_MODE 
 
-    CALLBACK_URL: str = "https://127.0.0.1:8080/callback" if (DEBUG_MODE) else "https://tomtomload.com/callback"
-    ADMIN_URL: str = "https://127.0.0.1:5000/admin" if (DEBUG_MODE) else "https://tomtomload.com/admin"
+    CALLBACK_URL: str = "https://127.0.0.1:8080/callback" if DEBUG_MODE else "https://tomtomload.com/callback"
+    ADMIN_URL: str = "https://127.0.0.1:5000/admin" if DEBUG_MODE else "https://tomtomload.com/admin"
 
     IP_ROOT_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.parent.absolute()
     IP_CONFIG_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.absolute() / "config_files"
@@ -28,8 +28,16 @@ class Constants:
     BLACKLISTED_FILE_NAME: str = "blacklisted.json"
     ACL_FILE_NAME: str = "acl.json"
 
+    # --- GOOGLE CERTIFICATE AUTHORITY ---
+    GOOGLE_CA_POOL_NAME: str = "identity-proxy-ca-pool"
+    GOOGLE_CA_NAME: str = "identity-proxy-ca"
+    GOOGLE_SUBORDINATE_CA_NAME: str = "identity-proxy-subordinate-ca"
+    GOOGLE_COMMON_NAME: str = "identity-proxy-ca"
+    GOOGLE_ORGANIZATION: str = "identity-proxy-ca"
+    GOOGLE_CA_DURATION: str = "P10Y"
+
     # --- JWT ACCESS TOKEN ---
-    JWT_ACCESS_TOKEN_EXPIRATION_TIME: int = 60 if (DEBUG_MODE) else 10
+    JWT_ACCESS_TOKEN_EXPIRATION_TIME: int = 60 if DEBUG_MODE else 10
     JWT_ACCESS_TOKEN_SKEW_TIME: int = 30
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_SECRET_KEY: str = "identity-proxy-jwt-key"

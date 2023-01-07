@@ -11,6 +11,7 @@ from flask import Blueprint, request, session, redirect, abort, make_response
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 from static.classes.storage import GoogleCloudStorage
 from static.security.session_management import TTLSession
+from static.security.certificate_authority import GoogleCertificateAuthority, Certificates
 
 from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
@@ -22,6 +23,8 @@ potential_user = Blueprint('potential_user', __name__, template_folder="template
 
 ttlSession = TTLSession()
 storage = GoogleCloudStorage()
+certificate_authority = GoogleCertificateAuthority()
+certificate = Certificates()
 
 client_secrets_file = CONSTANTS.IP_CONFIG_FOLDER.joinpath("client_secret.json")
 flow = Flow.from_client_secrets_file(
@@ -70,10 +73,10 @@ def callback():
     token_request = google.auth.transport.requests.Request(session=cached_session)
 
     id_info = id_token.verify_oauth2_token(
-        id_token=credentials._id_token,
-        request=token_request,
-        audience=CONSTANTS.GOOGLE_CLIENT_ID,
-        clock_skew_in_seconds=CONSTANTS.GOOGLE_OAUTH_SKEW_TIME,
+        id_token = credentials._id_token,
+        request = token_request,
+        audience = CONSTANTS.GOOGLE_CLIENT_ID,
+        clock_skew_in_seconds = CONSTANTS.GOOGLE_OAUTH_SKEW_TIME,
     )
 
     session['id_info'] = id_info
@@ -96,7 +99,7 @@ def authorisation():
 
     custom_ip = {
         "ip": details["ip"],
-        "city" : details["city"],
+        "city": details["city"],
         "hostname": details["region"],
         "loc": details["loc"],
     }
@@ -107,10 +110,16 @@ def authorisation():
 
     # -----------------  END OF CONTEXT-AWARE ACCESS ----------------- #
 
+    # -----------------  START OF BLACKLIST ----------------- #
+
     storage.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, CONSTANTS.BLACKLISTED_FILE_NAME, CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"))
 
     with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"), "r") as f:
         blacklisted = json.load(f)
+
+    # -----------------  END OF BLACKLIST ----------------- #
+
+    # -----------------  START OF ACCESS CONTROL LIST ----------------- #
 
     storage.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, CONSTANTS.ACL_FILE_NAME, CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"))
 
@@ -131,10 +140,8 @@ def authorisation():
             if session['id_info'].get("email") == user:
                 role = 'admin'
 
-        # append new to acl
         if session['id_info'].get("email") not in acl['superadmin']:
             if session['id_info'].get("email") not in acl['admin']:
-
                 w = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r")
                 dict_acl = json.loads(w.read())
                 dict_acl[session['id_info'].get("email")] = ["read", "write", "delete"]
@@ -156,6 +163,75 @@ def authorisation():
         else:
             print("You are already superadmin.")
 
+        # -----------------  END OF ACCESS CONTROL LIST ----------------- #
+
+        # -----------------  START OF CERTIFICATE AUTHORITY ----------------- #
+
+        if certificate_authority.list_certificate_authorities(
+            project_id=CONSTANTS.GOOGLE_PROJECT_ID,
+            location=CONSTANTS.GOOGLE_LOCATION,
+            ca_pool=CONSTANTS.GOOGLE_CA_POOL
+        ):
+            print("CA Pool already exists.")
+
+            # -----------------  START OF CERTIFICATE CHECKING FOR SUPERADMIN ----------------- #
+
+            # if role == 'superadmin':
+            #     if not os.path.isfile(CONSTANTS.IP_CONFIG_FOLDER.joinpath("superadmin.crt")):
+            #         print("No superadmin certificate found. Generating new certificate...")
+            #         GoogleCertificateAuthority().generate_certificate(
+            #             name="superadmin",
+            #             role=role,
+            #             email=session['id_info'].get("email"),
+            #             ip=TTLContextAwareAccessClientIP,
+            #             user_agent=TTLContextAwareAccessClientUserAgent,
+            #             certificate=TTLContextAwareAccessClientCertificate
+            #         )
+            #
+            #         storage.upload_blob(
+            #             bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+            #             source_file_name=CONSTANTS.IP_CONFIG_FOLDER.joinpath("superadmin.crt"),
+            #             destination_blob_name="superadmin.crt"
+            #         )
+            #
+            #         TTLContextAwareAccessClientCertificate = CONSTANTS.IP_CONFIG_FOLDER.joinpath("superadmin.crt")
+
+            # -----------------  END OF CERTIFICATE CHECKING FOR SUPERADMIN ----------------- #
+
+        else:
+            certificate_authority.create_certificate_authority(
+                project_id=CONSTANTS.GOOGLE_PROJECT_ID,
+                location=CONSTANTS.GOOGLE_LOCATION,
+                ca_pool_name=CONSTANTS.GOOGLE_CA_POOL_NAME,
+                ca_name=CONSTANTS.GOOGLE_CA_NAME,
+                common_name=CONSTANTS.GOOGLE_COMMON_NAME,
+                organization=CONSTANTS.GOOGLE_ORGANIZATION,
+                ca_duration=CONSTANTS.GOOGLE_CA_DURATION,
+            )
+
+            certificate_authority.create_subordinate_ca(
+                project_id=CONSTANTS.GOOGLE_PROJECT_ID,
+                location=CONSTANTS.GOOGLE_LOCATION,
+                ca_pool_name=CONSTANTS.GOOGLE_CA_POOL_NAME,
+                ca_name=CONSTANTS.GOOGLE_CA_NAME,
+                subordinate_ca_name=CONSTANTS.GOOGLE_SUBORDINATE_CA_NAME,
+                common_name=CONSTANTS.GOOGLE_COMMON_NAME,
+                organization=CONSTANTS.GOOGLE_ORGANIZATION,
+                subordinate_ca_duration=CONSTANTS.GOOGLE_SUBORDINATE_CA_DURATION,
+            )
+
+            certificate.create_certificate_csr(
+                project_id=CONSTANTS.GOOGLE_PROJECT_ID,
+                location=CONSTANTS.GOOGLE_LOCATION,
+                ca_pool_name=CONSTANTS.GOOGLE_CA_POOL_NAME,
+                ca_name=CONSTANTS.GOOGLE_CA_NAME,
+                certificate_name=CONSTANTS.GOOGLE_CERTIFICATE_NAME,
+                certificate_lifetime=CONSTANTS.GOOGLE_CERTIFICATE_LIFETIME,
+                pem_csr=CONSTANTS.IP_CONFIG_FOLDER.joinpath("csr.pem"),
+            )
+
+        # -----------------  END OF CERTIFICATE AUTHORITY ----------------- #
+
         signed_header = {
             "TTL-Authenticated-User-Name": session['id_info'].get("name"),
             "TTL-JWTAuthenticated-User":
@@ -168,7 +244,7 @@ def authorisation():
                         "name": session['id_info'].get("name"),
                         "email": session['id_info'].get("email"),
                         "picture": session['id_info'].get("picture"),
-                        "role" : role
+                        "role" : role,
                     },
                 SECRET_CONSTANTS.JWT_SECRET_KEY,
                 algorithm=CONSTANTS.JWT_ALGORITHM

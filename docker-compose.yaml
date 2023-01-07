@@ -1,18 +1,54 @@
-services:
-  web:
-    build: .
-    container_name: identity-proxy
-    command: uvicorn main:app --host 0.0.0.0 --port 80 --reload
-    ports:
-      - 8080:80
-    volumes:
-      - .:/app
+version: '3'
 
-  web:
-    build: .
-    container_name: tomtomload
-    command: uvicorn main:app --host 0.0.0.0 --port 80 --reload
-    ports:
-      - 5000:80
-    volumes:
-      - .:/app
+services:
+    #  run SELinux in permissive mode
+    selinux:
+        image: fedora:latest
+        privileged: true
+        command: /usr/sbin/setenforce 0
+        volumes:
+        - /sys/fs/cgroup:/sys/fs/cgroup:ro
+        tmpfs:
+        - /run
+        - /tmp
+        network_mode: host
+
+    #  install and configure docker
+    docker:
+        image: fedora:latest
+        privileged: true
+        volumes:
+        - /sys/fs/cgroup:/sys/fs/cgroup:ro
+        tmpfs:
+        - /run
+        - /tmp
+        network_mode: host
+        depends_on:
+        - selinux
+        command: |
+            dnf install -y docker
+            systemctl enable docker
+            systemctl start docker
+            usermod
+
+    identity-proxy:
+        build: .
+        container_name: identity-proxy
+        command: uvicorn app:app --host 0.0.0.0 --port 80 --reload
+        ports:
+          - 8080:80
+        volumes:
+          - .:/identity-proxy
+        depends_on:
+          - docker
+
+    tomtomload:
+        build: .
+        container_name: tomtomload
+        command: uvicorn app:app --host 0.0.0.0 --port 80 --reload
+        ports:
+          - 5000:80
+        volumes:
+          - .:/tomtomload
+        depends_on:
+          - identity-proxy
