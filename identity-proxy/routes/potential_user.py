@@ -167,12 +167,12 @@ def authorisation():
 
         # -----------------  START OF CERTIFICATE AUTHORITY ----------------- #
 
-        if certificate_authority.list_certificate_authorities(
-            project_id=CONSTANTS.GOOGLE_PROJECT_ID,
-            location=CONSTANTS.GOOGLE_LOCATION,
-            ca_pool=CONSTANTS.GOOGLE_CA_POOL
-        ):
-            print("CA Pool already exists.")
+        # if certificate_authority.list_certificate_authorities(
+        #     project_id=CONSTANTS.GOOGLE_PROJECT_ID,
+        #     location=CONSTANTS.GOOGLE_LOCATION,
+        #     ca_pool=CONSTANTS.GOOGLE_CA_POOL
+        # ):
+        #     print("CA Pool already exists.")
 
             # -----------------  START OF CERTIFICATE CHECKING FOR SUPERADMIN ----------------- #
 
@@ -198,37 +198,37 @@ def authorisation():
 
             # -----------------  END OF CERTIFICATE CHECKING FOR SUPERADMIN ----------------- #
 
-        else:
-            certificate_authority.create_certificate_authority(
-                project_id=CONSTANTS.GOOGLE_PROJECT_ID,
-                location=CONSTANTS.GOOGLE_LOCATION,
-                ca_pool_name=CONSTANTS.GOOGLE_CA_POOL_NAME,
-                ca_name=CONSTANTS.GOOGLE_CA_NAME,
-                common_name=CONSTANTS.GOOGLE_COMMON_NAME,
-                organization=CONSTANTS.GOOGLE_ORGANIZATION,
-                ca_duration=CONSTANTS.GOOGLE_CA_DURATION,
-            )
-
-            certificate_authority.create_subordinate_ca(
-                project_id=CONSTANTS.GOOGLE_PROJECT_ID,
-                location=CONSTANTS.GOOGLE_LOCATION,
-                ca_pool_name=CONSTANTS.GOOGLE_CA_POOL_NAME,
-                ca_name=CONSTANTS.GOOGLE_CA_NAME,
-                subordinate_ca_name=CONSTANTS.GOOGLE_SUBORDINATE_CA_NAME,
-                common_name=CONSTANTS.GOOGLE_COMMON_NAME,
-                organization=CONSTANTS.GOOGLE_ORGANIZATION,
-                subordinate_ca_duration=CONSTANTS.GOOGLE_SUBORDINATE_CA_DURATION,
-            )
-
-            certificate.create_certificate_csr(
-                project_id=CONSTANTS.GOOGLE_PROJECT_ID,
-                location=CONSTANTS.GOOGLE_LOCATION,
-                ca_pool_name=CONSTANTS.GOOGLE_CA_POOL_NAME,
-                ca_name=CONSTANTS.GOOGLE_CA_NAME,
-                certificate_name=CONSTANTS.GOOGLE_CERTIFICATE_NAME,
-                certificate_lifetime=CONSTANTS.GOOGLE_CERTIFICATE_LIFETIME,
-                pem_csr=CONSTANTS.IP_CONFIG_FOLDER.joinpath("csr.pem"),
-            )
+        # else:
+        #     certificate_authority.create_certificate_authority(
+        #         project_id=CONSTANTS.GOOGLE_PROJECT_ID,
+        #         location=CONSTANTS.GOOGLE_LOCATION,
+        #         ca_pool_name=CONSTANTS.GOOGLE_CA_POOL_NAME,
+        #         ca_name=CONSTANTS.GOOGLE_CA_NAME,
+        #         common_name=CONSTANTS.GOOGLE_COMMON_NAME,
+        #         organization=CONSTANTS.GOOGLE_ORGANIZATION,
+        #         ca_duration=CONSTANTS.GOOGLE_CA_DURATION,
+        #     )
+        #
+        #     certificate_authority.create_subordinate_ca(
+        #         project_id=CONSTANTS.GOOGLE_PROJECT_ID,
+        #         location=CONSTANTS.GOOGLE_LOCATION,
+        #         ca_pool_name=CONSTANTS.GOOGLE_CA_POOL_NAME,
+        #         ca_name=CONSTANTS.GOOGLE_CA_NAME,
+        #         subordinate_ca_name=CONSTANTS.GOOGLE_SUBORDINATE_CA_NAME,
+        #         common_name=CONSTANTS.GOOGLE_COMMON_NAME,
+        #         organization=CONSTANTS.GOOGLE_ORGANIZATION,
+        #         subordinate_ca_duration=CONSTANTS.GOOGLE_SUBORDINATE_CA_DURATION,
+        #     )
+        #
+        #     certificate.create_certificate_csr(
+        #         project_id=CONSTANTS.GOOGLE_PROJECT_ID,
+        #         location=CONSTANTS.GOOGLE_LOCATION,
+        #         ca_pool_name=CONSTANTS.GOOGLE_CA_POOL_NAME,
+        #         ca_name=CONSTANTS.GOOGLE_CA_NAME,
+        #         certificate_name=CONSTANTS.GOOGLE_CERTIFICATE_NAME,
+        #         certificate_lifetime=CONSTANTS.GOOGLE_CERTIFICATE_LIFETIME,
+        #         pem_csr=CONSTANTS.IP_CONFIG_FOLDER.joinpath("csr.pem"),
+        #     )
 
         # -----------------  END OF CERTIFICATE AUTHORITY ----------------- #
 
