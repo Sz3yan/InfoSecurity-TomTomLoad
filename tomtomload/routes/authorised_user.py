@@ -5,7 +5,7 @@ import os
 
 from static.classes.config import CONSTANTS
 from static.classes.unique_id import UniqueID
-from static.security.storage import GoogleCloudStorage
+from static.classes.storage import GoogleCloudStorage
 from static.security.secure_data import GoogleCloudKeyManagement, Encryption
 from static.security.session_management import TTLSession
 from static.security.malware_analysis import malwareAnalysis
