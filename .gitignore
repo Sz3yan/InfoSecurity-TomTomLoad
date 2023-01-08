@@ -2,8 +2,7 @@
 .DS_Store
 
 *.json
-tomtomload/static/config_files/media/*.png
-tomtomload/static/config_files/media/*.json
+tomtomload/static/config_files/*
 
 # flask session
 session/
