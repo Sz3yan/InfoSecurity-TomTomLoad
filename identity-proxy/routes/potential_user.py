@@ -56,14 +56,16 @@ def login():
     )
 
     session["state"] = state
-
+    
+    # print(authorization_url)
+    # print(state)
     return redirect(authorization_url)
 
 
 @potential_user.route("/callback")
 def callback():
     flow.fetch_token(authorization_response=request.url)
-
+    # print("callback")
     if not session["state"] == request.args["state"]:
         abort(500)
 
@@ -91,7 +93,7 @@ def callback():
 @authenticated
 @potential_user.route("/authorisation", methods=["GET", "POST"])
 def authorisation():
-
+    # print("authroisation")
     # -----------------  START OF CONTEXT-AWARE ACCESS ----------------- #
 
     handler = ipinfo.getHandler(SECRET_CONSTANTS.IPINFO_TOKEN)
