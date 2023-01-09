@@ -70,10 +70,15 @@
                 </div>
             </div>
 
+            <p>{{ create_new_media_id }}</p>
+
             <div class="collection-edit__sidebar-wrap">
                 <div class="collection-edit__sidebar">
                     <div class="collection-edit__sidebar-sticky-wrap">
-                        <ul class="collection-edit__collection-actions"></ul>
+                        <ul class="collection-edit__collection-actions">
+                            <li><a id="action-create" href="/admin/media/upload/{{ create_new_media_id }}">Create New</a></li>
+                            <li><a href="/admin/media/delete/{{ media_id }}" class="delete-document__toggle">Delete</a></li>
+                        </ul>
                         <div class="collection-edit__document-actions"></div>
                         <div class="collection-edit__sidebar-fields">
                             <div class="render-fields"></div>

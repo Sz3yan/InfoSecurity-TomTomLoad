@@ -34,7 +34,7 @@ class Constants:
     KMS_KEY_ID: str = "tomtomload-symmetric-key"
 
     # --- JWT ACCESS TOKEN ---
-    JWT_ACCESS_TOKEN_EXPIRATION_TIME: int = 10 if DEBUG_MODE else 60
+    JWT_ACCESS_TOKEN_EXPIRATION_TIME: int = 60 if DEBUG_MODE else 10
     JWT_ACCESS_TOKEN_SKEW_TIME: int = 30 if DEBUG_MODE else 60
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_SECRET_KEY: str = "identity-proxy-jwt-key"

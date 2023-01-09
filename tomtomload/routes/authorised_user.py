@@ -248,6 +248,7 @@ def media():
 @check_signed_credential
 def media_id(id):
     media_id = id
+    create_new_media_id = UniqueID()
 
     path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "media" , media_id)
     path = path + ".png"
@@ -281,7 +282,7 @@ def media_id(id):
 
     # -----------------  END OF RETRIEVING FROM GCS ----------------- #
 
-    return render_template('authorised_admin/media_id.html', media_id=media_id, metadata=metadata, pic=decoded_jwt["picture"])
+    return render_template('authorised_admin/media_id.html', media_id=media_id, metadata=metadata, create_new_media_id=create_new_media_id, pic=decoded_jwt["picture"])
 
 
 @authorised_user.route("/media/upload/<regex('[0-9a-f]{32}'):id>", methods=['GET', 'POST'])
@@ -308,40 +309,64 @@ def media_upload(id):
         # -----------------  START OF MALWARE CHECKING ----------------- #
 
         # virus total stuff here
+        # malwareAnalysis()
+        # if not malwareAnalysis:
 
         # -----------------  END OF MALWARE CHECKING ----------------- #
 
-        malwareAnalysis()
-        if not malwareAnalysis:
 
-            # -----------------  START OF SAVING FILE LOCALLY ----------------- #
+        # -----------------  START OF SAVING FILE LOCALLY ----------------- #
 
-            temp_Mediafile_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, secure_filename(f.filename))
-            f.save(os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, secure_filename(f.filename)))
+        temp_Mediafile_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, secure_filename(f.filename))
+        f.save(os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, secure_filename(f.filename)))
 
-            # -----------------  END OF SAVING FILE LOCALLY ----------------- #
+        # -----------------  END OF SAVING FILE LOCALLY ----------------- #
 
-            # -----------------  START OF UPLOADING TO GCS ----------------- #
-            Ptoken = ttlSession.get_data_from_session("TTLAuthenticatedUserName", Ptoken=True)
+        # -----------------  START OF UPLOADING TO GCS ----------------- #
+        Ptoken = ttlSession.get_data_from_session("TTLAuthenticatedUserName", Ptoken=True)
 
-            if ttlSession.verfiy_Ptoken(Ptoken):
+        if ttlSession.verfiy_Ptoken(Ptoken):
 
-                # can compute hash here
+            # can compute hash here
 
-                storage.upload_blob(
-                    bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
-                    source_file_name=temp_Mediafile_path,
-                    destination_blob_name="Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_upload_id + "." + file_extension,
-                )
+            storage.upload_blob(
+                bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+                source_file_name=temp_Mediafile_path,
+                destination_blob_name="Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_upload_id + "." + file_extension,
+            )
 
-            else:
-                abort(403)
+        else:
+            abort(403)
 
-            # -----------------  END OF UPLOADING TO GCS ----------------- #
+        # -----------------  END OF UPLOADING TO GCS ----------------- #
 
-            return redirect(url_for('authorised_user.media_id', id=media_upload_id))
+        return redirect(url_for('authorised_user.media_id', id=media_upload_id))
 
     return render_template('authorised_admin/media_upload.html', upload_id=media_upload_id, name="k", pic=decoded_jwt["picture"])
+
+
+@authorised_user.route("/media/delete/<regex('[0-9a-f]{32}'):id>")
+@check_signed_credential
+@check_role_read
+def media_delete(id):
+    media_delete_id = id
+
+    # -----------------  START OF DELETING FROM GCS ----------------- #
+
+    Ptoken = ttlSession.get_data_from_session("TTLAuthenticatedUserName", Ptoken=True)
+
+    if ttlSession.verfiy_Ptoken(Ptoken):
+        storage.delete_blob(
+            bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+            blob_name="Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_delete_id + ".png"
+        )
+
+    else:
+        abort(403)
+
+    # -----------------  END OF DELETING FROM GCS ----------------- #
+
+    return redirect(url_for('authorised_user.media'))
 
 
 @authorised_user.route("/posts")
