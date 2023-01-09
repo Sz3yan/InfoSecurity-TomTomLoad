@@ -1,11 +1,16 @@
 # for mac
 .DS_Store
 
+.idea/
+
 *.json
-tomtomload/static/config_files/*
+tomtomload/static/config_files/media/
+tomtomload/static/config_files/post/
 
 # flask session
-session/
+sessions/
+tomtomload/sessions/
+identity-proxy/sessions/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
