@@ -31,12 +31,12 @@ def verification():
     return jsonify(token=verified_user.id_token),200
     
 
-@api.route("/v1/<route>")
+@api.route("/v1/<route>", methods=['GET', 'POST'])
 @ttl_jwt_authentication
-def ip_api_login(route):
+def ip_api_route(route):
     # flow.fetch_token(authorization_response=request.url)
     print("Authorization", request.headers['Authorization'])
-    
+
     verified_user = flow.credentials
     request_session = requests.session()
     cached_session = cachecontrol.CacheControl(request_session)
@@ -53,5 +53,31 @@ def ip_api_login(route):
         print(id_info)
         # return jsonify(message="hi"),200
         return redirect("https://127.0.0.1:5000/api/view_user")
+    else:
+        return jsonify(error="User profile not found.")
+
+
+@api.route("/v1/<route>/<id>", methods=['GET', 'PUT', 'DELETE'])
+@ttl_jwt_authentication
+def ip_api_route_wif_id(route, id):
+    # flow.fetch_token(authorization_response=request.url)
+    print("Authorization", request.headers['Authorization'])
+
+    verified_user = flow.credentials
+    request_session = requests.session()
+    cached_session = cachecontrol.CacheControl(request_session)
+    token_request = google.auth.transport.requests.Request(session=cached_session)
+
+    id_info = id_token.verify_oauth2_token(
+        id_token = verified_user.id_token,
+        request = token_request,
+        audience = CONSTANTS.GOOGLE_CLIENT_ID2,
+        clock_skew_in_seconds = CONSTANTS.GOOGLE_OAUTH_SKEW_TIME,
+    )
+
+    if id_info != None:
+        print(id_info)
+        return jsonify(message="hi"),200
+        # return redirect("https://127.0.0.1:5000/api/view_user")
     else:
         return jsonify(error="User profile not found.")
