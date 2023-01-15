@@ -12,6 +12,7 @@ from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 from static.classes.storage import GoogleCloudStorage
 from static.security.session_management import TTLSession
 from static.security.certificate_authority import GoogleCertificateAuthority, Certificates
+from static.functions.check_authentication import authenticated
 
 from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
@@ -35,13 +36,13 @@ flow = Flow.from_client_secrets_file(
 
 # -----------------  START OF WRAPPER ----------------- #
 
-def authenticated(func):
-    @wraps(func)
-    def decorated_function(*args, **kwargs):
-        if "id_info" in session:
-            return func(*args, **kwargs)
+# def authenticated(func):
+#     @wraps(func)
+#     def decorated_function(*args, **kwargs):
+#         if "id_info" in session:
+#             return func(*args, **kwargs)
 
-    return decorated_function
+#     return decorated_function
 
 # -----------------  END OF WRAPPER ----------------- #
 
@@ -90,8 +91,8 @@ def callback():
 
 # -----------------  START OF AUTHORISATION ----------------- #
 
-@authenticated
 @potential_user.route("/authorisation", methods=["GET", "POST"])
+@authenticated
 def authorisation():
     # print("authroisation")
     # -----------------  START OF CONTEXT-AWARE ACCESS ----------------- #

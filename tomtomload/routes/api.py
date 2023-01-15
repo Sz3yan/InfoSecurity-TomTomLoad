@@ -1,20 +1,20 @@
 from static.classes.config import CONSTANTS
 from static.classes.storage import GoogleCloudStorage
 #from static.classes.form import login 
-from flask import Blueprint, render_template, request, redirect, abort
+from flask import Blueprint, render_template, request, redirect, abort, jsonify
 
 api = Blueprint('api', __name__, url_prefix="/api", template_folder="templates", static_folder='static')
 
 # ------ Admin Login API ------
-@api.route("/admin/login")
-def api_login():
-    pass
+# @api.route("/admin/login")
+# def api_login():
+#     pass
 
 
 # ------ Admin User API ------
-@api.route("/login")
-def api_admin_user_login():
-    pass
+# @api.route("/login")
+# def api_admin_user_login():
+#     pass
 
 
 # ------ User API ------
@@ -25,7 +25,7 @@ def api_create_user():
 
 @api.route("/view_user", methods=["GET"])
 def api_view_users():
-    pass
+    return jsonify(message="hello"),200
 
 
 @api.route("/view_user/<regex('[0-9]{21}'):id>", methods=["GET"])

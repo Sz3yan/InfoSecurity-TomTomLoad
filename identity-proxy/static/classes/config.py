@@ -47,6 +47,9 @@ class Constants:
     GOOGLE_CLIENT_ID: str = "526204912239-9t2aptlchfeclmkcsegpp69cb690jre3.apps.googleusercontent.com"
     GOOGLE_OAUTH_SKEW_TIME: int = 2
 
+    # --- GOOGLE OAUTH API ---
+    GOOGLE_CLIENT_ID2: str = "526204912239-ug33fg2dkq2jm55p0igbp7qc8v93gio4.apps.googleusercontent.com"
+
     # --- IPINFO ---
     IPINFO: str = "ipinfo"
 
