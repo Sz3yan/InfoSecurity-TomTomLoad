@@ -6,11 +6,12 @@ import google_crc32c
 import pathlib
 import crcmod
 import six
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 from google.cloud import kms
 from google.cloud import secretmanager
 from google.protobuf import duration_pb2
-
 
 config_file = pathlib.Path(__file__).parent.parent.absolute()
 join_sz3yan = os.path.join(config_file, "config_files/service_account.json")
@@ -19,7 +20,6 @@ join_sz3yan = os.path.join(config_file, "config_files/service_account.json")
 class GoogleCloudKeyManagement:
     def __init__(self):
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = join_sz3yan
-        
 
     # create once only when setup
     def create_key_ring(self, project_id, location_id, key_ring_id):
@@ -29,10 +29,10 @@ class GoogleCloudKeyManagement:
 
         key_ring = {}
 
-        created_key_ring = client.create_key_ring(request={'parent': location_name, 'key_ring_id': key_ring_id, 'key_ring': key_ring})
+        created_key_ring = client.create_key_ring(
+            request={'parent': location_name, 'key_ring_id': key_ring_id, 'key_ring': key_ring})
         print('Created key ring: {}'.format(created_key_ring.name))
         return created_key_ring
-
 
     # for key rotation. Google will automatically use the correct key version to encrypt and decrypt data (if key version is enabled)
     def create_key_rotation_schedule(self, project_id, location_id, key_ring_id, key_id):
@@ -58,10 +58,10 @@ class GoogleCloudKeyManagement:
             }
         }
 
-        created_key = client.create_crypto_key(request={'parent': key_ring_name, 'crypto_key_id': key_id, 'crypto_key': key})
+        created_key = client.create_crypto_key(
+            request={'parent': key_ring_name, 'crypto_key_id': key_id, 'crypto_key': key})
         print('Created labeled key: {}'.format(created_key.name))
         return created_key
-
 
     # creates key based on Hardware Security Module (HSM). To be use for encryption and decryption.
     def create_key_hsm(self, project_id, location_id, key_ring_id, key_id):
@@ -88,7 +88,6 @@ class GoogleCloudKeyManagement:
         print('Created hsm key: {}'.format(created_key.name))
         return created_key
 
-
     def retrieve_key(self, project_id, location_id, key_ring_id, key_id):
         client = kms.KeyManagementServiceClient()
 
@@ -101,7 +100,6 @@ class Encryption:
     def __init__(self):
         pass
 
-
     def crc32c(self, data):
         """
         Calculates the CRC32C checksum of the provided data.
@@ -110,10 +108,9 @@ class Encryption:
         Returns:
             An int representing the CRC32C checksum of the provided bytes.
         """
-        
+
         crc32c_fun = crcmod.predefined.mkPredefinedCrcFun('crc-32c')
         return crc32c_fun(six.ensure_binary(data))
-
 
     def encrypt_symmetric(self, project_id, location_id, key_ring_id, key_id, plaintext):
         """
@@ -146,7 +143,7 @@ class Encryption:
 
         # Call the API.
         encrypt_response = client.encrypt(
-        request={'name': key_name, 'plaintext': plaintext_bytes, 'plaintext_crc32c': plaintext_crc32c})
+            request={'name': key_name, 'plaintext': plaintext_bytes, 'plaintext_crc32c': plaintext_crc32c})
 
         # Optional, but recommended: perform integrity verification on encrypt_response.
         # For more details on ensuring E2E in-transit integrity to and from Cloud KMS visit:
@@ -159,7 +156,6 @@ class Encryption:
 
         print('Ciphertext: {}'.format(base64.b64encode(encrypt_response.ciphertext)))
         return encrypt_response
-
 
     def decrypt_symmetric(self, project_id, location_id, key_ring_id, key_id, ciphertext):
         """
@@ -206,7 +202,6 @@ class GoogleSecretManager:
     def __init__(self):
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = join_sz3yan
 
-
     def create_secret(self, project_id, secret_id):
         """
         Create a new secret with the given name. A secret is a logical wrapper
@@ -229,7 +224,6 @@ class GoogleSecretManager:
 
         # Print the new secret name.
         print("Created secret: {}".format(response.name))
-
 
     def add_secret_version(self, project_id, secret_id, payload):
         """
@@ -259,7 +253,6 @@ class GoogleSecretManager:
         # Print the new secret version name.
         print("Added secret version: {}".format(response.name))
 
-
     def get_secret_payload(self, project_id, secret_id, version_id):
         """
         Get the payload of the given secret version.
@@ -271,7 +264,6 @@ class GoogleSecretManager:
         payload = response.payload.data.decode("UTF-8")
 
         return payload
-
 
     def list_secrets(self, project_id):
         """
@@ -285,7 +277,6 @@ class GoogleSecretManager:
         for secret in client.list_secrets(request={"parent": parent}):
             print("Found secret: {}".format(secret.name))
 
-
     def delete_secret(self, project_id, secret_id):
         """
         Delete the secret with the given name and all of its versions.
@@ -296,6 +287,7 @@ class GoogleSecretManager:
 
         # Delete the secret.
         client.delete_secret(request={"name": name})
+
 
 
 # if __name__ == "__main__":
@@ -311,12 +303,12 @@ class GoogleSecretManager:
 
 #     print("Encrypted envelope key: {}".format(envelope_key))
 
-    # decrypt_envelope_key = encryption.decrypt_symmetric(
-    #     project_id="infosec-62c05",
-    #     location_id="global",
-    #     key_ring_id="tomtomload",
-    #     key_id="tomtomload-symmetric-key",
-    #     ciphertext=b"\n$\000\210B\314\270\326\335\340`\263\3461\237\320\036.n\330\033\023\357_\363RL\247\340\2433\337>\001\377C\236\255\022\270\001*\265\001\n\024\n\014\336\272\266?\207q{.5\247\000y\020\274\333\244\325\002\022\202\001\nzM\355\335?\014Q\214\0043:X0\221\270H\033\251\210\301\026:<\356K\314\314\017\321c\331\'5R\217,*\365\375\333\264\204\024V)\230\214D\276\221o\202\320\3003&\357\014:\255\364\222\272\025\333\037\215\346#\r\313\337\260\237\207\211aj\2366\030,\373\2646\"-\250\274X%\216\204\035Q\326\373o\3331\324.\325\336\304\254f]5\3569\234`\336\230A\325B\262\337\344\006\222\020\213\320\225\363\016\032\030\n\020\n\325\010\211\236\326f\271+\032\351\300\031\337\224q\020\353\251\340\300\014"
-    # )
+# decrypt_envelope_key = encryption.decrypt_symmetric(
+#     project_id="infosec-62c05",
+#     location_id="global",
+#     key_ring_id="tomtomload",
+#     key_id="tomtomload-symmetric-key",
+#     ciphertext=b"\n$\000\210B\314\270\326\335\340`\263\3461\237\320\036.n\330\033\023\357_\363RL\247\340\2433\337>\001\377C\236\255\022\270\001*\265\001\n\024\n\014\336\272\266?\207q{.5\247\000y\020\274\333\244\325\002\022\202\001\nzM\355\335?\014Q\214\0043:X0\221\270H\033\251\210\301\026:<\356K\314\314\017\321c\331\'5R\217,*\365\375\333\264\204\024V)\230\214D\276\221o\202\320\3003&\357\014:\255\364\222\272\025\333\037\215\346#\r\313\337\260\237\207\211aj\2366\030,\373\2646\"-\250\274X%\216\204\035Q\326\373o\3331\324.\325\336\304\254f]5\3569\234`\336\230A\325B\262\337\344\006\222\020\213\320\225\363\016\032\030\n\020\n\325\010\211\236\326f\271+\032\351\300\031\337\224q\020\353\251\340\300\014"
+# )
 
-    # print("Decrypted envelope key: {}".format(decrypt_envelope_key))
+# print("Decrypted envelope key: {}".format(decrypt_envelope_key))

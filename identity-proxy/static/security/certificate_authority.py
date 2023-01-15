@@ -1,474 +1,282 @@
 import os
 import pathlib
-
-import google.cloud.security.privateca_v1 as privateca_v1
-from google.protobuf import duration_pb2
-
+from OpenSSL import crypto
 
 config_file = pathlib.Path(__file__).parent.parent.absolute()
-join_sz3yan = os.path.join(config_file, "config_files/service_account.json")
+certificate_directory = os.path.join(config_file, "config_files/certificates")
 
 
-class GoogleCertificateAuthority:
-    def __init__(self):
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = join_sz3yan
+class CertificateAuthority:
+    def __post_init__(self) -> None:
+        os.mkdir(certificate_directory)
 
-    # --- CERTIFICATION AUTHORITY ---
     def create_certificate_authority(
-        self,
-        project_id: str,
-        location: str,
-        ca_pool_name: str,
-        ca_name: str,
-        common_name: str,
-        organization: str,
-        ca_duration: int,
+            self,
+            ca_name: str,
+            ca_duration: int,
     ) -> None:
         """
         Create Certificate Authority which is the root CA in the given CA Pool. This CA will be
         responsible for signing certificates within this pool.
 
         Args:
-            project_id: project ID or project number of the Cloud project you want to use.
-            location: location you want to use. For a list of locations, see: https://cloud.google.com/certificate-authority-service/docs/locations.
-            ca_pool_name: set it to the CA Pool under which the CA should be created.
             ca_name: unique name for the CA.
-            common_name: a title for your certificate authority.
-            organization: the name of your company for your certificate authority.
             ca_duration: the validity of the certificate authority in seconds.
         """
 
-        caServiceClient = privateca_v1.CertificateAuthorityServiceClient()
+        # generate a CA private key
+        CAkey = crypto.PKey()
+        CAkey.generate_key(type=crypto.TYPE_RSA, bits=4096)
 
-        # Set the types of Algorithm used to create a cloud KMS key.
-        key_version_spec = privateca_v1.CertificateAuthority.KeyVersionSpec(
-            algorithm=privateca_v1.CertificateAuthority.SignHashAlgorithm.RSA_PKCS1_4096_SHA256
-        )
+        # create a CA certificate
+        ca = crypto.X509()
+        ca.set_version(3)
+        ca.set_serial_number(1000)
+        ca.get_subject().CN = ca_name
+        ca.gmtime_adj_notBefore(0)
+        ca.gmtime_adj_notAfter(ca_duration)
+        ca.set_issuer(ca.get_subject())
+        ca.set_pubkey(key)
+        ca.add_extensions([
+            crypto.X509Extension(b"basicConstraints", True, b"CA:TRUE"),
+            crypto.X509Extension(b"keyUsage", True, b"keyCertSign, cRLSign"),
+            crypto.X509Extension(b"subjectKeyIdentifier", False, b"hash", subject=ca),
+        ])
+        ca.sign(key, "sha256")
 
-        # Set CA subject config.
-        subject_config = privateca_v1.CertificateConfig.SubjectConfig(
-            subject=privateca_v1.Subject(common_name=common_name, organization=organization)
-        )
+        # save the CA private key and certificate to files
+        # This will create a CA private key and certificate
+        # that you can use to sign certificate requests.
+        # You can then use the CA certificate to verify the authenticity
+        # of signed certificates.
+        with open("ca.key", "wb") as f:
+            f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, key))
 
-        # Set the key usage options for X.509 fields.
-        x509_parameters = privateca_v1.X509Parameters(
-            key_usage=privateca_v1.KeyUsage(
-                base_key_usage=privateca_v1.KeyUsage.KeyUsageOptions(
-                    crl_sign=True,
-                    cert_sign=True,
-                )
-            ),
-            ca_options=privateca_v1.X509Parameters.CaOptions(
-                is_ca=True,
-            ),
-        )
+        with open("ca.crt", "wb") as f:
+            f.write(crypto.dump_certificate(crypto.FILETYPE_PEM, ca))
 
-        # Set certificate authority settings.
-        certificate_authority = privateca_v1.CertificateAuthority(
-            # CertificateAuthority.Type.SELF_SIGNED denotes that this CA is a root CA.
-            type_=privateca_v1.CertificateAuthority.Type.SELF_SIGNED,
-            key_spec=key_version_spec,
-            config=privateca_v1.CertificateConfig(
-                subject_config=subject_config,
-                x509_config=x509_parameters,
-            ),
-            lifetime=duration_pb2.Duration(seconds=ca_duration),
-        )
-
-        ca_pool_path = caServiceClient.ca_pool_path(project_id, location, ca_pool_name)
-
-        # Create the CertificateAuthorityRequest.
-        request = privateca_v1.CreateCertificateAuthorityRequest(
-            parent=ca_pool_path,
-            certificate_authority_id=ca_name,
-            certificate_authority=certificate_authority,
-        )
-
-        operation = caServiceClient.create_certificate_authority(request=request)
-        result = operation.result()
-
-        print("Operation result:", result)
-
-    # --- INTERMEDIATE CERTIFICATE AUTHORITY ---
     def create_subordinate_ca(
-        self,
-        project_id: str,
-        location: str,
-        ca_pool_name: str,
-        subordinate_ca_name: str,
-        common_name: str,
-        organization: str,
-        domain: str,
-        ca_duration: int,
+            self,
+            subordinate_ca_name: str,
+            ca_duration: int,
     ) -> None:
         """
         Create Certificate Authority (CA) which is the subordinate CA in the given CA Pool.
         Args:
-            project_id: project ID or project number of the Cloud project you want to use.
-            location: location you want to use. For a list of locations, see: https://cloud.google.com/certificate-authority-service/docs/locations.
-            ca_pool_name: set it to the CA Pool under which the CA should be created.
             subordinate_ca_name: unique name for the Subordinate CA.
-            common_name: a title for your certificate authority.
-            organization: the name of your company for your certificate authority.
-            domain: the name of your company for your certificate authority.
             ca_duration: the validity of the certificate authority in seconds.
         """
 
-        ca_service_client = privateca_v1.CertificateAuthorityServiceClient()
+        with open("parent_ca.key", "rb") as f:
+            root_key = crypto.load_privatekey(crypto.FILETYPE_PEM, f.read())
 
-        # Set the type of Algorithm
-        key_version_spec = privateca_v1.CertificateAuthority.KeyVersionSpec(
-            algorithm=privateca_v1.CertificateAuthority.SignHashAlgorithm.RSA_PKCS1_4096_SHA256
-        )
+        with open("parent_ca.crt", "rb") as f:
+            root_cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
 
-        # Set CA subject config.
-        subject_config = privateca_v1.CertificateConfig.SubjectConfig(
-            subject=privateca_v1.Subject(
-                common_name=common_name, organization=organization
-            ),
-            # Set the fully qualified domain name.
-            subject_alt_name=privateca_v1.SubjectAltNames(dns_names=[domain]),
-        )
+        # generate subordinate CA private key
+        subordinate_key = crypto.PKey()
+        subordinate_key.generate_key(type=crypto.TYPE_RSA, bits=4096)
 
-        # Set the key usage options for X.509 fields.
-        x509_parameters = privateca_v1.X509Parameters(
-            key_usage=privateca_v1.KeyUsage(
-                base_key_usage=privateca_v1.KeyUsage.KeyUsageOptions(
-                    crl_sign=True,
-                    cert_sign=True,
-                )
-            ),
-            ca_options=privateca_v1.X509Parameters.CaOptions(
-                is_ca=True,
-            ),
-        )
+        # Create a subordinate CA certificate request
+        req = crypto.X509Req()
+        subject = req.get_subject()
+        subject.CN = subordinate_ca_name
+        req.set_pubkey(key)
+        req.sign(key, "sha256")
 
-        # Set certificate authority settings.
-        certificate_authority = privateca_v1.CertificateAuthority(
-            type_=privateca_v1.CertificateAuthority.Type.SUBORDINATE,
-            key_spec=key_version_spec,
-            config=privateca_v1.CertificateConfig(
-                subject_config=subject_config,
-                x509_config=x509_parameters,
-            ),
-            # Set the CA validity duration.
-            lifetime=duration_pb2.Duration(seconds=ca_duration),
-        )
+        # Create a certificate extension for the certificate request that indicates that it is a subordinate CA
+        ext = crypto.X509Extension(b"basicConstraints", True, b"CA:TRUE, pathlen:0")
+        req.add_extensions([ext])
 
-        ca_pool_path = ca_service_client.ca_pool_path(project_id, location, ca_pool_name)
+        # Sign the subordinate CA certificate request with the parent CA
+        cert = crypto.X509()
+        cert.set_subject(req.get_subject())
+        cert.set_serial_number(1000)
+        cert.gmtime_adj_notBefore(0)
+        cert.gmtime_adj_notAfter(ca_duration)
+        cert.set_issuer(root_cert.get_subject())
+        cert.set_pubkey(req.get_pubkey())
+        cert.add_extensions(req.get_extensions())
+        cert.sign(root_key, "sha256")
 
-        # Create the CertificateAuthorityRequest.
-        request = privateca_v1.CreateCertificateAuthorityRequest(
-            parent=ca_pool_path,
-            certificate_authority_id=subordinate_ca_name,
-            certificate_authority=certificate_authority,
-        )
+        # Save the subordinate CA private key and certificate to files
+        with open("sub_ca.key", "wb") as f:
+            f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, key))
 
-        operation = ca_service_client.create_certificate_authority(request=request)
-        result = operation.result()
+        with open("sub_ca.crt", "wb") as f:
+            f.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
 
-        print(f"Operation result: {result}")
-
-    # --- DELETE CERTIFICATE AUTHORITY ---
-    def delete_certificate_authority(
-        self,
-        project_id: str, location: str, ca_pool_name: str, ca_name: str
-    ) -> None:
+    def revoke_subordinate_ca(self) -> None:
         """
-        Delete the Certificate Authority from the specified CA pool.
-        Before deletion, the CA must be disabled and must not contain any active certificates.
+        Revoke the Certificate Authority.
 
-        Args:
-            project_id: project ID or project number of the Cloud project you want to use.
-            location: location you want to use. For a list of locations, see: https://cloud.google.com/certificate-authority-service/docs/locations.
-            ca_pool_name: the name of the CA pool under which the CA is present.
-            ca_name: the name of the CA to be deleted.
         """
 
-        caServiceClient = privateca_v1.CertificateAuthorityServiceClient()
-        ca_path = caServiceClient.certificate_authority_path(
-            project_id, location, ca_pool_name, ca_name
-        )
+        # Load the subordinate CA certificate
+        with open("sub_ca.crt", "rb") as f:
+            sub_ca_cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
 
-        # Check if the CA is enabled.
-        ca_state = caServiceClient.get_certificate_authority(name=ca_path).state
-        print(ca_state)
-        if ca_state == privateca_v1.CertificateAuthority.State.ENABLED:
-            print(
-                "Please disable the Certificate Authority before deletion ! Current state:",
-                ca_state,
-            )
+        # Load the parent CA private key and certificate
+        with open("parent_ca.key", "rb") as f:
+            parent_key = crypto.load_privatekey(crypto.FILETYPE_PEM, f.read())
 
-        # Create the DeleteCertificateAuthorityRequest.
-        # Setting the ignore_active_certificates to True will delete the CA
-        # even if it contains active certificates. Care should be taken to re-anchor
-        # the certificates to new CA before deleting.
-        request = privateca_v1.DeleteCertificateAuthorityRequest(
-            name=ca_path, ignore_active_certificates=False
-        )
+        with open("parent_ca.crt", "rb") as f:
+            parent_cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
 
-        # Delete the Certificate Authority.
-        operation = caServiceClient.delete_certificate_authority(request=request)
-        result = operation.result()
+        # Create a certificate revocation list (CRL) with the revoked subordinate CA certificate
+        crl = crypto.CRL()
+        crl.set_lastUpdate(sub_ca_cert.get_notBefore())
+        crl.set_nextUpdate(sub_ca_cert.get_notAfter())
+        crl.add_revoked(sub_ca_cert)
+        crl.sign(parent_key, "sha256")
 
-        print("Operation result", result)
+        with open("crl.pem", "wb") as f:
+            f.write(crypto.dump_crl(crypto.FILETYPE_PEM, crl))
 
-        # Get the current CA state.
-        ca_state = caServiceClient.get_certificate_authority(name=ca_path).state
-
-        # Check if the CA has been deleted.
-        if ca_state == privateca_v1.CertificateAuthority.State.DELETED:
-            print("Successfully deleted Certificate Authority:", ca_name)
-        else:
-            print(
-                "Unable to delete Certificate Authority. Please try again ! Current state:",
-                ca_state,
-            )
-
-
-    # --- DISABLE CERTIFICATE AUTHORITY ---
-    def disable_certificate_authority(
-        self,
-        project_id: str, location: str, ca_pool_name: str, ca_name: str
-    ) -> None:
+    def load_crl(self) -> None:
         """
-        Disable a Certificate Authority which is present in the given CA pool.
-
-        Args:
-            project_id: project ID or project number of the Cloud project you want to use.
-            location: location you want to use. For a list of locations, see: https://cloud.google.com/certificate-authority-service/docs/locations.
-            ca_pool_name: the name of the CA pool under which the CA is present.
-            ca_name: the name of the CA to be disabled.
+        Load the Certificate Revocation List (CRL) from the file system.
         """
 
-        caServiceClient = privateca_v1.CertificateAuthorityServiceClient()
-        ca_path = caServiceClient.certificate_authority_path(
-            project_id, location, ca_pool_name, ca_name
-        )
+        with open("crl.pem", "rb") as f:
+            crl = crypto.load_crl(crypto.FILETYPE_PEM, f.read())
 
-        # Create the Disable Certificate Authority Request.
-        request = privateca_v1.DisableCertificateAuthorityRequest(name=ca_path)
+        # Verify the CRL
+        store = crypto.X509Store()
+        store.add_crl(crl)
+        store.set_flags(crypto.X509StoreFlags.CRL_CHECK)
+        store_ctx = crypto.X509StoreContext(store, crl)
+        store_ctx.verify_certificate()
 
-        # Disable the Certificate Authority.
-        operation = caServiceClient.disable_certificate_authority(request=request)
-        result = operation.result()
-
-        print("Operation result:", result)
-
-        # Get the current CA state.
-        ca_state = caServiceClient.get_certificate_authority(name=ca_path).state
-
-        # Check if the CA is disabled.
-        if ca_state == privateca_v1.CertificateAuthority.State.DISABLED:
-            print("Disabled Certificate Authority:", ca_name)
-        else:
-            print("Cannot disable the Certificate Authority ! Current CA State:", ca_state)
-
-    # --- ENABLE CERTIFICATE AUTHORITY ---
-    def enable_certificate_authority(
-        self,
-        project_id: str, location: str, ca_pool_name: str, ca_name: str
-    ) -> None:
+    def create_certificate_from_csr():
         """
-        Enable the Certificate Authority present in the given ca pool.
-        CA cannot be enabled if it has been already deleted.
-
-        Args:
-            project_id: project ID or project number of the Cloud project you want to use.
-            location: location you want to use. For a list of locations, see: https://cloud.google.com/certificate-authority-service/docs/locations.
-            ca_pool_name: the name of the CA pool under which the CA is present.
-            ca_name: the name of the CA to be enabled.
+        Create a certificate using the given CA.
         """
 
-        caServiceClient = privateca_v1.CertificateAuthorityServiceClient()
-        ca_path = caServiceClient.certificate_authority_path(
-            project_id, location, ca_pool_name, ca_name
-        )
+        # load the CSR and the CA private key and certificate
+        with open("csr.pem", "rb") as f:
+            req = crypto.load_certificate_request(crypto.FILETYPE_PEM, f.read())
 
-        # Create the Enable Certificate Authority Request.
-        request = privateca_v1.EnableCertificateAuthorityRequest(
-            name=ca_path,
-        )
+        with open("ca.key", "rb") as f:
+            ca_key = crypto.load_privatekey(crypto.FILETYPE_PEM, f.read())
 
-        # Enable the Certificate Authority.
-        operation = caServiceClient.enable_certificate_authority(request=request)
-        result = operation.result()
+        with open("ca.crt", "rb") as f:
+            ca_cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
 
-        print("Operation result:", result)
+        # Create a certificate and sign it with the CA
+        cert = crypto.X509()
+        cert.set_subject(req.get_subject())
+        cert.set_serial_number(1000)
+        cert.gmtime_adj_notBefore(0)
+        cert.gmtime_adj_notAfter(10 * 365 * 24 * 60 * 60)
+        cert.set_issuer(ca_cert.get_subject())
+        cert.set_pubkey(req.get_pubkey())
+        cert.sign(ca_key, "sha256")
 
-        # Get the current CA state.
-        ca_state = caServiceClient.get_certificate_authority(name=ca_path).state
+        # Save the certificate to a file
+        with open("cert.pem", "wb") as f:
+            f.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
 
-        # Check if the CA is enabled.
-        if ca_state == privateca_v1.CertificateAuthority.State.ENABLED:
-            print("Enabled Certificate Authority:", ca_name)
-        else:
-            print("Cannot enable the Certificate Authority ! Current CA State:", ca_state)
-
-    # --- LIST CERTIFICATE AUTHORITY ---
-    def list_certificate_authorities(
-        self,
-        project_id: str, location: str, ca_pool_name: str
-    ) -> None:
+    def verify_certificate(self) -> None:
         """
-        List all Certificate authorities present in the given CA Pool.
-
-        Args:
-            project_id: project ID or project number of the Cloud project you want to use.
-            location: location you want to use. For a list of locations, see: https://cloud.google.com/certificate-authority-service/docs/locations.
-            ca_pool_name: the name of the CA pool under which the CAs to be listed are present.
+        Verify the certificate.
         """
 
-        caServiceClient = privateca_v1.CertificateAuthorityServiceClient()
+        # Load the CA certificate
+        with open("ca.crt", "rb") as f:
+            ca = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
 
-        ca_pool_path = caServiceClient.ca_pool_path(project_id, location, ca_pool_name)
+        # Load the certificate
+        with open("cert.pem", "rb") as f:
+            cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
 
-        # List the CA name and its corresponding state.
-        for ca in caServiceClient.list_certificate_authorities(parent=ca_pool_path):
-            print(ca.name, "is", ca.state)
+        # Verify the certificate
+        store = crypto.X509Store()
+        store.add_cert(ca)
+        store_ctx = crypto.X509StoreContext(store, cert)
+        store_ctx.verify_certificate()
 
 
 class Certificates:
-    def __init__(self):
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = join_sz3yan
-
-    # --- CREATE CERTIFICATE SIGNING REQUEST ---
     def create_certificate_csr(
-        self,
-        project_id: str,
-        location: str,
-        ca_pool_name: str,
-        ca_name: str,
-        certificate_name: str,
-        certificate_lifetime: int,
-        pem_csr: str,
+            self,
+            ca_name: str,
+            certificate_lifetime: int,
     ) -> None:
         """
         Create a Certificate which is issued by the specified Certificate Authority (CA).
         The certificate details and the public key is provided as a Certificate Signing Request (CSR).
         Args:
-            project_id: project ID or project number of the Cloud project you want to use.
-            location: location you want to use. For a list of locations, see: https://cloud.google.com/certificate-authority-service/docs/locations.
-            ca_pool_name: set a unique name for the CA pool.
             ca_name: the name of the certificate authority to sign the CSR.
-            certificate_name: set a unique name for the certificate.
             certificate_lifetime: the validity of the certificate in seconds.
-            pem_csr: set the Certificate Issuing Request in the pem encoded format.
         """
 
-        ca_service_client = privateca_v1.CertificateAuthorityServiceClient()
+        # generate private key
+        key = crypto.PKey()
+        key.generate_key(crypto.TYPE_RSA, 4096)
 
-        # The public key used to sign the certificate can be generated using any crypto library/framework.
-        # Also you can use Cloud KMS to retrieve an already created public key.
-        # For more info, see: https://cloud.google.com/kms/docs/retrieve-public-key.
+        # create a certificate request
+        req = crypto.X509Req()
+        subject = req.get_subject()
+        subject.CN = ca_name
+        req.set_pubkey(key)
+        req.gmtime_adj_notBefore(0)
+        req.gmtime_adj_notAfter(certificate_lifetime)
+        req.sign(key, "sha256")
 
-        # Create certificate with CSR.
-        # The pem_csr contains the public key and the domain details required.
-        certificate = privateca_v1.Certificate(
-            pem_csr=pem_csr,
-            lifetime=duration_pb2.Duration(seconds=certificate_lifetime),
-        )
+        # Save the private key and request to files
+        with open("key.pem", "wb") as f:
+            f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, key))
 
-        # Create the Certificate Request.
-        # Set the CA which is responsible for creating the certificate with the provided CSR.
-        request = privateca_v1.CreateCertificateRequest(
-            parent=ca_service_client.ca_pool_path(project_id, location, ca_pool_name),
-            certificate_id=certificate_name,
-            certificate=certificate,
-            issuing_certificate_authority_id=ca_name,
-        )
-        response = ca_service_client.create_certificate(request=request)
+        with open("csr.pem", "wb") as f:
+            f.write(crypto.dump_certificate_request(crypto.FILETYPE_PEM, req))
 
-        print(f"Certificate created successfully: {response.name}")
-
-        # Get the signed certificate and the issuer chain list.
-        print(f"Signed certificate: {response.pem_certificate}")
-        print(f"Issuer chain list: {response.pem_certificate_chain}")
-
-    # --- LIST CERTIFICATE ---
-    def list_certificates(
-        self,
-        project_id: str,
-        location: str,
-        ca_pool_name: str,
-    ) -> None:
-        """
-        List Certificates present in the given CA pool.
-
-        Args:
-            project_id: project ID or project number of the Cloud project you want to use.
-            location: location you want to use. For a list of locations, see: https://cloud.google.com/certificate-authority-service/docs/locations.
-            ca_pool_name: name of the CA pool which contains the certificates to be listed.
-        """
-
-        caServiceClient = privateca_v1.CertificateAuthorityServiceClient()
-
-        ca_pool_path = caServiceClient.ca_pool_path(project_id, location, ca_pool_name)
-
-        # Retrieve and print the certificate names.
-        print(f"Available certificates in CA pool {ca_pool_name}:")
-        for certificate in caServiceClient.list_certificates(parent=ca_pool_path):
-            print(certificate.name)
-
-    # --- REVOKE CERTIFICATE ---
-    def revoke_certificate(
-        self,
-        project_id: str,
-        location: str,
-        ca_pool_name: str,
-        certificate_name: str,
-    ) -> None:
+    def revoke_certificate(self) -> None:
         """
         Revoke an issued certificate. Once revoked, the certificate will become invalid and will expire post its lifetime.
 
-        Args:
-            project_id: project ID or project number of the Cloud project you want to use.
-            location: location you want to use. For a list of locations, see: https://cloud.google.com/certificate-authority-service/docs/locations.
-            ca_pool_name: name for the CA pool which contains the certificate.
-            certificate_name: name of the certificate to be revoked.
         """
 
-        caServiceClient = privateca_v1.CertificateAuthorityServiceClient()
+        # Load the certificate and the Certificate Authority (CA) private key and certificate
+        with open("cert.crt", "rb") as f:
+            cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
 
-        # Create Certificate Path.
-        certificate_path = caServiceClient.certificate_path(
-            project_id, location, ca_pool_name, certificate_name
-        )
+        with open("ca.key", "rb") as f:
+            ca_key = crypto.load_privatekey(crypto.FILETYPE_PEM, f.read())
 
-        # Create Revoke Certificate Request and specify the appropriate revocation reason.
-        request = privateca_v1.RevokeCertificateRequest(
-            name=certificate_path, reason=privateca_v1.RevocationReason.PRIVILEGE_WITHDRAWN
-        )
-        result = caServiceClient.revoke_certificate(request=request)
+        with open("ca.crt", "rb") as f:
+            ca_cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
 
-        print("Certificate revoke result:", result)
+        # Create a certificate revocation list (CRL) with the revoked certificate
+        crl = crypto.CRL()
+        crl.set_lastUpdate(cert.get_notBefore())
+        crl.set_nextUpdate(cert.get_notAfter())
+        crl.add_revoked(cert)
+        crl.sign(ca_key, "sha256")
 
-    # --- GET CERTIFICATE ---
-    def get_certificate(
-        self,
-        project_id: str,
-        location: str,
-        ca_pool_name: str,
-        certificate_name: str,
-    ) -> None:
+        # Save the CRL to a file
+        with open("crl.pem", "wb") as f:
+            f.write(crypto.dump_crl(crypto.FILETYPE_PEM, crl))
+
+    def get_certificates(self) -> None:
         """
         Get the certificate details.
 
-        Args:
-            project_id: project ID or project number of the Cloud project you want to use.
-            location: location you want to use. For a list of locations, see: https://cloud.google.com/certificate-authority-service/docs/locations.
-            ca_pool_name: name for the CA pool which contains the certificate.
-            certificate_name: name of the certificate to be revoked.
         """
 
-        caServiceClient = privateca_v1.CertificateAuthorityServiceClient()
+        # load the CA certificate
+        with open("ca.crt", "rb") as f:
+            ca_cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
 
-        # Create Certificate Path.
-        certificate_path = caServiceClient.certificate_path(
-            project_id, location, ca_pool_name, certificate_name
-        )
+        # Enumerate all the certificate files in a directory
+        cert_dir = "certs"
+        cert_files = [os.path.join(cert_dir, f) for f in os.listdir(cert_dir) if f.endswith(".crt")]
 
-        # Get the certificate details.
-        certificate = caServiceClient.get_certificate(name=certificate_path)
-
-        print("Certificate details:", certificate)
+        # iterate over the certificate files and check if they are signed by the CA
+        for cert_file in cert_files:
+            with open(cert_file, "rb") as f:
+                cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
+                if cert.verify(ca_cert.get_pubkey()):
+                    print(f"{cert_file} is signed by {ca_cert.get_subject().CN}")
+                else:
+                    print(f"{cert_file} is not signed by {ca_cert.get_subject().CN}")
