@@ -81,8 +81,8 @@ class CertificateAuthority:
         req = crypto.X509Req()
         subject = req.get_subject()
         subject.CN = subordinate_ca_name
-        req.set_pubkey(key)
-        req.sign(key, "sha256")
+        req.set_pubkey(subordinate_key)
+        req.sign(subordinate_key, "sha256")
 
         # Create a certificate extension for the certificate request that indicates that it is a subordinate CA
         ext = crypto.X509Extension(b"basicConstraints", True, b"CA:TRUE, pathlen:0")
@@ -220,8 +220,6 @@ class Certificates:
         subject = req.get_subject()
         subject.CN = ca_name
         req.set_pubkey(key)
-        req.gmtime_adj_notBefore(0)
-        req.gmtime_adj_notAfter(certificate_lifetime)
         req.sign(key, "sha256")
 
         # Save the private key and request to files

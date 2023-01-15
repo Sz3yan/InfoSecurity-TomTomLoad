@@ -11,7 +11,7 @@ from flask import Blueprint, request, session, redirect, abort, make_response
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 from static.classes.storage import GoogleCloudStorage
 from static.security.session_management import TTLSession
-from static.security.certificate_authority import GoogleCertificateAuthority, Certificates
+from static.security.certificate_authority import CertificateAuthority, Certificates
 from static.functions.check_authentication import authenticated
 
 from google.oauth2 import id_token
@@ -24,7 +24,7 @@ potential_user = Blueprint('potential_user', __name__, template_folder="template
 
 ttlSession = TTLSession()
 storage = GoogleCloudStorage()
-certificate_authority = GoogleCertificateAuthority()
+certificate_authority = CertificateAuthority()
 certificate = Certificates()
 
 client_secrets_file = CONSTANTS.IP_CONFIG_FOLDER.joinpath("client_secret.json")
@@ -36,13 +36,13 @@ flow = Flow.from_client_secrets_file(
 
 # -----------------  START OF WRAPPER ----------------- #
 
-# def authenticated(func):
-#     @wraps(func)
-#     def decorated_function(*args, **kwargs):
-#         if "id_info" in session:
-#             return func(*args, **kwargs)
+def authenticated(func):
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
+        if "id_info" in session:
+            return func(*args, **kwargs)
 
-#     return decorated_function
+    return decorated_function
 
 # -----------------  END OF WRAPPER ----------------- #
 
@@ -94,7 +94,6 @@ def callback():
 @potential_user.route("/authorisation", methods=["GET", "POST"])
 @authenticated
 def authorisation():
-    # print("authroisation")
     # -----------------  START OF CONTEXT-AWARE ACCESS ----------------- #
 
     handler = ipinfo.getHandler(SECRET_CONSTANTS.IPINFO_TOKEN)
@@ -133,18 +132,14 @@ def authorisation():
         (TTLContextAwareAccessClientUserAgent not in blacklisted["blacklisted_useragent"]) and \
         (TTLContextAwareAccessClientIP not in blacklisted["blacklisted_ip"]):
 
-        role = 'user'
+        role = 'Admins'
 
-        for user, value in acl['superadmin'].items():
+        for user, value in acl['SuperAdmins'].items():
             if session['id_info'].get("email") == user:
-                role = 'superadmin'
+                role = 'SuperAdmins'
 
-        for user, value in acl['admin'].items():
-            if session['id_info'].get("email") == user:
-                role = 'admin'
-
-        if session['id_info'].get("email") not in acl['superadmin']:
-            if session['id_info'].get("email") not in acl['admin']:
+        if session['id_info'].get("email") not in acl['SuperAdmins']:
+            if session['id_info'].get("email") not in acl['Admins']:
                 w = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r")
                 dict_acl = json.loads(w.read())
                 dict_acl[session['id_info'].get("email")] = ["read", "write", "delete"]
@@ -161,79 +156,20 @@ def authorisation():
                 )
 
             else:
-                print("You are already admin.")
+                print("You are already Admin.")
 
         else:
-            print("You are already superadmin.")
+            print("You are already SuperAdmin.")
 
         # -----------------  END OF ACCESS CONTROL LIST ----------------- #
 
         # -----------------  START OF CERTIFICATE AUTHORITY ----------------- #
 
-        # if certificate_authority.list_certificate_authorities(
-        #     project_id=CONSTANTS.GOOGLE_PROJECT_ID,
-        #     location=CONSTANTS.GOOGLE_LOCATION,
-        #     ca_pool=CONSTANTS.GOOGLE_CA_POOL
-        # ):
-        #     print("CA Pool already exists.")
-
-            # -----------------  START OF CERTIFICATE CHECKING FOR SUPERADMIN ----------------- #
-
-            # if role == 'superadmin':
-            #     if not os.path.isfile(CONSTANTS.IP_CONFIG_FOLDER.joinpath("superadmin.crt")):
-            #         print("No superadmin certificate found. Generating new certificate...")
-            #         GoogleCertificateAuthority().generate_certificate(
-            #             name="superadmin",
-            #             role=role,
-            #             email=session['id_info'].get("email"),
-            #             ip=TTLContextAwareAccessClientIP,
-            #             user_agent=TTLContextAwareAccessClientUserAgent,
-            #             certificate=TTLContextAwareAccessClientCertificate
-            #         )
-            #
-            #         storage.upload_blob(
-            #             bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
-            #             source_file_name=CONSTANTS.IP_CONFIG_FOLDER.joinpath("superadmin.crt"),
-            #             destination_blob_name="superadmin.crt"
-            #         )
-            #
-            #         TTLContextAwareAccessClientCertificate = CONSTANTS.IP_CONFIG_FOLDER.joinpath("superadmin.crt")
-
-            # -----------------  END OF CERTIFICATE CHECKING FOR SUPERADMIN ----------------- #
-
-        # else:
-        #     certificate_authority.create_certificate_authority(
-        #         project_id=CONSTANTS.GOOGLE_PROJECT_ID,
-        #         location=CONSTANTS.GOOGLE_LOCATION,
-        #         ca_pool_name=CONSTANTS.GOOGLE_CA_POOL_NAME,
-        #         ca_name=CONSTANTS.GOOGLE_CA_NAME,
-        #         common_name=CONSTANTS.GOOGLE_COMMON_NAME,
-        #         organization=CONSTANTS.GOOGLE_ORGANIZATION,
-        #         ca_duration=CONSTANTS.GOOGLE_CA_DURATION,
-        #     )
-        #
-        #     certificate_authority.create_subordinate_ca(
-        #         project_id=CONSTANTS.GOOGLE_PROJECT_ID,
-        #         location=CONSTANTS.GOOGLE_LOCATION,
-        #         ca_pool_name=CONSTANTS.GOOGLE_CA_POOL_NAME,
-        #         ca_name=CONSTANTS.GOOGLE_CA_NAME,
-        #         subordinate_ca_name=CONSTANTS.GOOGLE_SUBORDINATE_CA_NAME,
-        #         common_name=CONSTANTS.GOOGLE_COMMON_NAME,
-        #         organization=CONSTANTS.GOOGLE_ORGANIZATION,
-        #         subordinate_ca_duration=CONSTANTS.GOOGLE_SUBORDINATE_CA_DURATION,
-        #     )
-        #
-        #     certificate.create_certificate_csr(
-        #         project_id=CONSTANTS.GOOGLE_PROJECT_ID,
-        #         location=CONSTANTS.GOOGLE_LOCATION,
-        #         ca_pool_name=CONSTANTS.GOOGLE_CA_POOL_NAME,
-        #         ca_name=CONSTANTS.GOOGLE_CA_NAME,
-        #         certificate_name=CONSTANTS.GOOGLE_CERTIFICATE_NAME,
-        #         certificate_lifetime=CONSTANTS.GOOGLE_CERTIFICATE_LIFETIME,
-        #         pem_csr=CONSTANTS.IP_CONFIG_FOLDER.joinpath("csr.pem"),
-        #     )
+        # CREATE CERTIFICATE AUTHORITY IF NOT EXISTS
 
         # -----------------  END OF CERTIFICATE AUTHORITY ----------------- #
+
+        # -----------------  START OF PACKAGING UP ----------------- #
 
         signed_header = {
             "TTL-Authenticated-User-Name": session['id_info'].get("name"),
@@ -287,5 +223,7 @@ def authorisation():
 
     else:
         return abort(401)
+
+    # -----------------  END OF PACKAGING UP ----------------- #
 
 # -----------------  END OF AUTHORISATION ----------------- #

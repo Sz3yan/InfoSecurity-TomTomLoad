@@ -134,6 +134,10 @@ class GoogleCloudStorage:
             "time_deleted": blob.time_deleted,
             "updated": blob.updated,
 
+            # get custom metadata
+            "metadata": blob.metadata,
+
+
         }
 
         if blob.retention_expiration_time:
@@ -143,7 +147,7 @@ class GoogleCloudStorage:
 
         return metadata_dict
 
-    def set_blob_metadata(self, bucket_name, blob_name):
+    def set_blob_metadata(self, bucket_name, blob_name, metadata_dict):
         """Set a blob's metadata."""
         # bucket_name = 'your-bucket-name'
         # blob_name = 'your-object-name'
@@ -151,22 +155,7 @@ class GoogleCloudStorage:
         storage_client = storage.Client()
         bucket = storage_client.bucket(bucket_name)
         blob = bucket.get_blob(blob_name)
-        metadata = {'color': 'Red', 'name': 'Test'}
-        blob.metadata = metadata
-        blob.patch()
-
-        print(f"The metadata for the blob {blob.name} is {blob.metadata}")
-
-
-    def set_blob_metadata(self, bucket_name, blob_name):
-        """Set a blob's metadata."""
-        # bucket_name = 'your-bucket-name'
-        # blob_name = 'your-object-name'
-
-        storage_client = storage.Client()
-        bucket = storage_client.bucket(bucket_name)
-        blob = bucket.get_blob(blob_name)
-        metadata = {'color': 'Red', 'name': 'Test'}
+        metadata = metadata_dict
         blob.metadata = metadata
         blob.patch()
 

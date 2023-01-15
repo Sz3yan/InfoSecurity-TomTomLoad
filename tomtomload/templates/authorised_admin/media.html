@@ -64,9 +64,9 @@
                         <a href="/admin/media/{{ id_list[loop.index - 1] }}">
                             <div class="upload-card upload-card--has-on-click">
                                 <div class="thumbnail thumbnail--size-expand">
-                                    <img src="./../static/config_files/media/{{ id_list[loop.index - 1] }}.png" alt="{{ media.filename }}">
+                                    <img src="./../static/config_files/media/{{ id_list[loop.index - 1] }}.png" alt="{{ metadata["metadata"]["name"] }}">
                                 </div>
-                                <div class="upload-card__filename">{{ id_list[loop.index - 1] }}</div>
+                                <div class="upload-card__filename">{{ metadata["metadata"]["name"] }}</div>
                             </div>
                         </a>
                     </li>
