@@ -8,6 +8,8 @@ from routes.potential_user import potential_user
 from routes.api import api
 from routes.Errors import error
 
+from apscheduler.schedulers.background import BackgroundScheduler
+
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 
 
@@ -48,7 +50,35 @@ with app.app_context():
 
 # -----------------  END OF BLUEPRINT  ----------------- #
 
+
+# -----------------  START OF SCHEDULER JOB  ----------------- #
+
+def auto_delete_sessions() -> None:
+    for file in os.listdir(app.config["SESSION_FILE_DIR"]):
+        file_path = os.path.join(app.config["SESSION_FILE_DIR"], file)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+                print("system delete session file:  ", file_path)
+
+        except Exception as e:
+            print(e)
+
+# -----------------  END OF SCHEDULER JOB  ----------------- #
+
+
 if __name__ == "__main__":
+
+    scheduler = BackgroundScheduler()
+    scheduler.configure(timezone="Asia/Singapore")
+
+    scheduler.add_job(
+        auto_delete_sessions,
+        "interval", seconds=30
+    )
+
+    scheduler.start()
+
     if app.config["DEBUG_FLAG"]:
         SSL_CONTEXT = (
             CONSTANTS.IP_CONFIG_FOLDER.joinpath("certificate.pem"),
@@ -60,10 +90,10 @@ if __name__ == "__main__":
         host = "0.0.0.0"
 
     app.run(
-        debug=app.config["DEBUG_FLAG"],
-        host=host,
-        port=int(os.environ.get("PORT", 8080)),
-        ssl_context=SSL_CONTEXT
+        debug = app.config["DEBUG_FLAG"],
+        host = host,
+        port = int(os.environ.get("PORT", 8080)),
+        ssl_context = SSL_CONTEXT
     )
 
 # -----------------  END OF IDENTITY PROXY  ----------------- #
