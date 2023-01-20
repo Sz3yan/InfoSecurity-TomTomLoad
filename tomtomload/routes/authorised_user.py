@@ -216,6 +216,7 @@ def logout_screen():
 @check_role_read
 def media():
     media_id = UniqueID()
+    metadata = ""
 
     # -----------------  START OF RETRIEVING MEDIA ----------------- #
 
