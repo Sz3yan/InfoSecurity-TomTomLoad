@@ -6,7 +6,7 @@ import ipinfo
 from datetime import datetime, timedelta
 import google.auth.transport.requests
 
-from flask import Blueprint, request, session, redirect, abort, make_response
+from flask import Blueprint, request, session, redirect, abort, make_response, jsonify
 
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 from static.classes.storage import GoogleCloudStorage
@@ -83,6 +83,8 @@ def callback():
     )
 
     session['id_info'] = id_info
+
+    ttlSession.write_data_to_session("route_from", "web")
 
     return redirect("/authorisation")
 
@@ -196,30 +198,36 @@ def authorisation():
             "TTL-Context-Aware-Access-Client-Certificate": TTLContextAwareAccessClientCertificate
         }
 
-        response = make_response(redirect("https://127.0.0.1:5000/admin", code=302))
+        if ttlSession.get_data_from_session("route_from", data=True) != "api" and ttlSession.get_data_from_session("route_from", Ptoken=True) == ttlSession.get_token():
+            response = make_response(redirect("https://127.0.0.1:5000/admin", code=302))
 
-        response.set_cookie(
-            'TTL-Authenticated-User-Name',
-            value=base64.b64encode(str(session['id_info'].get("name")).encode("utf-8")),
-            httponly=True,
-            secure=True
-        )
+            response.set_cookie(
+                'TTL-Authenticated-User-Name',
+                value=base64.b64encode(str(session['id_info'].get("name")).encode("utf-8")),
+                httponly=True,
+                secure=True
+            )
 
-        response.set_cookie(
-            'TTL-JWTAuthenticated-User',
-            value=base64.b64encode(str(signed_header).encode("utf-8")),
-            httponly=True,
-            secure=True
-        )
+            response.set_cookie(
+                'TTL-JWTAuthenticated-User',
+                value=base64.b64encode(str(signed_header).encode("utf-8")),
+                httponly=True,
+                secure=True
+            )
 
-        response.set_cookie(
-            'TTL-Context-Aware-Access',
-            value=base64.b64encode(str(context_aware_access).encode("utf-8")),
-            httponly=True,
-            secure=True
-        )
+            response.set_cookie(
+                'TTL-Context-Aware-Access',
+                value=base64.b64encode(str(context_aware_access).encode("utf-8")),
+                httponly=True,
+                secure=True
+            )
 
-        return response
+            return response
+        elif ttlSession.get_data_from_session("route_from", data=True) != "api" and ttlSession.get_data_from_session("route_from", Ptoken=True) == ttlSession.get_token():
+            return jsonify(message="This is for api")
+        
+        else:
+            abort(401)
 
     else:
         return abort(401)

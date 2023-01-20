@@ -12,7 +12,7 @@ class TTLSession(Paranoid):
         self.__server = 'identity-proxy'
         super().__init__(app)
     
-    def get_token(self, jwtToken:str=""):
+    def get_token(self):
 
         device_ip_addr = socket.gethostbyname(socket.gethostname())
         createdTTLtoken = str(self.__server) + str(super().create_token()) + str(device_ip_addr)
@@ -20,8 +20,13 @@ class TTLSession(Paranoid):
         encoded_session = hashlib.sha384(createdTTLtoken.encode()).hexdigest()
         return encoded_session
 
-    def write_data_to_session(self, session_name:str, Ptoken:str, data):
-        value = {"Ptoken": Ptoken, "data": data}
+    def write_data_to_session(self, session_name:str, data, Ptoken:str=None):
+        # value = {"Ptoken": Ptoken, "data": data}
+        if Ptoken == None:
+            value = {"Ptoken": self.get_token(), "data": data}
+        else:
+            value = {"Ptoken": Ptoken, "data": data}
+        
         session[session_name] = json.dumps(value)
 
     def get_data_from_session(self, session_name:str, Ptoken:bool=False, data:bool = False):
