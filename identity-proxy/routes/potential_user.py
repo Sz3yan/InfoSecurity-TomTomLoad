@@ -19,6 +19,10 @@ from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
 from functools import wraps
 
+# todo
+# 1. setup certificate authority 
+# 2. setup certificate for identity proxy and tomtomload, run if valid
+
 
 potential_user = Blueprint('potential_user', __name__, template_folder="templates", static_folder='static')
 
@@ -29,9 +33,9 @@ certificate = Certificates()
 
 client_secrets_file = CONSTANTS.IP_CONFIG_FOLDER.joinpath("client_secret.json")
 flow = Flow.from_client_secrets_file(
-    client_secrets_file=client_secrets_file,
-    scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
-    redirect_uri=CONSTANTS.CALLBACK_URL
+    client_secrets_file = client_secrets_file,
+    scopes = ["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
+    redirect_uri = CONSTANTS.CALLBACK_URL
 )
 
 # -----------------  START OF WRAPPER ----------------- #

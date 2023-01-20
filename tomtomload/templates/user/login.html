@@ -23,20 +23,21 @@
 </head>
 
 <script src="https://www.google.com/recaptcha/api.js?render=6LcmXogjAAAAAOTMJEaOmWBAxklTmmUQdtEK0mMr"></script>
-<script>
-    function onSubmit(token) {
+<!--<script>
+   function onSubmit(token) {
       document.getElementById("demo-form").submit();
     }
-  </script>
+  </script>-->
 
         <div class="gutter--left gutter--right collection-list__wrap">
             <header class="collection-list__header">
                 <h1>Login</h1>
             </header>
-
+            
                 <div>
                     <p>To log in, use the email <strong>user@ttl.com</strong> with the password <strong>user</strong>.
-                <form novalidate="" method="post" action="" class="form">
+                <form novalidate="" method="post" action="#" class="form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <div class="field-type email"><label for="field-email" class="field-label">Email<span
                                 class="required">*</span></label><input id="field-email" type="email" name="email"
                             autocomplete="email" value=""></div>
@@ -45,10 +46,12 @@
                             autocomplete="off" name="password" value=""></div><a href="/user/forget">Forgot
                         password?</a>
                     <div class="form-submit">
-                        <button class="g-recaptcha btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right" type="submit"
-                        data-sitekey="6LcmXogjAAAAAOTMJEaOmWBAxklTmmUQdtEK0mMr" 
+                        <button class="btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right" type="submit"
                         data-callback='onSubmit' 
                         data-action='submit'>Login</button>
+
+                        <!--<button class="g-recaptcha btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right" type="submit"
+                        data-sitekey="6LcmXogjAAAAAOTMJEaOmWBAxklTmmUQdtEK0mMr" -->
                     <p>New to TTL? <a href="/user/signup">Sign up</a></p>
                 </form>
             </div>

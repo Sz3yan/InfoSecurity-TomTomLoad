@@ -24,31 +24,108 @@
 </head>
 
     <script src="https://www.google.com/recaptcha/api.js?render=6LcmXogjAAAAAOTMJEaOmWBAxklTmmUQdtEK0mMr"></script>
-    <script>
-        function onSubmit(token) {
-        document.getElementById("demo-form").submit();
-        }
-    </script>
+    <!--<script>
+   function onSubmit(token) {
+      document.getElementById("demo-form").submit();
+    }
+  </script>-->
 <body>
 
     <div class="gutter--left gutter--right collection-list__wrap">
         <header class="collection-list__header">
             <h1>Sign Up</h1>
         </header>
+        <style>
+            .alert {
+              padding: 20px;
+              background-color: #f44336;
+              color: white;
+              opacity: 1;
+              transition: opacity 0.6s;
+              margin-bottom: 15px;
+            }
+            
+            .alert.success {background-color: #04AA6D;}
+            
+            .closebtn {
+              margin-left: 15px;
+              color: white;
+              font-weight: bold;
+              float: right;
+              font-size: 22px;
+              line-height: 20px;
+              cursor: pointer;
+              transition: 0.3s;
+            }
+            
+            .closebtn:hover {
+              color: black;
+            }
+            </style>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            {% if category == "error" %}
+            <div class="alert alert-danger">
+                <span class="closebtn">&times;</span>  
+                {{ message }}
+              </div>
 
+            <script>
+            var close = document.getElementsByClassName("closebtn");
+            var i;
+            
+            for (i = 0; i < close.length; i++) {
+                close[i].onclick = function(){
+                var div = this.parentElement;
+                div.style.opacity = "0";
+                setTimeout(function(){ div.style.display = "none"; }, 600);
+                }
+            }
+            </script>
+            {% else %}
+            <div class="alert success">
+                <span class="closebtn">&times;</span>  
+                {{ message }}
+              </div>
+            <script>
+                var close = document.getElementsByClassName("closebtn");
+                var i;
+                
+                for (i = 0; i < close.length; i++) {
+                  close[i].onclick = function(){
+                    var div = this.parentElement;
+                    div.style.opacity = "0";
+                    setTimeout(function(){ div.style.display = "none"; }, 600);
+                  }
+                }
+                </script>
+            
+            {% endif %}
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
             <div>
-            <form novalidate="" method="post" action="" class="form">
+            <form novalidate="" method="post" action="#" class="form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="field-type email"><label for="field-email" class="field-label">Email<span
                             class="required">*</span></label><input id="field-email" type="email" name="email"
                         autocomplete="email" value=""></div>
+                        
+            
+
+
                 <div class="field-type password"><label for="field-password" class="field-label">Password<span
                             class="required">*</span></label><input id="field-password" type="password"
-                        autocomplete="off" name="password" value=""></div><p>Have an account? <a href="/user/login">Login</a></p>
-                <div class="form-submit">
-                    <button class="g-recaptcha btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right" type="submit"
-                    data-sitekey="6LcmXogjAAAAAOTMJEaOmWBAxklTmmUQdtEK0mMr" 
-                    data-callback='onSubmit' 
-                    data-action='submit'>Sign Up</button>
+                        autocomplete="off" name="password" value=""></div>
+                        <p>Have an account? <a href="/user/login">Login</a></p>
+                        <div class="form-submit">
+                            <button class="btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right" type="submit"
+                            data-callback='onSubmit' 
+                            data-action='submit'>Sign Up</button>
+    
+                            <!--<button class="g-recaptcha btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right" type="submit"
+                            data-sitekey="6LcmXogjAAAAAOTMJEaOmWBAxklTmmUQdtEK0mMr" -->
             </form>
             </div>
         </section>

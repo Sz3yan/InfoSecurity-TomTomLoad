@@ -9,6 +9,8 @@ from flask_talisman import Talisman
 from flask_reggie import Reggie
 from flask_moment import Moment
 
+from apscheduler.schedulers.background import BackgroundScheduler
+
 from routes.authorised_user import authorised_user
 from routes.admin_user import admin_user
 from routes.api import api
@@ -107,12 +109,65 @@ with app.app_context():
 # -----------------  END OF BLUEPRINT  ----------------- #
 
 
+# -----------------  START OF SCHEDULER JOB  ----------------- #
+
+def delete_sessions() -> None:
+    for file in os.listdir(app.config["SESSION_FILE_DIR"]):
+        file_path = os.path.join(app.config["SESSION_FILE_DIR"], file)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+                print("system deleted session file: " + file_path)
+
+        except Exception as e:
+            print(e)
+
+def remove_media() -> None:
+    for file in os.listdir(app.config["CONSTANTS"].TTL_CONFIG_MEDIA_FOLDER):
+        file_path = os.path.join(app.config["CONSTANTS"].TTL_CONFIG_MEDIA_FOLDER, file)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+                print("system deleted media file: " + file_path)
+
+        except Exception as e:
+            print(e)
+
+def remove_post() -> None:
+    for file in os.listdir(app.config["CONSTANTS"].TTL_CONFIG_POSTS_FOLDER):
+        file_path = os.path.join(app.config["CONSTANTS"].TTL_CONFIG_POSTS_FOLDER, file)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+                print("system deleted post file: " + file_path)
+
+        except Exception as e:
+            print(e)
+
+# -----------------  END OF SCHEDULER JOB  ----------------- #
+
+
 if __name__ == "__main__":
 
-    # maybe add scheduler here
-    #   |- to auto delete the files in config_folder
-    #   |- to auto delete the files in sessions folder
-    #   |- auto redirect user to identity-proxy if their token is expired
+    scheduler = BackgroundScheduler()
+    scheduler.configure(timezone="Asia/Singapore")
+
+    scheduler.add_job(
+        delete_sessions,
+        "interval", hours=23, minutes=58, seconds=0
+    )
+
+    scheduler.add_job(
+        remove_media,
+        "interval", hours=23, minutes=58, seconds=0
+    )
+
+    scheduler.add_job(
+        remove_post,
+        "interval", hours=23, minutes=59, seconds=0
+    )
+
+    scheduler.start()
 
     if app.config["DEBUG_FLAG"]:
         SSL_CONTEXT = (
@@ -125,10 +180,10 @@ if __name__ == "__main__":
         host = "0.0.0.0"
 
     app.run(
-        debug=app.config["DEBUG_FLAG"],
-        host=host,
-        port=int(os.environ.get("PORT", 5000)),
-        ssl_context=SSL_CONTEXT
+        debug = app.config["DEBUG_FLAG"],
+        host = host,
+        port = int(os.environ.get("PORT", 5000)),
+        ssl_context = SSL_CONTEXT
     )
 
 # -----------------  END OF TOM TOM LOAD  ----------------- #
