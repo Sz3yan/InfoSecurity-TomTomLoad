@@ -69,15 +69,15 @@ def auto_delete_sessions() -> None:
 
 if __name__ == "__main__":
 
-    scheduler = BackgroundScheduler()
-    scheduler.configure(timezone="Asia/Singapore")
+    # scheduler = BackgroundScheduler()
+    # scheduler.configure(timezone="Asia/Singapore")
 
-    scheduler.add_job(
-        auto_delete_sessions,
-        "interval", seconds=30
-    )
+    # scheduler.add_job(
+    #     auto_delete_sessions,
+    #     "interval", seconds=60
+    # )
 
-    scheduler.start()
+    # scheduler.start()
 
     if app.config["DEBUG_FLAG"]:
         SSL_CONTEXT = (

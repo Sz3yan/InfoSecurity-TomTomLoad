@@ -6,7 +6,7 @@ import ipinfo
 from datetime import datetime, timedelta
 import google.auth.transport.requests
 
-from flask import Blueprint, request, session, redirect, abort, make_response, jsonify
+from flask import Blueprint, request, session, redirect, abort, make_response, jsonify, url_for
 
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 from static.classes.storage import GoogleCloudStorage
@@ -88,7 +88,12 @@ def callback():
 
     session['id_info'] = id_info
 
-    ttlSession.write_data_to_session("route_from", "web")
+    try:
+        if ttlSession.get_data_from_session("route_from", data=True) != "api":
+            ttlSession.write_data_to_session("route_from", "web")
+    except:
+        ttlSession.write_data_to_session("route_from", "web")
+
 
     return redirect("/authorisation")
 
@@ -101,7 +106,7 @@ def callback():
 @authenticated
 def authorisation():
     # -----------------  START OF CONTEXT-AWARE ACCESS ----------------- #
-
+    print(ttlSession.get_data_from_session("route_from", data=True))
     handler = ipinfo.getHandler(SECRET_CONSTANTS.IPINFO_TOKEN)
     details = handler.getDetails().all
 
@@ -227,8 +232,10 @@ def authorisation():
             )
 
             return response
-        elif ttlSession.get_data_from_session("route_from", data=True) != "api" and ttlSession.get_data_from_session("route_from", Ptoken=True) == ttlSession.get_token():
-            return jsonify(message="This is for api")
+        elif ttlSession.get_data_from_session("route_from", data=True) == "api" and ttlSession.get_data_from_session("route_from", Ptoken=True) == ttlSession.get_token():
+            # print("\nEntering api back route\n")
+            # return jsonify(message="This is for api")
+            return redirect(url_for("api.callback"))
         
         else:
             abort(401)
