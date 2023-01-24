@@ -3,9 +3,10 @@ import jwt
 import google.auth.transport.requests
 
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
-from static.functions.check_authentication import ttl_jwt_authentication
+from static.functions.check_authentication import ttl_jwt_authentication, ttl_redirect_user
+from static.security.session_management import TTLSession
 
-from flask import Blueprint, request, session, redirect, abort, jsonify
+from flask import Blueprint, request, session, redirect, abort, jsonify, url_for
 from google.oauth2 import id_token
 from google_auth_oauthlib.flow import InstalledAppFlow
 from pip._vendor import cachecontrol
@@ -17,18 +18,28 @@ flow = InstalledAppFlow.from_client_secrets_file(
     client_secrets_file=client_secrets_file,
     scopes=["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email", "openid"],
 )
-
     # redirect_uri=CONSTANTS.API_CALLBACK_URL
 
+ttlSession = TTLSession()
+    
 # -----------------  START OF AUTHENTICATION ----------------- #
 @api.route("/login")
+@ttl_redirect_user
 def verification():
     verified_user = flow.run_local_server(port=8081)
-    # print("User-Agent", request.headers['User-Agent'])
+
+    ttlSession.write_data_to_session("route_from","api")
+    print("User-Agent", request.headers['User-Agent'])
     
     # print(verified_user.id_token)
     
-    return jsonify(token=verified_user.id_token),200
+    # return jsonify(token=verified_user.id_token),200
+
+    return redirect(url_for("authorisation"))
+
+@api.route("/callback")
+def callback():
+    return jsonify(token=flow.credentials.id_token),200
     
 
 @api.route("/v1/<route>", methods=['GET', 'POST'])
