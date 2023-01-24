@@ -1,97 +1,118 @@
 import os
 import pathlib
+import shutil
+import uuid
+
 from OpenSSL import crypto
+from OpenSSL.crypto import PKey, X509, X509Extension, X509Req
+from prettytable import PrettyTable
+
+
+# -----------------  START OF BASIC SETUP  ----------------- #
+
+# -----------------  START OF FILE DIRECTORY SETUP  ----------------- #
 
 config_file = pathlib.Path(__file__).parent.parent.absolute()
 certificate_directory = os.path.join(config_file, "config_files/certificates")
 
+if not os.path.exists(certificate_directory):
+    os.makedirs(certificate_directory)
 
+to_tomtomload_path = pathlib.Path(__file__).parent.parent.parent.parent.absolute()
+tomtomload_configfiles = os.path.join(to_tomtomload_path, "tomtomload/static/config_files/")
+
+# -----------------  END OF FILE DIRECTORY SETUP  ----------------- #
+
+# -----------------  START OF CERTIFICATE SETUP  ----------------- #
+
+ca_certificate = os.path.join(certificate_directory, "IDENTITYPROXY.crt")
+ca_key = os.path.join(certificate_directory, "IDENTITYPROXY.key")
+sub_certificate = os.path.join(certificate_directory, "SUBORDINATE_IDENTITY_PROXY.crt")
+sub_key = os.path.join(certificate_directory, "SUBORDINATE_IDENTITY_PROXY.key")
+
+# -----------------  END OF CERTIFICATE SETUP  ----------------- #
+
+# -----------------  END OF BASIC SETUP  ----------------- #
+
+
+# -----------------  START OF CERTIFICATE AUTHORITY  ----------------- #
 class CertificateAuthority:
-    def __post_init__(self) -> None:
-        os.mkdir(certificate_directory)
 
-    def create_certificate_authority(
-            self,
-            ca_name: str,
-            ca_duration: int,
-    ) -> None:
+    def create_certificate_authority(self, ca_name: str, ca_duration: int) -> None:
         """
-        Create Certificate Authority which is the root CA in the given CA Pool. This CA will be
-        responsible for signing certificates within this pool.
+
+        Create Certificate Authority which is the root CA who will be
+        responsible for signing certificates for identity-proxy and tomtomload.
 
         Args:
             ca_name: unique name for the CA.
             ca_duration: the validity of the certificate authority in seconds.
+
         """
 
-        # generate a CA private key
         CAkey = crypto.PKey()
         CAkey.generate_key(type=crypto.TYPE_RSA, bits=4096)
 
-        # create a CA certificate
         ca = crypto.X509()
         ca.set_version(3)
-        ca.set_serial_number(1000)
+        ca.set_serial_number(uuid.uuid4().int)
         ca.get_subject().CN = ca_name
         ca.gmtime_adj_notBefore(0)
         ca.gmtime_adj_notAfter(ca_duration)
         ca.set_issuer(ca.get_subject())
-        ca.set_pubkey(key)
+        ca.set_pubkey(CAkey)
         ca.add_extensions([
             crypto.X509Extension(b"basicConstraints", True, b"CA:TRUE"),
             crypto.X509Extension(b"keyUsage", True, b"keyCertSign, cRLSign"),
             crypto.X509Extension(b"subjectKeyIdentifier", False, b"hash", subject=ca),
         ])
-        ca.sign(key, "sha256")
+        ca.sign(CAkey, "sha256")
 
-        # save the CA private key and certificate to files
-        # This will create a CA private key and certificate
-        # that you can use to sign certificate requests.
-        # You can then use the CA certificate to verify the authenticity
-        # of signed certificates.
-        with open("ca.key", "wb") as f:
-            f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, key))
+        ca_certificate = os.path.join(certificate_directory, f"{ca_name}.crt")
+        ca_key = os.path.join(certificate_directory, f"{ca_name}.key")
 
-        with open("ca.crt", "wb") as f:
+        with open(ca_key, "wb") as f:
+            f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, CAkey))
+
+        with open(ca_certificate, "wb") as f:
             f.write(crypto.dump_certificate(crypto.FILETYPE_PEM, ca))
 
-    def create_subordinate_ca(
-            self,
-            subordinate_ca_name: str,
-            ca_duration: int,
-    ) -> None:
-        """
-        Create Certificate Authority (CA) which is the subordinate CA in the given CA Pool.
-        Args:
-            subordinate_ca_name: unique name for the Subordinate CA.
-            ca_duration: the validity of the certificate authority in seconds.
+        print(f"Certificate Authority - {ca_key} created successfully.")
+
+
+    def create_subordinate_ca(self, subordinate_ca_name: str, ca_duration: int) -> None:
         """
 
-        with open("parent_ca.key", "rb") as f:
+        Create a subordinate CA which will be responsible for signing certificates for
+        the identity-proxy and tomtomload.
+
+        Args:
+            subordinate_ca_name: unique name for the subordinate CA.
+            ca_duration: the validity of the certificate authority in seconds.
+
+        """
+
+        with open(ca_key, "rb") as f:
             root_key = crypto.load_privatekey(crypto.FILETYPE_PEM, f.read())
 
-        with open("parent_ca.crt", "rb") as f:
+        with open(ca_certificate, "rb") as f:
             root_cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
 
-        # generate subordinate CA private key
         subordinate_key = crypto.PKey()
         subordinate_key.generate_key(type=crypto.TYPE_RSA, bits=4096)
 
-        # Create a subordinate CA certificate request
         req = crypto.X509Req()
         subject = req.get_subject()
         subject.CN = subordinate_ca_name
         req.set_pubkey(subordinate_key)
         req.sign(subordinate_key, "sha256")
 
-        # Create a certificate extension for the certificate request that indicates that it is a subordinate CA
         ext = crypto.X509Extension(b"basicConstraints", True, b"CA:TRUE, pathlen:0")
         req.add_extensions([ext])
 
-        # Sign the subordinate CA certificate request with the parent CA
         cert = crypto.X509()
         cert.set_subject(req.get_subject())
-        cert.set_serial_number(1000)
+        cert.set_serial_number(uuid.uuid4().int)
         cert.gmtime_adj_notBefore(0)
         cert.gmtime_adj_notAfter(ca_duration)
         cert.set_issuer(root_cert.get_subject())
@@ -99,182 +120,260 @@ class CertificateAuthority:
         cert.add_extensions(req.get_extensions())
         cert.sign(root_key, "sha256")
 
-        # Save the subordinate CA private key and certificate to files
-        with open("sub_ca.key", "wb") as f:
-            f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, key))
+        sub_certificate = os.path.join(certificate_directory, f"{subordinate_ca_name}.crt")
+        sub_key = os.path.join(certificate_directory, f"{subordinate_ca_name}.key")
 
-        with open("sub_ca.crt", "wb") as f:
+        with open(sub_key, "wb") as f:
+            f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, subordinate_key))
+
+        with open(sub_certificate, "wb") as f:
             f.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
 
-    def revoke_subordinate_ca(self) -> None:
+        print(f"Subordinate Certificate Authority - {subordinate_ca_name} created successfully.")
+
+
+    def revoke_subordinate_ca(self, subordinate_ca_name: str) -> None:
         """
+
         Revoke the Certificate Authority.
 
+        Args:
+            name: name of the certificate authority to be revoked.
+
         """
 
-        # Load the subordinate CA certificate
-        with open("sub_ca.crt", "rb") as f:
+        name = os.path.join(certificate_directory, f"{subordinate_ca_name}.crt")
+
+        with open(name, "rb") as f:
             sub_ca_cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
 
-        # Load the parent CA private key and certificate
-        with open("parent_ca.key", "rb") as f:
+        with open(ca_key, "rb") as f:
             parent_key = crypto.load_privatekey(crypto.FILETYPE_PEM, f.read())
 
-        with open("parent_ca.crt", "rb") as f:
-            parent_cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
-
-        # Create a certificate revocation list (CRL) with the revoked subordinate CA certificate
         crl = crypto.CRL()
         crl.set_lastUpdate(sub_ca_cert.get_notBefore())
         crl.set_nextUpdate(sub_ca_cert.get_notAfter())
         crl.add_revoked(sub_ca_cert)
         crl.sign(parent_key, "sha256")
 
-        with open("crl.pem", "wb") as f:
+        crl_pem = os.path.join(certificate_directory, "crl.pem")
+
+        with open(crl_pem, "wb") as f:
             f.write(crypto.dump_crl(crypto.FILETYPE_PEM, crl))
 
-    def load_crl(self) -> None:
-        """
-        Load the Certificate Revocation List (CRL) from the file system.
+        print(f"Subordinate Certificate Authority - {name} revoked successfully.")
+
+
+    def create_certificate_from_csr(self, csr_file: str, ca_name: str, ca_duration: int) -> None:
         """
 
-        with open("crl.pem", "rb") as f:
-            crl = crypto.load_crl(crypto.FILETYPE_PEM, f.read())
-
-        # Verify the CRL
-        store = crypto.X509Store()
-        store.add_crl(crl)
-        store.set_flags(crypto.X509StoreFlags.CRL_CHECK)
-        store_ctx = crypto.X509StoreContext(store, crl)
-        store_ctx.verify_certificate()
-
-    def create_certificate_from_csr():
-        """
         Create a certificate using the given CA.
+
+        Args:
+            csr_file: name of the certificate signing request file.
+            ca_name: name of the certificate authority to be used.
+            ca_duration: the validity of the certificate authority in seconds.
+
         """
 
-        # load the CSR and the CA private key and certificate
-        with open("csr.pem", "rb") as f:
+        csr_pem = os.path.join(certificate_directory, f"{csr_file}_csr.pem")
+        sub_certificate = os.path.join(certificate_directory, f"{ca_name}.crt")
+        sub_key = os.path.join(certificate_directory, f"{ca_name}.key")
+        cert_crt = os.path.join(certificate_directory, f"{csr_file}.crt")
+
+        with open(csr_pem, "rb") as f:
             req = crypto.load_certificate_request(crypto.FILETYPE_PEM, f.read())
 
-        with open("ca.key", "rb") as f:
-            ca_key = crypto.load_privatekey(crypto.FILETYPE_PEM, f.read())
+        with open(sub_key, "rb") as f:
+            root_key = crypto.load_privatekey(crypto.FILETYPE_PEM, f.read())
 
-        with open("ca.crt", "rb") as f:
+        with open(sub_certificate, "rb") as f:
             ca_cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
 
-        # Create a certificate and sign it with the CA
         cert = crypto.X509()
         cert.set_subject(req.get_subject())
-        cert.set_serial_number(1000)
+        cert.set_serial_number(uuid.uuid4().int)
         cert.gmtime_adj_notBefore(0)
-        cert.gmtime_adj_notAfter(10 * 365 * 24 * 60 * 60)
+        cert.gmtime_adj_notAfter(ca_duration)
         cert.set_issuer(ca_cert.get_subject())
         cert.set_pubkey(req.get_pubkey())
-        cert.sign(ca_key, "sha256")
+        cert.sign(root_key, "sha256")
 
-        # Save the certificate to a file
-        with open("cert.pem", "wb") as f:
+        with open(cert_crt, "wb") as f:
             f.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
 
-    def verify_certificate(self) -> None:
+        if "TOM" in cert_crt:
+            shutil.copy(cert_crt, tomtomload_configfiles)
+
+        print("Certificate created successfully.")
+
+
+    def verify_certificate(self, cert_to_verify: str) -> None:
         """
+
         Verify the certificate.
+
+        Args:
+            cert_to_verify: name of the certificate to be verified.
+
         """
 
-        # Load the CA certificate
-        with open("ca.crt", "rb") as f:
-            ca = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
+        cert_to_verify = os.path.join(certificate_directory, f"{cert_to_verify}.crt")
 
-        # Load the certificate
-        with open("cert.pem", "rb") as f:
+        with open(cert_to_verify, "rb") as f:
             cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
 
-        # Verify the certificate
+        with open(ca_certificate, "rb") as f:
+            ca_cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
+
+        with open(sub_certificate, "rb") as f:
+            sub_ca_cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
+
         store = crypto.X509Store()
-        store.add_cert(ca)
+        store.add_cert(ca_cert)
+        store.add_cert(sub_ca_cert)
         store_ctx = crypto.X509StoreContext(store, cert)
-        store_ctx.verify_certificate()
+
+        try:
+            store_ctx.verify_certificate()
+            print(f"Certificate - {cert_to_verify} verified successfully.")
+
+        except crypto.X509StoreContextError as e:
+            print("Certificate is invalid:", e)
 
 
+# -----------------  END OF CERTIFICATE AUTHORITY  ----------------- #
+
+
+# -----------------  START OF CERTIFICATE  ----------------- #
 class Certificates:
-    def create_certificate_csr(
-            self,
-            ca_name: str,
-            certificate_lifetime: int,
-    ) -> None:
+
+    def create_certificate_csr(self, ca_name: str) -> None:
         """
+
         Create a Certificate which is issued by the specified Certificate Authority (CA).
         The certificate details and the public key is provided as a Certificate Signing Request (CSR).
+
         Args:
             ca_name: the name of the certificate authority to sign the CSR.
-            certificate_lifetime: the validity of the certificate in seconds.
+
         """
 
-        # generate private key
         key = crypto.PKey()
-        key.generate_key(crypto.TYPE_RSA, 4096)
+        key.generate_key(type=crypto.TYPE_RSA, bits=4096)
 
-        # create a certificate request
         req = crypto.X509Req()
         subject = req.get_subject()
         subject.CN = ca_name
         req.set_pubkey(key)
         req.sign(key, "sha256")
 
-        # Save the private key and request to files
-        with open("key.pem", "wb") as f:
+        csr_pem = os.path.join(certificate_directory, f"{ca_name}_csr.pem")
+        key_pem = os.path.join(certificate_directory, f"{ca_name}_key.pem")
+
+        with open(key_pem, "wb") as f:
             f.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, key))
 
-        with open("csr.pem", "wb") as f:
+        with open(csr_pem, "wb") as f:
             f.write(crypto.dump_certificate_request(crypto.FILETYPE_PEM, req))
 
-    def revoke_certificate(self) -> None:
+        if "TOM" in key_pem:
+            shutil.copy(key_pem, tomtomload_configfiles)
+
+        print(f"CSR - {ca_name} created successfully.")
+
+
+    def revoke_certificate(self, cert: str) -> None:
         """
+
         Revoke an issued certificate. Once revoked, the certificate will become invalid and will expire post its lifetime.
 
+        Args:
+            cert: the name of the certificate to be revoked.
+
         """
 
-        # Load the certificate and the Certificate Authority (CA) private key and certificate
         with open("cert.crt", "rb") as f:
             cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
 
-        with open("ca.key", "rb") as f:
-            ca_key = crypto.load_privatekey(crypto.FILETYPE_PEM, f.read())
+        with open(sub_key, "rb") as f:
+            root_key = crypto.load_privatekey(crypto.FILETYPE_PEM, f.read())
 
-        with open("ca.crt", "rb") as f:
+        with open(sub_certificate, "rb") as f:
             ca_cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
 
-        # Create a certificate revocation list (CRL) with the revoked certificate
         crl = crypto.CRL()
         crl.set_lastUpdate(cert.get_notBefore())
         crl.set_nextUpdate(cert.get_notAfter())
         crl.add_revoked(cert)
-        crl.sign(ca_key, "sha256")
+        crl.sign(root_key, "sha256")
 
-        # Save the CRL to a file
-        with open("crl.pem", "wb") as f:
+        crl_pem = os.path.join(certificate_directory, "cert.crl")
+
+        with open(crl_pem, "wb") as f:
             f.write(crypto.dump_crl(crypto.FILETYPE_PEM, crl))
 
-    def get_certificates(self) -> None:
+        print(f"Certificate - {cert} revoked successfully.")
+
+
+    def get_certificates(self, name: str) -> None:
         """
+
         Get the certificate details.
 
+        Args:
+            name: the name of the certificate to get the details of.
+
         """
 
-        # load the CA certificate
-        with open("ca.crt", "rb") as f:
-            ca_cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
+        cert_files = [
+            os.path.join(certificate_directory, f) 
+            for f in os.listdir(certificate_directory) if f.endswith(".crt")
+        
+        ]
 
-        # Enumerate all the certificate files in a directory
-        cert_dir = "certs"
-        cert_files = [os.path.join(cert_dir, f) for f in os.listdir(cert_dir) if f.endswith(".crt")]
-
-        # iterate over the certificate files and check if they are signed by the CA
         for cert_file in cert_files:
-            with open(cert_file, "rb") as f:
-                cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
-                if cert.verify(ca_cert.get_pubkey()):
-                    print(f"{cert_file} is signed by {ca_cert.get_subject().CN}")
-                else:
-                    print(f"{cert_file} is not signed by {ca_cert.get_subject().CN}")
+            if name in cert_file:
+                with open(cert_file, "rb") as f:
+                    cert = crypto.load_certificate(crypto.FILETYPE_PEM, f.read())
+
+                table = PrettyTable()
+                table.field_names =["Subject", "Issuer", "Serial Number", "Validity", "Signature Algorithm", "Public Key", "Version", "Revoked"]
+                table.add_row([
+                    str(cert.get_subject()),
+                    str(cert.get_issuer()),
+                    str(cert.get_serial_number()),
+                    str(f"{cert.get_notBefore()} to {cert.get_notAfter()}"),
+                    str(cert.get_signature_algorithm()),
+                    str(cert.get_pubkey()),
+                    str(cert.get_version()),
+                    str(cert.has_expired())
+                ])
+
+                print(table)
+
+        print(f"Certificate - {name} details retrieved successfully.")
+
+# -----------------  END OF CERTIFICATE  ----------------- #
+
+# if __name__ == "__main__":
+
+#     ca = CertificateAuthority()
+#     cert = Certificates()
+
+#     ttl_duration = 365 * 24 * 60 * 60
+
+#     if not os.path.exists(ca_certificate):
+#         ca.create_certificate_authority(ca_name="IDENTITYPROXY", ca_duration=ttl_duration)
+#         ca.create_subordinate_ca(subordinate_ca_name="SUBORDINATE_IDENTITY_PROXY", ca_duration=ttl_duration)
+
+#     cert.create_certificate_csr(ca_name="TOMTOMLOAD")
+#     ca.create_certificate_from_csr(csr_file="TOMTOMLOAD", ca_name="SUBORDINATE_IDENTITY_PROXY", ca_duration=ttl_duration)
+
+#     cert.create_certificate_csr(ca_name="IDENTITYPROXY")
+#     ca.create_certificate_from_csr(csr_file="IDENTITYPROXY", ca_name="SUBORDINATE_IDENTITY_PROXY", ca_duration=ttl_duration)
+
+#     # ca.verify_certificate(cert_to_verify="IDENTITYPROXY")
+#     # ca.verify_certificate(cert_to_verify="SUBORDINATE_IDENTITY_PROXY")
+#     # ca.verify_certificate(cert_to_verify="TOMTOMLOAD")
+    

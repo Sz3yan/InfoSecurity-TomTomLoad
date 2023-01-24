@@ -171,8 +171,8 @@ if __name__ == "__main__":
 
     if app.config["DEBUG_FLAG"]:
         SSL_CONTEXT = (
-            CONSTANTS.TTL_CONFIG_FOLDER.joinpath("certificate.pem"),
-            CONSTANTS.TTL_CONFIG_FOLDER.joinpath("key.pem")
+            CONSTANTS.TTL_CONFIG_FOLDER.joinpath("TOMTOMLOAD.crt"),
+            CONSTANTS.TTL_CONFIG_FOLDER.joinpath("TOMTOMLOAD_key.pem")
         )
         host = None
     else:
