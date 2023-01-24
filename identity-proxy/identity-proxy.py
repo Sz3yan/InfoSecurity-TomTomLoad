@@ -68,7 +68,6 @@ def auto_delete_sessions() -> None:
 
 
 if __name__ == "__main__":
-
     # scheduler = BackgroundScheduler()
     # scheduler.configure(timezone="Asia/Singapore")
 
