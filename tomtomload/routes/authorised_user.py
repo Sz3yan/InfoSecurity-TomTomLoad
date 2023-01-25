@@ -353,25 +353,21 @@ def media_upload(id):
             # can compute hash here
 
 
-            # The file you want to upload
-            file_to_upload = temp_Mediafile_path
+            # # The file you want to upload
+            # file_to_upload = temp_Mediafile_path
 
-            # Open the file and read its contents
-            with open(file_to_upload, "rb") as f:
-                file_data = f.read()
+            # # Open the file and read its contents
+            # with open(file_to_upload, "rb") as f:
+            #     file_data = f.read()
 
-            # Create a new hash object
-            hash_object = hashlib.sha256()
+            # # Create a new hash object
+            # hash_object = hashlib.sha256()
 
-            # Update the hash object with the file's data
-            hash_object.update(file_data)
+            # # Update the hash object with the file's data
+            # hash_object.update(file_data)
 
-            # Get the hexadecimal representation of the hash
-            original_hash = hash_object.hexdigest()
-
-
-
-
+            # # Get the hexadecimal representation of the hash
+            # original_hash = hash_object.hexdigest()
 
             storage.upload_blob(
                 bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
@@ -398,20 +394,20 @@ def media_upload(id):
                 destination_file_name = temp_Mediafile_path
             )
 
-            # Create a new hash object
-            hash_object = hashlib.sha256()
+            # # Create a new hash object
+            # hash_object = hashlib.sha256()
 
-            # Update the hash object with the downloaded file's data
-            hash_object.update(downloaded_file_data)
+            # # Update the hash object with the downloaded file's data
+            # hash_object.update(downloaded_file_data)
 
-            # Get the hexadecimal representation of the hash
-            downloaded_hash = hash_object.hexdigest()
+            # # Get the hexadecimal representation of the hash
+            # downloaded_hash = hash_object.hexdigest()
 
-            # Compare the original hash to the downloaded hash
-            if original_hash == downloaded_hash:
-                print(f"{file_to_upload} has not been tampered with during upload. Hash matches.")
-            else:
-                print(f"{file_to_upload} has been tampered with during upload. Hash does not match.")
+            # # Compare the original hash to the downloaded hash
+            # if original_hash == downloaded_hash:
+            #     print(f"{file_to_upload} has not been tampered with during upload. Hash matches.")
+            # else:
+            #     print(f"{file_to_upload} has been tampered with during upload. Hash does not match.")
 
 
         else:
