@@ -2,22 +2,10 @@ from functools import wraps
 from flask import request, jsonify, session, redirect, url_for
 from static.security.session_management import TTLSession
 from static.security.secure_data import GoogleCloudKeyManagement
-from static.classes.config import CONSTANTS, SECRET_CONSTANTS
-from datetime import datetime, timedelta
+from static.classes.config import CONSTANTS
 import jwt
 
 KeyManagement = GoogleCloudKeyManagement()
-
-# ----- Webpage authentication -----
-def authenticated(func):
-    @wraps(func)
-    def decorated_function(*args, **kwargs):
-        ttlSession = TTLSession()
-        if "id_info" in session and ttlSession.verfiy_Ptoken("id_info"):
-            return func(*args, **kwargs)
-
-    return decorated_function
-
 
 # ----- API Authentication -----
 def ttl_jwt_authentication(func):
@@ -47,21 +35,29 @@ def ttl_jwt_authentication(func):
     
     return decorated_function
 
-
 # ----- Redirect User -----
 def ttl_redirect_user(func):
     @wraps(func)
     def decorated_function(*args, **kwargs):
-        ttlSession = TTLSession()
-        ttlSession.write_data_to_session("route_from","api")
-        
-        if ttl_check_user_agent():
-            return redirect(url_for("potential_user.login"))
-        else:
-            return func(*args, **kwargs)
+        # ttlSession = TTLSession()
+        # ttlSession.write_data_to_session("route_from","api")
+        # print(ttlSession.get_data_from_session("route_from", data=True))
+        try:
+            print(ttl_check_user_agent())
+            print(check_session())
+            if (ttl_check_user_agent() and check_session()):
+                return func(*args, **kwargs)
+            elif ttl_check_user_agent():
+                return redirect("https://127.0.0.1:8080")
+            elif request.headers['Authorization']:
+                return func(*args, **kwargs)
+            else:
+                return jsonify(message="Please login")
+        except KeyError:
+            return jsonify(message="Please input a authorization token"),401
+            
 
     return decorated_function
-
 
 # ----- Check User Agent -----
 def ttl_check_user_agent():
@@ -72,4 +68,36 @@ def ttl_check_user_agent():
             return True
     
     return False
+
+
+def check_session():
+    ttlSession = TTLSession()
+    counter = 0
+    try:
+        if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
+            counter += 1
+        else:
+            print("Please use the same browser")
+    except:
+        print("TTLAuthenticatedUserName not found")
+
+    try:
+        if ttlSession.verfiy_Ptoken("TTLJWTAuthenticatedUser"):
+            counter += 1
+        else:
+            print("Please use the same browser")
+    except:
+        print("TTLAuthenticatedUserName not found")
     
+    try:
+        if ttlSession.verfiy_Ptoken("TTLContextAwareAccess"):
+            counter += 1
+        else:
+            print("Please use the same browser")
+    except:
+        print("TTLAuthenticatedUserName not found")
+
+    if counter == 3:
+        return True
+    else:
+        return False
