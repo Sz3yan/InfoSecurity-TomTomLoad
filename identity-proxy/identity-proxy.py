@@ -1,4 +1,5 @@
 import os
+import pathlib
 
 from flask import Flask
 from flask_session import Session
@@ -6,11 +7,11 @@ from flask_paranoid import Paranoid
 
 from routes.potential_user import potential_user
 from routes.api import api
-from routes.Errors import error
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
+from static.security.certificate_authority import CertificateAuthority, Certificates
 
 
 # -----------------  START OF IDENTITY PROXY  ----------------- #
@@ -46,7 +47,6 @@ paranoid.redirect_view = "/"
 with app.app_context():
     app.register_blueprint(potential_user)
     app.register_blueprint(api)
-    app.register_blueprint(error)
 
 # -----------------  END OF BLUEPRINT  ----------------- #
 
@@ -74,15 +74,78 @@ if __name__ == "__main__":
 
     scheduler.add_job(
         auto_delete_sessions,
+<<<<<<< HEAD
         "interval", seconds=300
     )
 
     scheduler.start()
+=======
+        "interval", hours=23, minutes=58, seconds=0
+    )
+
+    scheduler.start()
+
+    # -----------------  START OF CERTIFICATE AUTHORITY  ----------------- #
+
+    # -----------------  START OF BASIC SETUP  ----------------- #
+
+    # -----------------  START OF FILE DIRECTORY SETUP  ----------------- #
+
+    certificate_directory = CONSTANTS.IP_CONFIG_FOLDER.joinpath("certificates")
+
+    if not os.path.exists(certificate_directory):
+        os.makedirs(certificate_directory)
+
+    to_tomtomload_path = pathlib.Path(__file__).parent.parent.parent.parent.absolute()
+    tomtomload_configfiles = os.path.join(to_tomtomload_path, "tomtomload/static/config_files/")
+
+    # -----------------  END OF FILE DIRECTORY SETUP  ----------------- #
+
+    # -----------------  START OF CERTIFICATE SETUP  ----------------- #
+
+    certificate_authority = "IDENTITYPROXY"
+    subordinate_certificate_authority = "SUBORDINATE_IDENTITY_PROXY"
+    identity_proxy = "IDENTITY_PROXY"
+    tomtomload = "TOMTOMLOAD"
+
+    ca_certificate = os.path.join(certificate_directory, f"{certificate_authority}.crt")
+    ca_key = os.path.join(certificate_directory, f"{certificate_authority}.key")
+    sub_certificate = os.path.join(certificate_directory, f"{subordinate_certificate_authority}.crt")
+    sub_key = os.path.join(certificate_directory, f"{subordinate_certificate_authority}.key")
+    identityproxy = os.path.join(certificate_directory, f"{identity_proxy}.crt")
+    ttl = os.path.join(certificate_directory, f"{tomtomload}.crt")
+
+    # -----------------  END OF CERTIFICATE SETUP  ----------------- #
+
+    # -----------------  END OF BASIC SETUP  ----------------- #
+
+    ca = CertificateAuthority()
+    cert = Certificates()
+
+    ttl_duration = 365 * 24 * 60 * 60
+
+    if not os.path.exists(ca_certificate):
+        ca.create_certificate_authority(ca_name=certificate_authority, ca_duration=ttl_duration)
+
+    if not os.path.exists(sub_certificate):
+        ca.create_subordinate_ca(subordinate_ca_name=subordinate_certificate_authority, ca_duration=ttl_duration)
+    
+    if not os.path.exists(identityproxy):
+        cert.create_certificate_csr(ca_name=identity_proxy)
+        ca.create_certificate_from_csr(csr_file=identity_proxy, ca_name=subordinate_certificate_authority, ca_duration=ttl_duration)
+
+    if not os.path.exists(ttl):
+        print(os.path.exists(ttl))
+        cert.create_certificate_csr(ca_name=tomtomload)
+        ca.create_certificate_from_csr(csr_file=tomtomload, ca_name=subordinate_certificate_authority, ca_duration=ttl_duration)
+
+    # -----------------  END OF CERTIFICATE AUTHORITY  ----------------- #
+>>>>>>> 8b78bfc10592876301fab7a958bad82cdf629bfe
 
     if app.config["DEBUG_FLAG"]:
         SSL_CONTEXT = (
-            CONSTANTS.IP_CONFIG_FOLDER.joinpath("certificate.pem"),
-            CONSTANTS.IP_CONFIG_FOLDER.joinpath("key.pem")
+            CONSTANTS.IP_CONFIG_FOLDER.joinpath("certificates/IDENTITY_PROXY.crt"),
+            CONSTANTS.IP_CONFIG_FOLDER.joinpath("certificates/IDENTITY_PROXY_key.pem")
         )
         host = None
     else:

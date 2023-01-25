@@ -2,9 +2,9 @@
 
 {% block bodyContent %}
     <div class="collection-edit">
-        <form novalidate="" method="post"
-            action=""
+        <form method="post"
             class="collection-edit__form form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="collection-edit__main">
                 <div class="eyebrow">
                     <div class="gutter--left gutter--right eyebrow__wrap">
@@ -23,57 +23,41 @@
                     <header class="collection-edit__header">
                         <h2><span class="render-title">{{ email }}</span></h2>
                     </header>
-                    <div class="auth-fields">
+
+                    <div class="auth-fields" id="accessCheckbox">
                         <h3>Access:</h3>
                         <div class="auth-fields__api-key">
-                            <div class="field-type checkbox">
-                                <div class="checkbox__error-wrap"></div><input id="field-readAccess"
-                                    type="checkbox" name="readAccess"><button
-                                    type="button"><span class="checkbox__input"><svg
-                                            class="icon icon--check" xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 25 25">
-                                            <path d="M10.6092 16.0192L17.6477 8.98076" class="stroke"
-                                                stroke-linecap="square" stroke-linejoin="bevel"></path>
-                                            <path d="M7.35229 12.7623L10.6092 16.0192" class="stroke"
-                                                stroke-linecap="square" stroke-linejoin="bevel"></path>
-                                        </svg></span><span class="checkbox__label">Read Access</span></button>
-                            </div>
-                            <div class="field-type checkbox">
-                                <div class="checkbox__error-wrap"></div><input id="field-writeAccess"
-                                    type="checkbox" name="writeAccess"><button
-                                    type="button"><span class="checkbox__input"><svg
-                                            class="icon icon--check" xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 25 25">
-                                            <path d="M10.6092 16.0192L17.6477 8.98076" class="stroke"
-                                                stroke-linecap="square" stroke-linejoin="bevel"></path>
-                                            <path d="M7.35229 12.7623L10.6092 16.0192" class="stroke"
-                                                stroke-linecap="square" stroke-linejoin="bevel"></path>
-                                        </svg></span><span class="checkbox__label">Write Access</span></button>
-                            </div>
-                            <div class="field-type checkbox">
-                                <div class="checkbox__error-wrap"></div><input id="field-deleteAccess"
-                                    type="checkbox" name="deleteAccess"><button
-                                    type="button"><span class="checkbox__input"><svg
-                                            class="icon icon--check" xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 25 25">
-                                            <path d="M10.6092 16.0192L17.6477 8.98076" class="stroke"
-                                                stroke-linecap="square" stroke-linejoin="bevel"></path>
-                                            <path d="M7.35229 12.7623L10.6092 16.0192" class="stroke"
-                                                stroke-linecap="square" stroke-linejoin="bevel"></path>
-                                        </svg></span><span class="checkbox__label">Delete Access</span></button>
-                            </div>
+                            {% if 'read' in access_list %}
+                            <input type="checkbox" name="readAccess" value = 'read' checked disabled><span style="font-size: 1.2em">Read Access</span>
+                            {% else %}
+                            <input type="checkbox" name="readAccess" value = 'read'>i<span style="font-size: 1.2em">Read Accesss</span>
+                            {% endif %}
                         </div>
+                        <div class="auth-fields__api-key">
+                            {% if 'write' in access_list %}
+                            <input type="checkbox" name="writeAccess" value = 'write' checked=true><span style="font-size: 1.2em">Write Access</span>
+                            {% else %}
+                            <input type="checkbox" name="writeAccess" value = ' '>i<span style="font-size: 1.2em">Write Accesss</span>
+                            {% endif %}
+                        </div>
+                        <div class="auth-fields__api-key">
+                            {% if 'delete' in access_list %}
+                            <input type="checkbox" name="deleteAccess" value = 'delete' checked=true><span style="font-size: 1.2em">Delete Access</span>
+                            {% else %}
+                            <input type="checkbox" name="deleteAccess" value = ' '><span style="font-size: 1.2em">Delete Accesss</span>
+                            {% endif %}
+                        </div>
+
+
+                            <br>
+                        <h4>Role: {{ access }}</h4>
+                        <h4>the list: {{access_list}}</h4>
                     </div>
                 </div>
             </div>
             <div class="collection-edit__sidebar-wrap">
                 <div class="collection-edit__sidebar">
                     <div class="collection-edit__sidebar-sticky-wrap">
-                        <ul class="collection-edit__collection-actions">
-                            <li><a id="action-create" href="/admin/collections/users/create">Create New</a>
-                            </li>
-                            <li></li>
-                        </ul>
                         <div class="collection-edit__document-actions">
                             <div class="form-submit"><button type="submit" id="action-save"
                                     class="btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right"><span
@@ -88,4 +72,5 @@
             </div>
         </form>
     </div>
+
 {% endblock %}
