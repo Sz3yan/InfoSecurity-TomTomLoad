@@ -1,3 +1,4 @@
+import os
 import jwt
 import json
 import requests
@@ -18,10 +19,6 @@ from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
 from functools import wraps
-
-# todo
-# 1. setup certificate authority 
-# 2. setup certificate for identity proxy and tomtomload, run if valid
 
 
 potential_user = Blueprint('potential_user', __name__, template_folder="templates", static_folder='static')
@@ -93,7 +90,6 @@ def callback():
             ttlSession.write_data_to_session("route_from", "web")
     except:
         ttlSession.write_data_to_session("route_from", "web")
-
 
     return redirect("/authorisation")
 
@@ -176,7 +172,52 @@ def authorisation():
 
         # -----------------  START OF CERTIFICATE AUTHORITY ----------------- #
 
-        # CREATE CERTIFICATE AUTHORITY IF NOT EXISTS
+        certificate_directory = CONSTANTS.IP_CONFIG_FOLDER.joinpath("certificates")
+
+        sub_certificate = os.path.join(certificate_directory, "SUBORDINATE_IDENTITY_PROXY")
+        super_admin = os.path.join(certificate_directory, "SUPER_ADMIN.crt")
+
+        used = 0
+
+        if session['id_info'].get("email") in acl['SuperAdmins']:
+
+            w = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r")
+            dict_acl = json.loads(w.read())
+            used = dict_acl['SuperAdmins'][session['id_info'].get("email")][3]
+
+            if used == 1:
+                if not os.path.exists(super_admin):
+                    print("SUPER ADMIN ACCESS DENIED")
+
+                    return abort(401)
+                
+                else:
+                    print("SUPER ADMIN ACCESS GRANTED")
+
+            if used == 0:
+                certificate.create_certificate_csr(ca_name="SUPER_ADMIN")
+                certificate_authority.create_certificate_from_csr(
+                    csr_file = "SUPER_ADMIN",
+                    ca_name = sub_certificate,
+                    ca_duration= 100 * 24 * 60 * 60
+                )
+
+                used = 1
+
+                r = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "w")
+                dict_acl['SuperAdmins'][session['id_info'].get("email")][3] = used
+                r.write(json.dumps(dict_acl))
+                r.close()
+
+                storage.upload_blob(
+                    bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+                    source_file_name=CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"),
+                    destination_blob_name="acl.json"
+                )
+
+                
+
+                print("SUPER ADMIN ACCESS GRANTED")
 
         # -----------------  END OF CERTIFICATE AUTHORITY ----------------- #
 
