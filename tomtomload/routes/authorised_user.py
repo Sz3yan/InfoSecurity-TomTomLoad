@@ -352,22 +352,19 @@ def media_upload(id):
 
             # can compute hash here
 
+            # Open the file and read its contents
+            with open(temp_Mediafile_path, "rb") as fs:
+                file_data = fs.read()
 
-            # # The file you want to upload
-            # file_to_upload = temp_Mediafile_path
+                # Create a new hash object
+                hash_object = hashlib.sha256()
 
-            # # Open the file and read its contents
-            # with open(file_to_upload, "rb") as f:
-            #     file_data = f.read()
+                # Update the hash object with the file's data
+                hash_object.update(file_data)
 
-            # # Create a new hash object
-            # hash_object = hashlib.sha256()
-
-            # # Update the hash object with the file's data
-            # hash_object.update(file_data)
-
-            # # Get the hexadecimal representation of the hash
-            # original_hash = hash_object.hexdigest()
+                # Get the hexadecimal representation of the hash
+                original_hash = hash_object.hexdigest()
+                print("original:", original_hash)
 
             storage.upload_blob(
                 bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
@@ -378,7 +375,7 @@ def media_upload(id):
             storage.set_blob_metadata(
                 bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
                 blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_upload_id + "." + file_extension,
-                metadata_dict = {"name": secure_filename(f.filename)}
+                metadata_dict = {"name": secure_filename(f.filename), "hash": original_hash}
             )
 
             # -----------------  START OF REMOVING FILE LOCALLY ----------------- #
@@ -388,26 +385,31 @@ def media_upload(id):
             # -----------------  END OF REMOVING FILE LOCALLY ----------------- #
 
             # Download the file from the server
-            downloaded_file_data = storage.download_blob(
+            storage.download_blob(
                 bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
                 source_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + id + ".png",
                 destination_file_name = temp_Mediafile_path
             )
 
-            # # Create a new hash object
-            # hash_object = hashlib.sha256()
+            with open(temp_Mediafile_path, "rb") as fs:
+                file_data = fs.read()
 
-            # # Update the hash object with the downloaded file's data
-            # hash_object.update(downloaded_file_data)
+                # Create a new hash object
+                hash_object = hashlib.sha256()
 
-            # # Get the hexadecimal representation of the hash
-            # downloaded_hash = hash_object.hexdigest()
+                # Update the hash object with the file's data
+                hash_object.update(file_data)
 
-            # # Compare the original hash to the downloaded hash
-            # if original_hash == downloaded_hash:
-            #     print(f"{file_to_upload} has not been tampered with during upload. Hash matches.")
-            # else:
-            #     print(f"{file_to_upload} has been tampered with during upload. Hash does not match.")
+                # Get the hexadecimal representation of the hash
+                new_hash = hash_object.hexdigest()
+                print("new:", new_hash)
+
+
+            # Compare the original hash to the downloaded hash
+            if original_hash == new_hash:
+                print(f"{temp_Mediafile_path} has not been tampered with during upload. Hash matches.")
+            else:
+                print(f"{temp_Mediafile_path} has been tampered with during upload. Hash does not match.")
 
 
         else:
@@ -737,46 +739,43 @@ def edit_access():
         elif value == "delete":
             access_list.append("delete")
 
+    if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
+        if request.method == 'POST':
+            write = request.form.get('writeAccess')
+            delete = request.form.get('deleteAccess')
 
-    if request.method == 'POST':
-        write = request.form.get('writeAccess')
-        delete = request.form.get('deleteAccess')
+            updated_access_list = ['read']
 
-        updated_access_list = ['read']
+            if write is not None:
+                updated_access_list.append('write')
 
-        if write is not None:
-            updated_access_list.append('write')
-            access_list.append("write")
+            if delete is not None:
+                updated_access_list.append("delete")
 
-        if delete is not None:
-            print("hi")
-            updated_access_list.append("delete")
-            access_list.append("delete")
+            print(updated_access_list)
 
-        print(updated_access_list)
+            if updated_access_list == acl[decoded_jwt["role"]][decoded_jwt["email"]]:
+                return redirect(url_for('authorised_user.profile'))
+            else:
+                w = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r")
+                dict_acl = json.loads(w.read())
+                dict_acl[decoded_jwt["role"]][decoded_jwt["email"]] = updated_access_list
+                w.close()
 
-        if updated_access_list == acl[decoded_jwt["role"]][decoded_jwt["email"]]:
-            return redirect(url_for('authorised_user.profile'))
-        else:
+                r = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "w")
+                r.write(json.dumps(dict_acl))
+                r.close()
 
-            w = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r")
-            dict_acl = json.loads(w.read())
-            dict_acl[decoded_jwt["role"]][decoded_jwt["email"]] = updated_access_list
-            w.close()
+                storage.upload_blob(
+                    bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+                    source_file_name=CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"),
+                    destination_blob_name="acl.json"
+                )
 
-            r = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "w")
-            r.write(json.dumps(dict_acl))
-            r.close()
+                return redirect(url_for('authorised_user.home'))
 
-            storage.upload_blob(
-                bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
-                source_file_name=CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"),
-                destination_blob_name="acl.json"
-            )
-
-            return redirect(url_for('authorised_user.home'))
-
-
+    else:
+        abort(403)
 
     return render_template('authorised_admin/user_access.html', pic=decoded_jwt["picture"], email=decoded_jwt["email"], access=decoded_jwt['role'], access_list=access_list)
 
