@@ -7,7 +7,6 @@ from flask_paranoid import Paranoid
 
 from routes.potential_user import potential_user
 from routes.api import api
-from routes.Errors import error
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -48,7 +47,6 @@ paranoid.redirect_view = "/"
 with app.app_context():
     app.register_blueprint(potential_user)
     app.register_blueprint(api)
-    app.register_blueprint(error)
 
 # -----------------  END OF BLUEPRINT  ----------------- #
 
@@ -99,11 +97,11 @@ if __name__ == "__main__":
 
     # -----------------  START OF CERTIFICATE SETUP  ----------------- #
 
-    ca_certificate = os.path.join(certificate_directory, "IDENTITY-PROXY.crt")
-    ca_key = os.path.join(certificate_directory, "IDENTITY-PROXY.key")
+    ca_certificate = os.path.join(certificate_directory, "IDENTITYPROXY.crt")
+    ca_key = os.path.join(certificate_directory, "IDENTITYPROXY.key")
     sub_certificate = os.path.join(certificate_directory, "SUBORDINATE_IDENTITY_PROXY.crt")
     sub_key = os.path.join(certificate_directory, "SUBORDINATE_IDENTITY_PROXY.key")
-    identityproxy = os.path.join(certificate_directory, "IDENTITY-PROXY.crt")
+    identityproxy = os.path.join(certificate_directory, "IDENTITY_PROXY.crt")
     tomtomload = os.path.join(tomtomload_configfiles, "TOMTOMLOAD.crt")
 
     # -----------------  END OF CERTIFICATE SETUP  ----------------- #

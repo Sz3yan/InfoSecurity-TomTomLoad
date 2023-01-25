@@ -9,6 +9,7 @@ from static.classes.storage import GoogleCloudStorage
 from static.security.secure_data import GoogleCloudKeyManagement, Encryption
 from static.security.session_management import TTLSession
 from static.security.malware_analysis import malwareAnalysis
+from static.security.DatalossPrevention import DataLossPrevention
 
 from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort
 from functools import wraps
@@ -521,6 +522,9 @@ def post_upload(id):
             "post_content": post_content,
         }
 
+        DLP = DataLossPrevention(post_data["post_content"])
+        DLP.detect_sensitive_data()
+        
         with open(temp_post_path, 'wb') as outfile:
 
             # -----------------  START OF ENCRYPTION ---------------- #
@@ -530,7 +534,7 @@ def post_upload(id):
                 location_id = CONSTANTS.GOOGLE_LOCATION_ID,
                 key_ring_id = CONSTANTS.KMS_TTL_KEY_RING_ID,
                 key_id = CONSTANTS.KMS_KEY_ID,
-                plaintext = post_data["post_content"]
+                plaintext = DLP.replace_sensitive_data()
             )
 
             # -----------------  END OF ENCRYPTION ---------------- #
