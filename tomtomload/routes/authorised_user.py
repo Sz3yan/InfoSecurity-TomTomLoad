@@ -21,14 +21,6 @@ from flask import Blueprint, render_template, session, redirect, request, make_r
 from functools import wraps
 from werkzeug.utils import secure_filename
 
-# todo
-# 1. encryption of media and post via bytes 
-# 2. enveloped encryption of the symmertric key via asymmetric key
-# 3. check the signed certificate provided by identity-proxy and run only if it is valid
-# 4. implement AI to detect if password is weak or easily fishable
-# 5. template json for storing admin's user details
-# 6. implement data loss prevention for admin's user details and post 
-
 
 authorised_user = Blueprint('authorised_user', __name__, url_prefix="/admin", template_folder="templates", static_folder='static')
 
@@ -87,7 +79,6 @@ def check_signed_credential(func):
     return decorated_function
 
 
-# superadmin works fine. but admin no. need to check why
 def check_role_read(func):
     @wraps(func)
     def decorated_function(*args, **kwargs):
