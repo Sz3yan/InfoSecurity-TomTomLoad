@@ -43,7 +43,7 @@ flow = Flow.from_client_secrets_file(
 def authenticated(func):
     @wraps(func)
     def decorated_function(*args, **kwargs):
-        if "id_info" in session:
+        if "id_info" in session and ttlSession.verfiy_Ptoken("id_info"):
             return func(*args, **kwargs)
 
     return decorated_function
@@ -59,8 +59,8 @@ def login():
         access_type='offline',
         prompt='consent'
     )
-
-    session["state"] = state
+    ttlSession.write_data_to_session("state",state)
+    # session["state"] = state
     
     # print(authorization_url)
     # print(state)
@@ -70,8 +70,9 @@ def login():
 @potential_user.route("/callback")
 def callback():
     flow.fetch_token(authorization_response=request.url)
-    # print("callback")
-    if not session["state"] == request.args["state"]:
+    print(request.args["state"])
+    print(not ttlSession.get_data_from_session("state",data=True) == request.args["state"])
+    if not ttlSession.get_data_from_session("state",data=True) == request.args["state"] and ttlSession.verfiy_Ptoken("state"):
         abort(500)
 
     credentials = flow.credentials
@@ -86,14 +87,10 @@ def callback():
         clock_skew_in_seconds = CONSTANTS.GOOGLE_OAUTH_SKEW_TIME,
     )
 
-    session['id_info'] = id_info
+    ttlSession.write_data_to_session('id_info',id_info)
+    # session['id_info'] = id_info
 
-    try:
-        if ttlSession.get_data_from_session("route_from", data=True) != "api":
-            ttlSession.write_data_to_session("route_from", "web")
-    except:
-        ttlSession.write_data_to_session("route_from", "web")
-
+    ttlSession.write_data_to_session("route_from","web")
 
     return redirect("/authorisation")
 
@@ -106,7 +103,7 @@ def callback():
 @authenticated
 def authorisation():
     # -----------------  START OF CONTEXT-AWARE ACCESS ----------------- #
-    print(ttlSession.get_data_from_session("route_from", data=True))
+    # print(ttlSession.get_data_from_session("route_from", data=True))
     handler = ipinfo.getHandler(SECRET_CONSTANTS.IPINFO_TOKEN)
     details = handler.getDetails().all
 
@@ -138,22 +135,23 @@ def authorisation():
 
     with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
         acl = json.load(s)
-
-    if (session['id_info'].get("name") not in blacklisted["blacklisted_users"]) and \
+    
+    if (ttlSession.get_data_from_session('id_info', data=True).get("name") not in blacklisted["blacklisted_users"]) and \
         (TTLContextAwareAccessClientUserAgent not in blacklisted["blacklisted_useragent"]) and \
-        (TTLContextAwareAccessClientIP not in blacklisted["blacklisted_ip"]):
-
+        (TTLContextAwareAccessClientIP not in blacklisted["blacklisted_ip"]) and \
+        (ttlSession.verfiy_Ptoken('id_info')):
+        
         role = 'Admins'
 
         for user, value in acl['SuperAdmins'].items():
-            if session['id_info'].get("email") == user:
+            if ttlSession.get_data_from_session('id_info', data=True).get("email") == user:
                 role = 'SuperAdmins'
 
-        if session['id_info'].get("email") not in acl['SuperAdmins']:
-            if session['id_info'].get("email") not in acl['Admins']:
+        if ttlSession.get_data_from_session('id_info', data=True).get("email") not in acl['SuperAdmins']:
+            if ttlSession.get_data_from_session('id_info', data=True).get("email") not in acl['Admins']:
                 w = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r")
                 dict_acl = json.loads(w.read())
-                dict_acl[session['id_info'].get("email")] = ["read", "write", "delete"]
+                dict_acl[ttlSession.get_data_from_session('id_info', data=True).get("email")] = ["read", "write", "delete"]
                 w.close()
 
                 r = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "w")
@@ -182,37 +180,37 @@ def authorisation():
 
         # -----------------  START OF PACKAGING UP ----------------- #
 
-        signed_header = {
-            "TTL-Authenticated-User-Name": session['id_info'].get("name"),
-            "TTL-JWTAuthenticated-User":
-                jwt.encode(
-                    {
-                        "iss": "identity-proxy",
-                        "exp": datetime.utcnow() + timedelta(minutes=CONSTANTS.JWT_ACCESS_TOKEN_EXPIRATION_TIME) + (2 * timedelta(seconds=CONSTANTS.JWT_ACCESS_TOKEN_SKEW_TIME)),
-                        "iat":  datetime.utcnow() - timedelta(seconds=30) + timedelta(seconds=CONSTANTS.JWT_ACCESS_TOKEN_SKEW_TIME),
-                        "google_id": session['id_info'].get("sub"),
-                        "name": session['id_info'].get("name"),
-                        "email": session['id_info'].get("email"),
-                        "picture": session['id_info'].get("picture"),
-                        "role" : role,
-                    },
-                SECRET_CONSTANTS.JWT_SECRET_KEY,
-                algorithm=CONSTANTS.JWT_ALGORITHM
-            )
-        }
+        if ttlSession.get_data_from_session("route_from", data=True) != "api" and ttlSession.verfiy_Ptoken("route_from"):
+            signed_header = {
+                "TTL-Authenticated-User-Name": ttlSession.get_data_from_session('id_info', data=True).get("name"),
+                "TTL-JWTAuthenticated-User":
+                    jwt.encode(
+                        {
+                            "iss": "identity-proxy",
+                            "exp": datetime.utcnow() + timedelta(minutes=CONSTANTS.JWT_ACCESS_TOKEN_EXPIRATION_TIME) + (2 * timedelta(seconds=CONSTANTS.JWT_ACCESS_TOKEN_SKEW_TIME)),
+                            "iat":  datetime.utcnow() - timedelta(seconds=30) + timedelta(seconds=CONSTANTS.JWT_ACCESS_TOKEN_SKEW_TIME),
+                            "google_id": ttlSession.get_data_from_session('id_info', data=True).get("sub"),
+                            "name": ttlSession.get_data_from_session('id_info', data=True).get("name"),
+                            "email": ttlSession.get_data_from_session('id_info', data=True).get("email"),
+                            "picture": ttlSession.get_data_from_session('id_info', data=True).get("picture"),
+                            "role" : role,
+                        },
+                    SECRET_CONSTANTS.JWT_SECRET_KEY,
+                    algorithm=CONSTANTS.JWT_ALGORITHM
+                )
+            }
 
-        context_aware_access = {
-            "TTL-Context-Aware-Access-Client-IP": TTLContextAwareAccessClientIP,
-            "TTL-Context-Aware-Access-Client-User-Agent": TTLContextAwareAccessClientUserAgent,
-            "TTL-Context-Aware-Access-Client-Certificate": TTLContextAwareAccessClientCertificate
-        }
+            context_aware_access = {
+                "TTL-Context-Aware-Access-Client-IP": TTLContextAwareAccessClientIP,
+                "TTL-Context-Aware-Access-Client-User-Agent": TTLContextAwareAccessClientUserAgent,
+                "TTL-Context-Aware-Access-Client-Certificate": TTLContextAwareAccessClientCertificate
+            }
 
-        if ttlSession.get_data_from_session("route_from", data=True) != "api" and ttlSession.get_data_from_session("route_from", Ptoken=True) == ttlSession.get_token():
             response = make_response(redirect("https://127.0.0.1:5000/admin", code=302))
 
             response.set_cookie(
                 'TTL-Authenticated-User-Name',
-                value=base64.b64encode(str(session['id_info'].get("name")).encode("utf-8")),
+                value=base64.b64encode(str(ttlSession.get_data_from_session('id_info', data=True).get("name")).encode("utf-8")),
                 httponly=True,
                 secure=True
             )
@@ -232,10 +230,24 @@ def authorisation():
             )
 
             return response
-        elif ttlSession.get_data_from_session("route_from", data=True) == "api" and ttlSession.get_data_from_session("route_from", Ptoken=True) == ttlSession.get_token():
-            # print("\nEntering api back route\n")
-            # return jsonify(message="This is for api")
-            return redirect(url_for("api.callback"))
+        elif ttlSession.get_data_from_session("route_from", data=True) == "api" and ttlSession.verfiy_Ptoken("route_from"):
+            print("\nEntering api back route\n")
+            ttlJwtToken =jwt.encode(
+                            {
+                                "iss": "public",
+                                "exp": ttlSession.get_data_from_session('id_info', data=True).get("exp"),
+                                "iat":  ttlSession.get_data_from_session('id_info', data=True).get("iat"),
+                                "google_id": ttlSession.get_data_from_session('id_info', data=True).get("sub"),
+                                "name": ttlSession.get_data_from_session('id_info', data=True).get("name"),
+                                "email": ttlSession.get_data_from_session('id_info', data=True).get("email"),
+                                "picture": ttlSession.get_data_from_session('id_info', data=True).get("picture"),
+                                "role" : role,
+                            },
+                        SECRET_CONSTANTS.JWT_SECRET_KEY,
+                        algorithm=CONSTANTS.JWT_ALGORITHM
+                    )
+
+            return jsonify(token=ttlJwtToken)
         
         else:
             abort(401)

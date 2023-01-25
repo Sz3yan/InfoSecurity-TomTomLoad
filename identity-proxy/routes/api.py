@@ -4,9 +4,11 @@ import google.auth.transport.requests
 
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 from static.functions.check_authentication import ttl_jwt_authentication, ttl_redirect_user
+from static.security.secure_data import GoogleCloudKeyManagement
 from static.security.session_management import TTLSession
 
-from flask import Blueprint, request, session, redirect, abort, jsonify, url_for
+from flask import Blueprint, request, session, redirect, abort, jsonify, url_for, make_response
+from datetime import datetime, timedelta
 from google.oauth2 import id_token
 from google_auth_oauthlib.flow import InstalledAppFlow
 from pip._vendor import cachecontrol
@@ -20,75 +22,95 @@ flow = InstalledAppFlow.from_client_secrets_file(
 )
     # redirect_uri=CONSTANTS.API_CALLBACK_URL
 
+# -----------------  START OF INITIALISATION ----------------- #
+
 ttlSession = TTLSession()
+KeyManagement = GoogleCloudKeyManagement()
+
+# -----------------  END OF INITIALISATION ----------------- #
+
+# ----- Change to Identity Proxy JWT -----
+def api_ip_to_ttl_jwt():
+    decoded_jwt = jwt.decode(
+                    request.headers['Authorization'].split(" ")[1], 
+                    algorithms = "HS256",
+                    key = str(KeyManagement.retrieve_key(
+                            project_id = CONSTANTS.GOOGLE_PROJECT_ID,
+                            location_id = CONSTANTS.GOOGLE_LOCATION_ID,
+                            key_ring_id = CONSTANTS.GOOGLE_KEY_RING_ID,
+                            key_id = CONSTANTS.JWT_ACCESS_TOKEN_SECRET_KEY
+                        ))
+                )
+
+    ttl_encoded_jwt = jwt.encode(
+                        {
+                            "iss": "identity-proxy",
+                            "exp": datetime.utcnow() + timedelta(minutes=CONSTANTS.JWT_ACCESS_TOKEN_EXPIRATION_TIME) + (2 * timedelta(seconds=CONSTANTS.JWT_ACCESS_TOKEN_SKEW_TIME)),
+                            "iat":  datetime.utcnow() - timedelta(seconds=30) + timedelta(seconds=CONSTANTS.JWT_ACCESS_TOKEN_SKEW_TIME),
+                            "google_id": decoded_jwt.get("google_id"),
+                            "name": decoded_jwt.get("name"),
+                            "email": decoded_jwt.get("email"),
+                            "picture": decoded_jwt.get("picture"),
+                            "role" : decoded_jwt.get("role"),
+                        },
+                    SECRET_CONSTANTS.JWT_SECRET_KEY,
+                    algorithm=CONSTANTS.JWT_ALGORITHM
+                )
     
+    return ttl_encoded_jwt
+
 # -----------------  START OF AUTHENTICATION ----------------- #
 @api.route("/login")
 @ttl_redirect_user
 def verification():
-    verified_user = flow.run_local_server(port=8081)
 
     ttlSession.write_data_to_session("route_from","api")
     print("User-Agent", request.headers['User-Agent'])
-    
-    # print(verified_user.id_token)
-    
-    # return jsonify(token=verified_user.id_token),200
 
-    return redirect(url_for("authorisation"))
+    verified_user = flow.run_local_server(port=8081)
+    request_session = requests.session()
+    cached_session = cachecontrol.CacheControl(request_session)
+    token_request = google.auth.transport.requests.Request(session=cached_session)
 
-@api.route("/callback")
-def callback():
-    return jsonify(token=flow.credentials.id_token),200
+    id_info = id_token.verify_oauth2_token(
+        id_token = verified_user.id_token,
+        request = token_request,
+        audience = CONSTANTS.GOOGLE_CLIENT_ID2,
+        clock_skew_in_seconds = CONSTANTS.GOOGLE_OAUTH_SKEW_TIME,
+    )
+    
+    ttlSession.write_data_to_session('id_info',id_info)
+
+    print(id_info)
+
+    return redirect(url_for("potential_user.authorisation"))
+
+# @api.route("/callback")
+# def callback():
+#     return jsonify(token=flow.credentials.id_token),200
     
 
 @api.route("/v1/<route>", methods=['GET', 'POST'])
 @ttl_jwt_authentication
 def ip_api_route(route):
-    # flow.fetch_token(authorization_response=request.url)
+    
     print("Authorization", request.headers['Authorization'])
+    
+    response = make_response(redirect(f"https://127.0.0.1:5000/api/{route}", code=302))
 
-    verified_user = flow.credentials
-    request_session = requests.session()
-    cached_session = cachecontrol.CacheControl(request_session)
-    token_request = google.auth.transport.requests.Request(session=cached_session)
+    response.headers['Authorization'] = api_ip_to_ttl_jwt()
 
-    id_info = id_token.verify_oauth2_token(
-        id_token = verified_user.id_token,
-        request = token_request,
-        audience = CONSTANTS.GOOGLE_CLIENT_ID2,
-        clock_skew_in_seconds = CONSTANTS.GOOGLE_OAUTH_SKEW_TIME,
-    )
-
-    if id_info != None:
-        print(id_info)
-        # return jsonify(message="hi"),200
-        return redirect("https://127.0.0.1:5000/api/view_user")
-    else:
-        return jsonify(error="User profile not found.")
+    return response
 
 
 @api.route("/v1/<route>/<id>", methods=['GET', 'PUT', 'DELETE'])
 @ttl_jwt_authentication
 def ip_api_route_wif_id(route, id):
-    # flow.fetch_token(authorization_response=request.url)
+    
     print("Authorization", request.headers['Authorization'])
 
-    verified_user = flow.credentials
-    request_session = requests.session()
-    cached_session = cachecontrol.CacheControl(request_session)
-    token_request = google.auth.transport.requests.Request(session=cached_session)
+    response = make_response(redirect(f"https://127.0.0.1:5000/api/{route}/{id}", code=302))
 
-    id_info = id_token.verify_oauth2_token(
-        id_token = verified_user.id_token,
-        request = token_request,
-        audience = CONSTANTS.GOOGLE_CLIENT_ID2,
-        clock_skew_in_seconds = CONSTANTS.GOOGLE_OAUTH_SKEW_TIME,
-    )
+    response.headers['Authorization'] = api_ip_to_ttl_jwt()
 
-    if id_info != None:
-        print(id_info)
-        return jsonify(message="hi"),200
-        # return redirect("https://127.0.0.1:5000/api/view_user")
-    else:
-        return jsonify(error="User profile not found.")
+    return response

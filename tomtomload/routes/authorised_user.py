@@ -57,7 +57,7 @@ def check_signed_credential(func):
 
             try:
                 decoded_jwt = jwt.decode(
-                    ttlSession.get_data_from_session("TTLJWTAuthenticatedUser")["data"]["TTL-JWTAuthenticated-User"], 
+                    ttlSession.get_data_from_session("TTLJWTAuthenticatedUser",data=True)["TTL-JWTAuthenticated-User"], 
                     algorithms = "HS256", 
                     key = KeyManagement.retrieve_key(
                         project_id = CONSTANTS.GOOGLE_PROJECT_ID,
@@ -157,9 +157,9 @@ def home():
     cleanup_TTLContextAwareAccess = TTLContextAwareAccess_raw.replace("'", '"')
     TTLContextAwareAccess = json.loads(cleanup_TTLContextAwareAccess)
 
-    ttlSession.write_data_to_session("TTLAuthenticatedUserName",ttlSession.get_token(),TTLAuthenticatedUserName)
-    ttlSession.write_data_to_session("TTLJWTAuthenticatedUser",ttlSession.get_token(),TTLJWTAuthenticatedUser)
-    ttlSession.write_data_to_session("TTLContextAwareAccess",ttlSession.get_token(),TTLContextAwareAccess)
+    ttlSession.write_data_to_session("TTLAuthenticatedUserName",TTLAuthenticatedUserName)
+    ttlSession.write_data_to_session("TTLJWTAuthenticatedUser",TTLJWTAuthenticatedUser)
+    ttlSession.write_data_to_session("TTLContextAwareAccess",TTLContextAwareAccess)
 
     # -----------------  END OF SESSION ----------------- #
 
