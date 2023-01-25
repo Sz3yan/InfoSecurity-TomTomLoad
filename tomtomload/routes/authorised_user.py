@@ -15,10 +15,19 @@ from static.classes.storage import GoogleCloudStorage
 from static.security.secure_data import GoogleCloudKeyManagement, Encryption
 from static.security.session_management import TTLSession
 from static.security.malware_analysis import malwareAnalysis
+from static.security.DatalossPrevention import DataLossPrevention
 
 from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort
 from functools import wraps
 from werkzeug.utils import secure_filename
+
+# todo
+# 1. encryption of media and post via bytes 
+# 2. enveloped encryption of the symmertric key via asymmetric key
+# 3. check the signed certificate provided by identity-proxy and run only if it is valid
+# 4. implement AI to detect if password is weak or easily fishable
+# 5. template json for storing admin's user details
+# 6. implement data loss prevention for admin's user details and post 
 
 
 authorised_user = Blueprint('authorised_user', __name__, url_prefix="/admin", template_folder="templates", static_folder='static')
@@ -214,6 +223,7 @@ def logout_screen():
 @check_role_read
 def media():
     media_id = UniqueID()
+    metadata = ""
 
     # -----------------  START OF RETRIEVING MEDIA ----------------- #
 
@@ -562,6 +572,9 @@ def post_upload(id):
             "post_content": post_content,
         }
 
+        DLP = DataLossPrevention(post_data["post_content"])
+        DLP.detect_sensitive_data()
+        
         with open(temp_post_path, 'wb') as outfile:
 
             # -----------------  START OF ENCRYPTION ---------------- #
@@ -571,7 +584,7 @@ def post_upload(id):
                 location_id = CONSTANTS.GOOGLE_LOCATION_ID,
                 key_ring_id = CONSTANTS.KMS_TTL_KEY_RING_ID,
                 key_id = CONSTANTS.KMS_KEY_ID,
-                plaintext = post_data["post_content"]
+                plaintext = DLP.replace_sensitive_data()
             )
 
             # -----------------  END OF ENCRYPTION ---------------- #
@@ -652,6 +665,9 @@ def post_update(id):
             "post_content": post_content,
         }
 
+        DLP = DataLossPrevention(post_data["post_content"])
+        DLP.detect_sensitive_data()
+
         with open(temp_post_path, 'wb') as outfile:
 
             # -----------------  START OF ENCRYPTION ---------------- #
@@ -661,7 +677,7 @@ def post_update(id):
                 location_id = CONSTANTS.GOOGLE_LOCATION_ID,
                 key_ring_id = CONSTANTS.KMS_TTL_KEY_RING_ID,
                 key_id = CONSTANTS.KMS_KEY_ID,
-                plaintext = post_data["post_content"]
+                plaintext = DLP.replace_sensitive_data()
             )
 
             # -----------------  END OF ENCRYPTION ---------------- #

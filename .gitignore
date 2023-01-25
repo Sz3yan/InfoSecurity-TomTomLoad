@@ -2,8 +2,11 @@
 .DS_Store
 
 .idea/
+*.crt
+*.pem
 
 *.json
+identity-proxy/static/config_files/certificates/
 tomtomload/static/config_files/media/
 tomtomload/static/config_files/post/
 
