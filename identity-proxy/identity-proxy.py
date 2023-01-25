@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
     scheduler.add_job(
         auto_delete_sessions,
-        "interval", seconds=300
+        "interval", hours=23, minutes=58, seconds=0
     )
 
     scheduler.start()

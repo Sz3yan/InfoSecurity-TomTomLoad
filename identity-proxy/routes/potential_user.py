@@ -196,6 +196,7 @@ def authorisation():
 
                 else:
                     print("SUPER ADMIN ACCESS GRANTED")
+                    TTLContextAwareAccessClientCertificate = str(super_admin)
 
             if used == 0:
                 certificate.create_certificate_csr(ca_name="SUPER_ADMIN")
