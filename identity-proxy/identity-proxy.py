@@ -4,6 +4,8 @@ import pathlib
 from flask import Flask
 from flask_session import Session
 from flask_paranoid import Paranoid
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 from routes.potential_user import potential_user
 from routes.api import api
@@ -30,14 +32,23 @@ app.config["SECRET_KEY"] = "SECRET.FLASK_SECRET_KEY"
 # -----------------  END OF FLASK CONFIGURATION  ----------------- #
 
 
+# -----------------  START OF LIMITER CONFIGURATION  ----------------- #
+
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=[app.config["CONSTANTS"].DEFAULT_REQUEST_LIMIT],
+)
+
+# -----------------  END OF LIMITER CONFIGURATION  ----------------- #
+
+
 # -----------------  START OF SESSION CONFIGURATION  ----------------- #
 
 sess = Session(app)
 if app.config["CONSTANTS"].DEBUG_MODE:
     app.config["SESSION_COOKIE_SECURE"] = True
 
-paranoid = Paranoid(app)
-paranoid.redirect_view = "/"
 
 # -----------------  END OF SESSION CONFIGURATION  ----------------- #
 

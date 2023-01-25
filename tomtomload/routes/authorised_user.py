@@ -281,9 +281,7 @@ def media_id(id):
 
     # -----------------  START OF RETRIEVING FROM GCS ----------------- #
 
-    Ptoken = ttlSession.get_data_from_session("TTLAuthenticatedUserName", Ptoken=True)
-
-    if ttlSession.verfiy_Ptoken(Ptoken):
+    if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
 
         metadata = storage.blob_metadata(
             bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
@@ -349,9 +347,8 @@ def media_upload(id):
         # -----------------  END OF SAVING FILE LOCALLY ----------------- #
 
         # -----------------  START OF UPLOADING TO GCS ----------------- #
-        Ptoken = ttlSession.get_data_from_session("TTLAuthenticatedUserName", Ptoken=True)
-
-        if ttlSession.verfiy_Ptoken(Ptoken):
+        
+        if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
 
             # can compute hash here
 
@@ -435,9 +432,7 @@ def media_delete(id):
 
     # -----------------  START OF DELETING FROM GCS ----------------- #
 
-    Ptoken = ttlSession.get_data_from_session("TTLAuthenticatedUserName", Ptoken=True)
-
-    if ttlSession.verfiy_Ptoken(Ptoken):
+    if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
         storage.delete_blob(
             bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
             blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_delete_id + ".png"
@@ -507,9 +502,7 @@ def post_id(id):
 
     # -----------------  START OF RETRIEVING FROM GCS ----------------- #
 
-    Ptoken = ttlSession.get_data_from_session("TTLAuthenticatedUserName", Ptoken=True)
-
-    if ttlSession.verfiy_Ptoken(Ptoken):
+    if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
 
         metadata = storage.blob_metadata(
             bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
@@ -596,9 +589,7 @@ def post_upload(id):
 
         # -----------------  START OF UPLOADING TO GCS ---------------- #
 
-        Ptoken = ttlSession.get_data_from_session("TTLAuthenticatedUserName", Ptoken=True)
-
-        if ttlSession.verfiy_Ptoken(Ptoken):
+        if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
 
             storage.upload_blob(
                 bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
@@ -622,9 +613,7 @@ def post_upload(id):
 def post_delete(id):
     post_delete_id = id
 
-    Ptoken = ttlSession.get_data_from_session("TTLAuthenticatedUserName", Ptoken=True)
-
-    if ttlSession.verfiy_Ptoken(Ptoken):
+    if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
 
         storage.delete_blob(
             bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
@@ -688,9 +677,7 @@ def post_update(id):
 
         # -----------------  START OF UPLOADING TO GCS ---------------- #
 
-        Ptoken = ttlSession.get_data_from_session("TTLAuthenticatedUserName", Ptoken=True)
-
-        if ttlSession.verfiy_Ptoken(Ptoken):
+        if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
 
             storage.upload_blob(
                 bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,

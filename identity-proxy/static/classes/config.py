@@ -53,6 +53,10 @@ class Constants:
     # --- IPINFO ---
     IPINFO: str = "ipinfo"
 
+    # --- RATE LIMITING ---
+    DEFAULT_REQUEST_LIMIT: str = "60 per minute"
+    SENSITIVE_PAGE_LIMIT: str = "9 per minute"
+
 
 CONSTANTS = Constants()
 

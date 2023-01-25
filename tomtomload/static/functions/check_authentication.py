@@ -32,6 +32,9 @@ def ttl_jwt_authentication(func):
                 return jsonify(message="Token has expired"),401
             except jwt.InvalidTokenError:
                 return jsonify(message="Forbidden access"),403
+        
+        else:
+            return func(*args, **kwargs)
     
     return decorated_function
 

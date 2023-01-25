@@ -91,10 +91,11 @@ def verification():
     
 
 @api.route("/v1/<route>", methods=['GET', 'POST'])
+@ttl_redirect_user
 @ttl_jwt_authentication
 def ip_api_route(route):
     
-    print("Authorization", request.headers['Authorization'])
+    # print("Authorization", request.headers['Authorization'])
     
     response = make_response(redirect(f"https://127.0.0.1:5000/api/{route}", code=302))
 
@@ -103,14 +104,18 @@ def ip_api_route(route):
     return response
 
 
-@api.route("/v1/<route>/<id>", methods=['GET', 'PUT', 'DELETE'])
+@api.route("/v1/<route>/<regex('(\d{21})|([0-9a-z]{32})'):id>", methods=['GET', 'PUT', 'DELETE'])
+@ttl_redirect_user
 @ttl_jwt_authentication
 def ip_api_route_wif_id(route, id):
     
-    print("Authorization", request.headers['Authorization'])
+    # print("Authorization", request.headers['Authorization'])
+    if len(id) == 21 or len(id) == 32:
 
-    response = make_response(redirect(f"https://127.0.0.1:5000/api/{route}/{id}", code=302))
+        response = make_response(redirect(f"https://127.0.0.1:5000/api/{route}/{id}", code=302))
 
-    response.headers['Authorization'] = api_ip_to_ttl_jwt()
+        response.headers['Authorization'] = api_ip_to_ttl_jwt()
 
-    return response
+        return response
+    else:
+        return jsonify(message="Invalid ID input"),404

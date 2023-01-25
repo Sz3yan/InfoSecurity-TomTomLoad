@@ -2,8 +2,6 @@ import os
 
 from flask import Flask
 from flask_session import Session
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
 from flask_talisman import Talisman
 from flask_reggie import Reggie
@@ -59,17 +57,6 @@ if app.config["CONSTANTS"].DEBUG_MODE:
     app.config["SESSION_COOKIE_SECURE"] = True
 
 # -----------------  END OF SESSION CONFIGURATION  ----------------- #
-
-
-# -----------------  START OF LIMITER CONFIGURATION  ----------------- #
-
-limiter = Limiter(
-    app=app,
-    key_func=get_remote_address,
-    default_limits=[app.config["CONSTANTS"].DEFAULT_REQUEST_LIMIT],
-)
-
-# -----------------  END OF LIMITER CONFIGURATION  ----------------- #
 
 
 # -----------------  START OF HTST CONFIGURATION  ----------------- #
