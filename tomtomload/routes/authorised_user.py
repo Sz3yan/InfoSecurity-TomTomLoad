@@ -2,6 +2,12 @@ import os
 import jwt
 import json
 import base64
+import hashlib
+import schedule
+import time
+import shutil
+import datetime
+
 
 from static.classes.config import CONSTANTS
 from static.classes.unique_id import UniqueID
@@ -157,7 +163,7 @@ def home():
 
     try:
         decoded_TTLJWTAuthenticatedUser = jwt.decode(
-            TTLJWTAuthenticatedUser["TTL-JWTAuthenticated-User"], 
+            TTLJWTAuthenticatedUser["TTL-JWTAuthenticated-User"],
             algorithms = "HS256",
             key = KeyManagement.retrieve_key(
                     project_id = CONSTANTS.GOOGLE_PROJECT_ID,
@@ -339,6 +345,27 @@ def media_upload(id):
 
             # can compute hash here
 
+
+            # The file you want to upload
+            file_to_upload = temp_Mediafile_path
+
+            # Open the file and read its contents
+            with open(file_to_upload, "rb") as f:
+                file_data = f.read()
+
+            # Create a new hash object
+            hash_object = hashlib.sha256()
+
+            # Update the hash object with the file's data
+            hash_object.update(file_data)
+
+            # Get the hexadecimal representation of the hash
+            original_hash = hash_object.hexdigest()
+
+
+
+
+
             storage.upload_blob(
                 bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
                 source_file_name = temp_Mediafile_path,
@@ -356,6 +383,29 @@ def media_upload(id):
             os.remove(temp_Mediafile_path)
 
             # -----------------  END OF REMOVING FILE LOCALLY ----------------- #
+
+            # Download the file from the server
+            downloaded_file_data = storage.download_blob(
+                bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+                source_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + id + ".png",
+                destination_file_name = temp_Mediafile_path
+            )
+
+            # Create a new hash object
+            hash_object = hashlib.sha256()
+
+            # Update the hash object with the downloaded file's data
+            hash_object.update(downloaded_file_data)
+
+            # Get the hexadecimal representation of the hash
+            downloaded_hash = hash_object.hexdigest()
+
+            # Compare the original hash to the downloaded hash
+            if original_hash == downloaded_hash:
+                print(f"{file_to_upload} has not been tampered with during upload. Hash matches.")
+            else:
+                print(f"{file_to_upload} has been tampered with during upload. Hash does not match.")
+
 
         else:
             abort(403)
@@ -673,7 +723,90 @@ def profile():
 # -----------------  END OF AUTHENTICATED SIGNED TRAFFIC ----------------- #
 
 
-@authorised_user.route("/users/edit_access")
+@authorised_user.route("/users/edit_access", methods=['GET', 'POST'])
 @check_signed_credential
 def edit_access():
-    return render_template('authorised_admin/user_access.html', pic=decoded_jwt["picture"], email=decoded_jwt["email"])
+    with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
+        acl = json.load(s)
+    access_list = []
+
+    for value in acl[decoded_jwt["role"]][decoded_jwt["email"]]:
+        if value == "read":
+            access_list.append("read")
+        elif value == "write":
+            access_list.append("write")
+        elif value == "delete":
+            access_list.append("delete")
+
+
+    if request.method == 'POST':
+        write = request.form.get('writeAccess')
+        delete = request.form.get('deleteAccess')
+
+        updated_access_list = ['read']
+
+        if write is not None:
+            updated_access_list.append('write')
+            access_list.append("write")
+
+        if delete is not None:
+            print("hi")
+            updated_access_list.append("delete")
+            access_list.append("delete")
+
+        print(updated_access_list)
+
+        if updated_access_list == acl[decoded_jwt["role"]][decoded_jwt["email"]]:
+            return redirect(url_for('authorised_user.profile'))
+        else:
+
+            w = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r")
+            dict_acl = json.loads(w.read())
+            dict_acl[decoded_jwt["role"]][decoded_jwt["email"]] = updated_access_list
+            w.close()
+
+            r = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "w")
+            r.write(json.dumps(dict_acl))
+            r.close()
+
+            storage.upload_blob(
+                bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+                source_file_name=CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"),
+                destination_blob_name="acl.json"
+            )
+
+            return redirect(url_for('authorised_user.home'))
+
+
+
+    return render_template('authorised_admin/user_access.html', pic=decoded_jwt["picture"], email=decoded_jwt["email"], access=decoded_jwt['role'], access_list=access_list)
+
+
+
+
+# def retention_policy(path, retention_period, delete_period):
+#     current_time = datetime.datetime.now()
+#     for root, dirs, files in os.walk(path):
+#         for file in files:
+#             file_path = os.path.join(root, file)
+#             file_time = datetime.datetime.fromtimestamp(os.path.getctime(file_path))
+#             if (current_time - file_time).days >= retention_period:
+#                 archive_path = os.path.join(path, "archive", file)
+#                 shutil.move(file_path, archive_path)
+#                 print(f"{file_path} moved to {archive_path}.")
+#                 archive_time = datetime.datetime.fromtimestamp(os.path.getctime(archive_path))
+#                 if (current_time - archive_time).days >= delete_period:
+#                     os.remove(archive_path)
+#                     print(f"{archive_path} deleted.")
+#
+# # move files older than 365 days to archive folder
+# # and delete files from archive folder older than 365 days
+# retention_policy(CONSTANTS.TTL_CONFIG_FOLDER, 365, 365)
+#
+# def data_retention_policy():
+#
+#     schedule.every().day.at("00:00").do(retention_policy, path="CONSTANTS.TTL_CONFIG_FOLDER", retention_period=365, delete_period=365)
+#
+#     while True:
+#         schedule.run_pending()
+#         # time.sleep(1)
