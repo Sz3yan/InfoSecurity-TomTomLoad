@@ -5,6 +5,7 @@ from flask import Flask
 from flask_session import Session
 from flask_paranoid import Paranoid
 from flask_limiter import Limiter
+from flask_reggie import Reggie
 from flask_limiter.util import get_remote_address
 
 from routes.potential_user import potential_user
@@ -41,6 +42,13 @@ limiter = Limiter(
 )
 
 # -----------------  END OF LIMITER CONFIGURATION  ----------------- #
+
+
+# -----------------  START OF FLASK REGEX CONFIGURATION  ----------------- #
+
+Reggie(app)
+
+# -----------------  END OF FLASK REGEX CONFIGURATION  ----------------- #
 
 
 # -----------------  START OF SESSION CONFIGURATION  ----------------- #
