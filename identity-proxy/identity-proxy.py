@@ -74,13 +74,7 @@ if __name__ == "__main__":
 
     scheduler.add_job(
         auto_delete_sessions,
-<<<<<<< HEAD
         "interval", seconds=300
-    )
-
-    scheduler.start()
-=======
-        "interval", hours=23, minutes=58, seconds=0
     )
 
     scheduler.start()
@@ -140,7 +134,6 @@ if __name__ == "__main__":
         ca.create_certificate_from_csr(csr_file=tomtomload, ca_name=subordinate_certificate_authority, ca_duration=ttl_duration)
 
     # -----------------  END OF CERTIFICATE AUTHORITY  ----------------- #
->>>>>>> 8b78bfc10592876301fab7a958bad82cdf629bfe
 
     if app.config["DEBUG_FLAG"]:
         SSL_CONTEXT = (
