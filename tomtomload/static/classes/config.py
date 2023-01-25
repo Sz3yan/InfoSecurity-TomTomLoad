@@ -22,6 +22,7 @@ class Constants:
     # --- GOOGLE CLOUD ---
     GOOGLE_PROJECT_ID: str = "infosec-62c05"
     GOOGLE_LOCATION_ID: str = "global"
+    GOOGLE_KEY_RING_ID: str = "identity-proxy"
 
     # --- GOOGLE CLOUD STORAGE ---
     STORAGE_BUCKET_NAME: str = "ttl1234567890"
