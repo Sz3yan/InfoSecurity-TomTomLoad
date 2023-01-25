@@ -97,12 +97,17 @@ if __name__ == "__main__":
 
     # -----------------  START OF CERTIFICATE SETUP  ----------------- #
 
-    ca_certificate = os.path.join(certificate_directory, "IDENTITYPROXY.crt")
-    ca_key = os.path.join(certificate_directory, "IDENTITYPROXY.key")
-    sub_certificate = os.path.join(certificate_directory, "SUBORDINATE_IDENTITY_PROXY.crt")
-    sub_key = os.path.join(certificate_directory, "SUBORDINATE_IDENTITY_PROXY.key")
-    identityproxy = os.path.join(certificate_directory, "IDENTITY_PROXY.crt")
-    tomtomload = os.path.join(tomtomload_configfiles, "TOMTOMLOAD.crt")
+    certificate_authority = "IDENTITYPROXY"
+    subordinate_certificate_authority = "SUBORDINATE_IDENTITY_PROXY"
+    identity_proxy = "IDENTITY_PROXY"
+    tomtomload = "TOMTOMLOAD"
+
+    ca_certificate = os.path.join(certificate_directory, f"{certificate_authority}.crt")
+    ca_key = os.path.join(certificate_directory, f"{certificate_authority}.key")
+    sub_certificate = os.path.join(certificate_directory, f"{subordinate_certificate_authority}.crt")
+    sub_key = os.path.join(certificate_directory, f"{subordinate_certificate_authority}.key")
+    identityproxy = os.path.join(certificate_directory, f"{identity_proxy}.crt")
+    ttl = os.path.join(certificate_directory, f"{tomtomload}.crt")
 
     # -----------------  END OF CERTIFICATE SETUP  ----------------- #
 
@@ -114,25 +119,26 @@ if __name__ == "__main__":
     ttl_duration = 365 * 24 * 60 * 60
 
     if not os.path.exists(ca_certificate):
-        ca.create_certificate_authority(ca_name="IDENTITYPROXY", ca_duration=ttl_duration)
+        ca.create_certificate_authority(ca_name=certificate_authority, ca_duration=ttl_duration)
 
     if not os.path.exists(sub_certificate):
-        ca.create_subordinate_ca(subordinate_ca_name="SUBORDINATE_IDENTITY_PROXY", ca_duration=ttl_duration)
+        ca.create_subordinate_ca(subordinate_ca_name=subordinate_certificate_authority, ca_duration=ttl_duration)
     
     if not os.path.exists(identityproxy):
-        cert.create_certificate_csr(ca_name="IDENTITY-PROXY")
-        ca.create_certificate_from_csr(csr_file="IDENTITY-PROXY", ca_name="SUBORDINATE_IDENTITY_PROXY", ca_duration=ttl_duration)
+        cert.create_certificate_csr(ca_name=identity_proxy)
+        ca.create_certificate_from_csr(csr_file=identity_proxy, ca_name=subordinate_certificate_authority, ca_duration=ttl_duration)
 
-    if not os.path.exists(tomtomload):
-        cert.create_certificate_csr(ca_name="TOMTOMLOAD")
-        ca.create_certificate_from_csr(csr_file="TOMTOMLOAD", ca_name="SUBORDINATE_IDENTITY_PROXY", ca_duration=ttl_duration)
+    if not os.path.exists(ttl):
+        print(os.path.exists(ttl))
+        cert.create_certificate_csr(ca_name=tomtomload)
+        ca.create_certificate_from_csr(csr_file=tomtomload, ca_name=subordinate_certificate_authority, ca_duration=ttl_duration)
 
     # -----------------  END OF CERTIFICATE AUTHORITY  ----------------- #
 
     if app.config["DEBUG_FLAG"]:
         SSL_CONTEXT = (
-            CONSTANTS.IP_CONFIG_FOLDER.joinpath("certificates/IDENTITY-PROXY.crt"),
-            CONSTANTS.IP_CONFIG_FOLDER.joinpath("certificates/IDENTITY-PROXY_key.pem")
+            CONSTANTS.IP_CONFIG_FOLDER.joinpath("certificates/IDENTITY_PROXY.crt"),
+            CONSTANTS.IP_CONFIG_FOLDER.joinpath("certificates/IDENTITY_PROXY_key.pem")
         )
         host = None
     else:

@@ -615,6 +615,9 @@ def post_update(id):
             "post_content": post_content,
         }
 
+        DLP = DataLossPrevention(post_data["post_content"])
+        DLP.detect_sensitive_data()
+
         with open(temp_post_path, 'wb') as outfile:
 
             # -----------------  START OF ENCRYPTION ---------------- #
@@ -624,7 +627,7 @@ def post_update(id):
                 location_id = CONSTANTS.GOOGLE_LOCATION_ID,
                 key_ring_id = CONSTANTS.KMS_TTL_KEY_RING_ID,
                 key_id = CONSTANTS.KMS_KEY_ID,
-                plaintext = post_data["post_content"]
+                plaintext = DLP.replace_sensitive_data()
             )
 
             # -----------------  END OF ENCRYPTION ---------------- #
