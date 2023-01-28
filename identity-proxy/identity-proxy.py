@@ -57,6 +57,8 @@ sess = Session(app)
 if app.config["CONSTANTS"].DEBUG_MODE:
     app.config["SESSION_COOKIE_SECURE"] = True
 
+if not app.config["CONSTANTS"].DEBUG_MODE:
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 # -----------------  END OF SESSION CONFIGURATION  ----------------- #
 
