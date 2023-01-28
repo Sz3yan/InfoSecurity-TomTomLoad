@@ -19,6 +19,8 @@ class Constants:
     TTL_CONFIG_MEDIA_FOLDER: pathlib.Path = TTL_CONFIG_FOLDER / "media"
     TTL_CONFIG_POSTS_FOLDER: pathlib.Path = TTL_CONFIG_FOLDER / "post"
 
+    ADMIN_URL: str = "https://127.0.0.1:5000/admin" if DEBUG_MODE else "https://www.tomtomload.com/admin"
+
     # --- GOOGLE CLOUD ---
     GOOGLE_PROJECT_ID: str = "infosec-62c05"
     GOOGLE_LOCATION_ID: str = "global"
