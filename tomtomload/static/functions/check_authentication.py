@@ -42,12 +42,10 @@ def ttl_jwt_authentication(func):
 def ttl_redirect_user(func):
     @wraps(func)
     def decorated_function(*args, **kwargs):
-        # ttlSession = TTLSession()
-        # ttlSession.write_data_to_session("route_from","api")
-        # print(ttlSession.get_data_from_session("route_from", data=True))
+        
         try:
-            print(ttl_check_user_agent())
-            print(check_session())
+            # print(ttl_check_user_agent())
+            # print(check_session())
             if (ttl_check_user_agent() and check_session()):
                 return func(*args, **kwargs)
             elif ttl_check_user_agent():

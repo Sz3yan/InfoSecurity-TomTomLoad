@@ -160,6 +160,7 @@ if __name__ == "__main__":
             CONSTANTS.IP_CONFIG_FOLDER.joinpath("certificates/IDENTITY_PROXY_key.pem")
         )
         host = None
+        #host = "0.0.0.0"
     else:
         SSL_CONTEXT = None
         host = "0.0.0.0"
