@@ -248,20 +248,17 @@ class GoogleCloudStorage:
             )
         )
 
+    #scheduling le backup
+    def sample_create_transfer_job(self):
+        # Create a client
+        client = storage_transfer_v1.StorageTransferServiceClient()
 
+        # Initialize request argument(s)
+        request = storage_transfer_v1.CreateTransferJobRequest(
+        )
 
-    #
-    # def sample_create_transfer_job(self):
-    #     #idk what im doing
-    #     # Create a client
-    #     client = storage_transfer_v1.StorageTransferServiceClient()
-    #
-    #     # Initialize request argument(s)
-    #     request = storage_transfer_v1.CreateTransferJobRequest(
-    #     )
-    #
-    #     # Make the request
-    #     response = client.create_transfer_job(request=request)
-    #
-    #     # Handle the response
-    #     print(response)
+        # Make the request
+        response = client.create_transfer_job(request=request)
+
+        # Handle the response
+        print(response)
