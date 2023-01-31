@@ -34,6 +34,7 @@ def ttl_jwt_authentication(func):
                 return jsonify(message="Forbidden access"),403
         
         else:
+            print("here is unsafe")
             return func(*args, **kwargs)
     
     return decorated_function
@@ -44,8 +45,8 @@ def ttl_redirect_user(func):
     def decorated_function(*args, **kwargs):
         
         try:
-            # print(ttl_check_user_agent())
-            # print(check_session())
+            print(ttl_check_user_agent())
+            print(check_session())
             if (ttl_check_user_agent() and check_session()):
                 return func(*args, **kwargs)
             elif ttl_check_user_agent():
@@ -98,6 +99,7 @@ def check_session():
     except:
         print("TTLAuthenticatedUserName not found")
 
+    print(counter)
     if counter == 3:
         return True
     else:
