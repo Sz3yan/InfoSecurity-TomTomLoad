@@ -13,8 +13,8 @@ class Constants:
     DEBUG_MODE: bool = DEBUG_MODE 
 
     CALLBACK_URL: str = "https://127.0.0.1:8080/callback" if DEBUG_MODE else "https://tomtomload.com/callback"
-    API_ROUTE_URL: str = "https://127.0.0.1:5000/api" if DEBUG_MODE else "https://tomtomload.com/api"
-    ADMIN_URL: str = "https://127.0.0.1:5000/admin" if DEBUG_MODE else "https://tomtomload.com/admin"
+    API_CALLBACK_URL: str = "https://127.0.0.1:8080/api/callback" if DEBUG_MODE else "https://tomtomload.com/api/callback"
+    ADMIN_URL: str = "https://127.0.0.1:5000/admin" if DEBUG_MODE else "https://www.tomtomload.com/admin"
 
     IP_ROOT_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.parent.absolute()
     IP_CONFIG_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.absolute() / "config_files"
