@@ -9,14 +9,14 @@
     <script defer="defer" src="/admin/styles.d70984b007c8fb12762a.js"></script>
     <script defer="defer" src="/admin/main.8fb1a28005d2f5676439.js"></script>
     <link href="/admin/styles.css" rel="stylesheet">
-    <title>Sign Up - TTL</title>
+    <title>Otp - TTL</title>
     <!--href???-->
     <link rel="icon" type="image/svg+xml" href="/admin/ebcc1430049fddb274f8.svg" data-react-helmet="true">
     <meta name="description" content="Login user" data-react-helmet="true">
     <meta name="keywords" content="Login" data-react-helmet="true">
     <meta property="og:title" content="Login - TTL" data-react-helmet="true">
     <meta property="og:image" content="/admin/4d8845b830f4e8e2affb.png" data-react-helmet="true">
-    <meta property="og:description" content="Login user" data-react-helmet="true">
+    <meta property="og:description" content="OTP" data-react-helmet="true">
     <meta property="og:type" content="website" data-react-helmet="true">
     <meta name="twitter:card" content="summary" data-react-helmet="true">
     <meta name="twitter:title" content="Login" data-react-helmet="true">
@@ -29,11 +29,11 @@
       document.getElementById("demo-form").submit();
     }
   </script>-->
-<body>
 
+<body>
     <div class="gutter--left gutter--right collection-list__wrap">
         <header class="collection-list__header">
-            <h1>Sign Up</h1>
+            <h1>OTP</h1>
         </header>
         <style>
             .alert {
@@ -108,48 +108,43 @@
             <div>
             <form novalidate="" method="post" action="#" class="form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                <div class="field-type email"><label for="field-email" class="field-label">Email<span
-                            class="required">*</span></label><input id="field-email" type="email" name="email"
-                        autocomplete="email" value=""></div>
-
-
-                <div class="field-type password"><label for="field-password" class="field-label">Password<span
-                            class="required">*</span></label><input id="field-password" type="password"
-                        autocomplete="off" name="password" value=""></div>
-                  
-                <div class="password"><input id="show-password" type="checkbox"
-                      name="password" value="">
-                  <label for="password" class="label">Show password</label></div>
-
-                
-                  <script>
-                  const showPassword = document.querySelector("#show-password");
-                  const passwordField = document.querySelector("#field-password");
-
-                  showPassword.addEventListener('click',function(){
-                    const type = passwordField.getAttribute("type")
-                    === "password" ? "text" : "password";
-                    passwordField.setAttribute("type", type);
-
-                  })
-
-                  </script>        
-            
-                        
-                        <div class="form-submit">
-                            <button class="btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right" type="submit"
-                            data-callback='onSubmit' 
-                            data-action='submit'>Sign Up</button>
-                          <p>Have an account? <a href="/user/login">Login</a></p>
-    
-                            <!--<button class="g-recaptcha btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right" type="submit"
-                            data-sitekey="6LcmXogjAAAAAOTMJEaOmWBAxklTmmUQdtEK0mMr" -->
+                <div class="field-type text"><label for="secret" class="field-label">Setup Key <span
+                    class="required">*</span></label><input id="secret" type="text" name="shared_secret"
+                    class="form-control" value="{{ shared_secret}}" readonly></div>
+                    <button class="btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right" type="button"
+                        onclick="copySecret()">Copy secret</button> 
+                <div class="field-type text"><label for="field-text" class="field-label">Generated OTP<span
+                    class="required">*</span></label><input type="hidden" name="secret" value="{{ shared_secret }}">
+                    <input id="field-text" type="text" name="totpval" class=form-control value=""></div>
+                    <p>Need help? Go to <a href="https://googleauthenticator.net/">googleauthenticator.net</a> for more information.</p>
+                <div class="form-submit">
+                    <button class="btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right" type="submit"
+                        data-callback='onSubmit' 
+                        data-action='submit'>Submit</button>
+                        <!--<button class="g-recaptcha btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right" type="submit"
+                        data-sitekey="6LcmXogjAAAAAOTMJEaOmWBAxklTmmUQdtEK0mMr" 
+                         -->
             </form>
             </div>
         </section>
         <div class="Toastify"></div>
     </div>
     <div id="portal"></div>
+    <script>
+        function copySecret() {
+          /* Get the text field */
+          var copyText = document.getElementById("secret");
+      
+          /* Select the text field */
+          copyText.select();
+          copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+      
+          /* Copy the text inside the text field */
+          document.execCommand("copy");
+      
+          alert("Successfully copied secret key.");
+        }
+      </script>
 </body>
 
 </html>
