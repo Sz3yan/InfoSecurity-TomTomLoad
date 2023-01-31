@@ -20,6 +20,8 @@ from static.security.DatalossPrevention import DataLossPrevention
 from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort
 from functools import wraps
 from werkzeug.utils import secure_filename
+from datetime import datetime, timedelta
+
 
 # todo
 # 1. encryption of media and post via bytes 
@@ -87,7 +89,6 @@ def check_signed_credential(func):
     return decorated_function
 
 
-# superadmin works fine. but admin no. need to check why
 def check_role_read(func):
     @wraps(func)
     def decorated_function(*args, **kwargs):
@@ -182,6 +183,100 @@ def home():
                 )
         )
 
+        def retention_policy():
+            current_time_pre = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            current_time = datetime.strptime(current_time_pre ,"%Y-%m-%d %H:%M:%S")
+            print(current_time)
+
+            # -----------------  START OF RETRIEVING MEDIA ----------------- #
+            storage = GoogleCloudStorage()
+            list_media = storage.list_blobs_with_prefix(
+                bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+                prefix = decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/",
+                delimiter = "/"
+            )
+
+            id_list = []
+
+            # default route: SuperAdmins/Sz3yan/media/{{ id }}}}.png
+            for media in list_media:
+                remove_slash = media.split("/")[3]
+                remove_extension = remove_slash.split(".")[0]
+
+                id_list.append(remove_extension)
+
+            # -----------------  START OF CHECKING LOCAL MEDIA ----------------- #
+
+            for id in id_list:
+                file_time = storage.blob_metadata(CONSTANTS.STORAGE_BUCKET_NAME, decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/media/" + id + ".png")["updated"]
+                print(file_time.strftime("%Y-%m-%d %H:%M:%S"))
+
+
+                # convert file_time to datetime
+                # file_time = datetime.strptime(file_time.strftime("%Y-%m-%d %H:%M:%S"), "%Y-%m-%d %H:%M:%S")
+
+                if id(current_time - file_time.strftime("%Y-%m-%d %H:%M:%S")).days >= 365:
+                    storage.move_blob(
+                        bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+                        blob_name= decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/media/" + id + ".png",
+                        destination_bucket_name='ttl_backup',
+                        destination_blob_name='archive/' + decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + id + ".png",
+                )
+            # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
+
+            # -----------------  END OF RETRIEVING MEDIA ----------------- #
+
+            # -----------------  START OF RETRIEVING POST ----------------- #
+
+            list_post = storage.list_blobs_with_prefix(
+                bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+                prefix = decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/",
+                delimiter = "/"
+            )
+
+            id_list = []
+
+            for post in list_post:
+                remove_slash = post.split("/")[3]
+                remove_extension = remove_slash.split(".")[0]
+                id_list.append(remove_extension)
+
+            # -----------------  START OF CHECKING LOCAL MEDIA ----------------- #
+
+            for id in id_list:
+                file_time = storage.blob_metadata(CONSTANTS.STORAGE_BUCKET_NAME, decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/post/" + id + ".json")["updated"]
+
+                # convert file_time to datetime
+                # file_time = datetime.strptime(file_time.strftime("%Y-%m-%d %H:%M:%S"), "%Y-%m-%d %H:%M:%S")
+
+                print(f"file time: {file_time}")
+
+                # if id(current_time - file_time) >= 365:
+                if id(current_time - file_time.strftime("%Y-%m-%d %H:%M:%S")).days >= 365:
+                    storage.move_blob(
+                        bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+                        blob_name= decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/post/" + id + ".json",
+                        destination_bucket_name='ttl_backup',
+                        destination_blob_name='archive/' + decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + id + ".json",
+                )
+            # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
+
+        # move files older than 365 days to archive folder
+        # and delete files from archive folder older than 365 days
+
+
+        def data_retention_policy():
+
+            schedule.every().day.at("03:29").do(retention_policy)
+            # retention_policy()
+            print('Data Retention Policy Started')
+
+            # while True:
+            #     schedule.run_pending()
+            #     time.sleep(1)
+
+        data_retention_policy()
+
     except jwt.ExpiredSignatureError:
         return abort(401)
 
@@ -191,7 +286,7 @@ def home():
     media_id = UniqueID()
     post_id = UniqueID()
     admin_user_id = UniqueID()
-    
+
     return render_template('authorised_admin/dashboard.html', user=TTLAuthenticatedUserName, media_id=media_id, post_id=post_id, admin_user_id=admin_user_id, pic=decoded_TTLJWTAuthenticatedUser["picture"])
 
 
@@ -780,31 +875,20 @@ def edit_access():
     return render_template('authorised_admin/user_access.html', pic=decoded_jwt["picture"], email=decoded_jwt["email"], access=decoded_jwt['role'], access_list=access_list)
 
 
+@authorised_user.route("/users/blockIPAddresses", methods=['GET', 'POST'])
+@check_signed_credential
+def block_IPAddresses():
+
+    return render_template('authorised_admin/blockIPAddresses.html', email=decoded_jwt["email"], pic=decoded_jwt["picture"])
 
 
-# def retention_policy(path, retention_period, delete_period):
-#     current_time = datetime.datetime.now()
-#     for root, dirs, files in os.walk(path):
-#         for file in files:
-#             file_path = os.path.join(root, file)
-#             file_time = datetime.datetime.fromtimestamp(os.path.getctime(file_path))
-#             if (current_time - file_time).days >= retention_period:
-#                 archive_path = os.path.join(path, "archive", file)
-#                 shutil.move(file_path, archive_path)
-#                 print(f"{file_path} moved to {archive_path}.")
-#                 archive_time = datetime.datetime.fromtimestamp(os.path.getctime(archive_path))
-#                 if (current_time - archive_time).days >= delete_period:
-#                     os.remove(archive_path)
-#                     print(f"{archive_path} deleted.")
-#
-# # move files older than 365 days to archive folder
-# # and delete files from archive folder older than 365 days
-# retention_policy(CONSTANTS.TTL_CONFIG_FOLDER, 365, 365)
-#
-# def data_retention_policy():
-#
-#     schedule.every().day.at("00:00").do(retention_policy, path="CONSTANTS.TTL_CONFIG_FOLDER", retention_period=365, delete_period=365)
-#
-#     while True:
-#         schedule.run_pending()
-#         # time.sleep(1)
+@authorised_user.route("/users/addBlockIPAddresses", methods=['GET', 'POST'])
+@check_signed_credential
+def addBlock_IPAddresses():
+
+    return render_template('authorised_admin/blockIPAddressesAdd.html', email=decoded_jwt["email"], pic=decoded_jwt["picture"])
+
+
+
+
+
