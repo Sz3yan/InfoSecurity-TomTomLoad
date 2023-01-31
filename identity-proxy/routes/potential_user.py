@@ -104,7 +104,7 @@ def callback():
 @authenticated
 def authorisation():
     # -----------------  START OF CONTEXT-AWARE ACCESS ----------------- #
-    # print(ttlSession.get_data_from_session("route_from", data=True))
+
     handler = ipinfo.getHandler(SECRET_CONSTANTS.IPINFO_TOKEN)
     details = handler.getDetails().all
 
@@ -196,6 +196,7 @@ def authorisation():
 
                 else:
                     print("SUPER ADMIN ACCESS GRANTED")
+                    TTLContextAwareAccessClientCertificate = str(super_admin)
 
             if used == 0:
                 certificate.create_certificate_csr(ca_name="SUPER_ADMIN")
@@ -248,7 +249,7 @@ def authorisation():
                 "TTL-Context-Aware-Access-Client-Certificate": TTLContextAwareAccessClientCertificate
             }
 
-            response = make_response(redirect("https://127.0.0.1:5000/admin", code=302))
+            response = make_response(redirect(CONSTANTS.ADMIN_URL, code=302))
 
             response.set_cookie(
                 'TTL-Authenticated-User-Name',
@@ -272,6 +273,7 @@ def authorisation():
             )
 
             return response
+
         elif ttlSession.get_data_from_session("route_from", data=True) == "api" and ttlSession.verfiy_Ptoken("route_from"):
             print("\nEntering api back route\n")
             ttlJwtToken =jwt.encode(

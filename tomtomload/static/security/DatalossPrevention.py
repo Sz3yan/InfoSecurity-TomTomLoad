@@ -9,7 +9,7 @@ class DataLossPrevention:
 
         self.credit_card_regex = re.compile(r'\d{4}[ -]?\d{4}[ -]?\d{4}[ -]?\d{4}')
         self.email_regex = re.compile(r'[\w\.-]+@[\w\.-]+')
-        self.nric_regex = re.compile(r'^[STFG]\d{7}[A-Z]')
+        self.nric_regex = re.compile(r'[STFGstf]\d{7}[A-Za-z]')
         self.phone_regex = re.compile(r'(\+65|65|0)[ -]?\d{8}')
         self.ip_regex = re.compile(r'\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}')
 
@@ -50,7 +50,7 @@ class DataLossPrevention:
         """
 
         self.dictOfSensitiveData = self.nric_regex.sub("[nric_protected]", self.dictOfSensitiveData)
-        self.dictOfSensitiveData = self.credit_card_regex.sub("XXXX-XXXX-XXXX-XXXX", self.dictOfSensitiveData)
+        self.dictOfSensitiveData = self.credit_card_regex.sub("[XXXX-XXXX-XXXX-XXXX]", self.dictOfSensitiveData)
         self.dictOfSensitiveData = self.email_regex.sub("[support@tomtomload.com] ", self.dictOfSensitiveData)
         self.dictOfSensitiveData = self.phone_regex.sub("[phone_protected]", self.dictOfSensitiveData)
         self.dictOfSensitiveData = self.ip_regex.sub("[ip_protected]", self.dictOfSensitiveData)

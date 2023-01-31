@@ -6,6 +6,7 @@ from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 from static.functions.check_authentication import ttl_jwt_authentication, ttl_redirect_user
 from static.security.secure_data import GoogleCloudKeyManagement
 from static.security.session_management import TTLSession
+from static.security.ttl_limiter import TTL_Limiter
 
 from flask import Blueprint, request, session, redirect, abort, jsonify, url_for, make_response
 from datetime import datetime, timedelta
@@ -26,6 +27,7 @@ flow = InstalledAppFlow.from_client_secrets_file(
 
 ttlSession = TTLSession()
 KeyManagement = GoogleCloudKeyManagement()
+ttlLimiter = TTL_Limiter()
 
 # -----------------  END OF INITIALISATION ----------------- #
 
@@ -93,11 +95,12 @@ def verification():
 @api.route("/v1/<route>", methods=['GET', 'POST'])
 @ttl_redirect_user
 @ttl_jwt_authentication
+@ttlLimiter.limit_user(limit_value="10/day")
 def ip_api_route(route):
     
     # print("Authorization", request.headers['Authorization'])
     
-    response = make_response(redirect(f"https://127.0.0.1:5000/api/{route}", code=302))
+    response = make_response(redirect(f"{CONSTANTS.API_ROUTE_URL}/{route}", code=302))
 
     response.headers['Authorization'] = api_ip_to_ttl_jwt()
 
@@ -107,12 +110,13 @@ def ip_api_route(route):
 @api.route("/v1/<route>/<regex('(\d{21})|([0-9a-z]{32})'):id>", methods=['GET', 'PUT', 'DELETE'])
 @ttl_redirect_user
 @ttl_jwt_authentication
+@ttlLimiter.limit_user(limit_value="10/day")
 def ip_api_route_wif_id(route, id):
     
     # print("Authorization", request.headers['Authorization'])
     if len(id) == 21 or len(id) == 32:
 
-        response = make_response(redirect(f"https://127.0.0.1:5000/api/{route}/{id}", code=302))
+        response = make_response(redirect(f"{CONSTANTS.API_ROUTE_URL}/{route}/{id}", code=302))
 
         response.headers['Authorization'] = api_ip_to_ttl_jwt()
 

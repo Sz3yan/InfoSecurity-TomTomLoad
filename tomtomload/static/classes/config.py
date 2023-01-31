@@ -18,10 +18,15 @@ class Constants:
 
     TTL_CONFIG_MEDIA_FOLDER: pathlib.Path = TTL_CONFIG_FOLDER / "media"
     TTL_CONFIG_POSTS_FOLDER: pathlib.Path = TTL_CONFIG_FOLDER / "post"
+    TTL_CONFIG_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.absolute() / "config_files"
+
+    ADMIN_URL: str = "https://127.0.0.1:5000/admin" if DEBUG_MODE else "https://www.tomtomload.com/admin"
+    IDENTITY_PROXY_URL: str = "https://127.0.0.1:8080/" if DEBUG_MODE else "https://tomtomload.com/"
 
     # --- GOOGLE CLOUD ---
     GOOGLE_PROJECT_ID: str = "infosec-62c05"
     GOOGLE_LOCATION_ID: str = "global"
+    GOOGLE_KEY_RING_ID: str = "identity-proxy"
 
     # --- GOOGLE CLOUD STORAGE ---
     STORAGE_BUCKET_NAME: str = "ttl1234567890"

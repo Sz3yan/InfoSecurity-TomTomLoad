@@ -16,19 +16,19 @@
                         <br>
 
                         {% if title == "400 Bad Request" %}
-                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="https://127.0.0.1:5000/admin">
+                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="{{ endpoint }}">
                                 <span class="btn__content"><span class="btn__label">Go Back</span></span>
                             </a>
                         {% elif title == "404 Not Found" %}
-                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="https://127.0.0.1:5000/admin">
+                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="{{ endpoint }}">
                                 <span class="btn__content"><span class="btn__label">Go Back</span></span>
                             </a>
                         {% elif title == "405 Method Not Allowed" %}
-                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="https://127.0.0.1:5000/admin">
+                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="{{ endpoint }}">
                                 <span class="btn__content"><span class="btn__label">Go Back</span></span>
                             </a>
                         {% else %}
-                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="https://127.0.0.1:8080">
+                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="{{ IP }}">
                                 <span class="btn__content"><span class="btn__label">Go Back</span></span>
                             </a>
                         {% endif %}

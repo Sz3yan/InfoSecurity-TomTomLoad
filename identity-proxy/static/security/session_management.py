@@ -5,7 +5,9 @@ from ast import literal_eval
 import base64
 import hashlib
 import socket
+import requests
 import json
+
 
 class TTLSession(Paranoid):
     def __init__(self):
@@ -16,7 +18,8 @@ class TTLSession(Paranoid):
     
     def __get_token(self):
 
-        device_ip_addr = socket.gethostbyname(socket.gethostname())
+        # device_ip_addr = socket.gethostbyname(socket.gethostname())
+        device_ip_addr = requests.get("https://api64.ipify.org?format=json").text
         createdTTLtoken = str(self.__server) + str(super().create_token()) + str(device_ip_addr)
         
         encoded_session = hashlib.sha384(createdTTLtoken.encode()).hexdigest()

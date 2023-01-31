@@ -23,14 +23,6 @@ from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 
 
-# todo
-# 1. encryption of media and post via bytes 
-# 2. enveloped encryption of the symmertric key via asymmetric key
-# 3. check the signed certificate provided by identity-proxy and run only if it is valid
-# 4. implement AI to detect if password is weak or easily fishable
-# 5. template json for storing admin's user details
-# 6. implement data loss prevention for admin's user details and post 
-
 
 authorised_user = Blueprint('authorised_user', __name__, url_prefix="/admin", template_folder="templates", static_folder='static')
 
@@ -425,14 +417,6 @@ def media_upload(id):
 
         # -----------------  END OF EXTENSION CHECKING ----------------- #
 
-        # -----------------  START OF MALWARE CHECKING ----------------- #
-
-        # virus total stuff here
-        # malwareAnalysis()
-        # if not malwareAnalysis:
-
-        # -----------------  END OF MALWARE CHECKING ----------------- #
-
 
         # -----------------  START OF SAVING FILE LOCALLY ----------------- #
 
@@ -445,7 +429,6 @@ def media_upload(id):
         
         if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
 
-            # can compute hash here
 
             # Open the file and read its contents
             with open(temp_Mediafile_path, "rb") as fs:
@@ -461,51 +444,62 @@ def media_upload(id):
                 original_hash = hash_object.hexdigest()
                 print("original:", original_hash)
 
-            storage.upload_blob(
-                bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
-                source_file_name = temp_Mediafile_path,
-                destination_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_upload_id + "." + file_extension,
-            )
+            # -----------------  START OF MALWARE CHECKING ----------------- #
 
-            storage.set_blob_metadata(
-                bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
-                blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_upload_id + "." + file_extension,
-                metadata_dict = {"name": secure_filename(f.filename), "hash": original_hash}
-            )
+            malwareAnalysis(original_hash)
+            if not malwareAnalysis:
 
-            # -----------------  START OF REMOVING FILE LOCALLY ----------------- #
-
-            os.remove(temp_Mediafile_path)
-
-            # -----------------  END OF REMOVING FILE LOCALLY ----------------- #
-
-            # Download the file from the server
-            storage.download_blob(
-                bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
-                source_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + id + ".png",
-                destination_file_name = temp_Mediafile_path
-            )
-
-            with open(temp_Mediafile_path, "rb") as fs:
-                file_data = fs.read()
-
-                # Create a new hash object
-                hash_object = hashlib.sha256()
-
-                # Update the hash object with the file's data
-                hash_object.update(file_data)
-
-                # Get the hexadecimal representation of the hash
-                new_hash = hash_object.hexdigest()
-                print("new:", new_hash)
+            # -----------------  END OF MALWARE CHECKING ----------------- #
 
 
-            # Compare the original hash to the downloaded hash
-            if original_hash == new_hash:
-                print(f"{temp_Mediafile_path} has not been tampered with during upload. Hash matches.")
+                storage.upload_blob(
+                    bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+                    source_file_name = temp_Mediafile_path,
+                    destination_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_upload_id + "." + file_extension,
+                )
+
+                storage.set_blob_metadata(
+                    bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+                    blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_upload_id + "." + file_extension,
+                    metadata_dict = {"name": secure_filename(f.filename), "hash": original_hash}
+                )
+
+                # -----------------  START OF REMOVING FILE LOCALLY ----------------- #
+
+                os.remove(temp_Mediafile_path)
+
+                # -----------------  END OF REMOVING FILE LOCALLY ----------------- #
+
+                # Download the file from the server
+                storage.download_blob(
+                    bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+                    source_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + id + ".png",
+                    destination_file_name = temp_Mediafile_path
+                )
+
+                with open(temp_Mediafile_path, "rb") as fs:
+                    file_data = fs.read()
+
+                    # Create a new hash object
+                    hash_object = hashlib.sha256()
+
+                    # Update the hash object with the file's data
+                    hash_object.update(file_data)
+
+                    # Get the hexadecimal representation of the hash
+                    new_hash = hash_object.hexdigest()
+                    print("new:", new_hash)
+
+
+                # Compare the original hash to the downloaded hash
+                if original_hash == new_hash:
+                    print(f"{temp_Mediafile_path} has not been tampered with during upload. Hash matches.")
+                else:
+                    print(f"{temp_Mediafile_path} has been tampered with during upload. Hash does not match.")
+
             else:
-                print(f"{temp_Mediafile_path} has been tampered with during upload. Hash does not match.")
-
+                print("bad object")
+                abort(403)
 
         else:
             abort(403)

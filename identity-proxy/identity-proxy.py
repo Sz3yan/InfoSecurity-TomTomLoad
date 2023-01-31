@@ -57,6 +57,8 @@ sess = Session(app)
 if app.config["CONSTANTS"].DEBUG_MODE:
     app.config["SESSION_COOKIE_SECURE"] = True
 
+if not app.config["CONSTANTS"].DEBUG_MODE:
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 # -----------------  END OF SESSION CONFIGURATION  ----------------- #
 
@@ -93,7 +95,7 @@ if __name__ == "__main__":
 
     scheduler.add_job(
         auto_delete_sessions,
-        "interval", seconds=300
+        "interval", hours=23, minutes=58, seconds=0
     )
 
     scheduler.start()
@@ -160,6 +162,7 @@ if __name__ == "__main__":
             CONSTANTS.IP_CONFIG_FOLDER.joinpath("certificates/IDENTITY_PROXY_key.pem")
         )
         host = None
+        #host = "0.0.0.0"
     else:
         SSL_CONTEXT = None
         host = "0.0.0.0"

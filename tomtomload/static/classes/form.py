@@ -18,3 +18,7 @@ class SignUp(FlaskForm):
 
 class Forget(FlaskForm):
     email = StringField([validators.Length(min=1, max=30), validators.DataRequired()], render_kw={"placeholder": "Email"})
+
+class Otp(FlaskForm):
+    shared_secret = StringField([validators.DataRequired()], render_kw={"placeholder": "Secret Key"})
+    totpval = StringField([validators.DataRequired()], render_kw={"placeholder": "Otp"})
