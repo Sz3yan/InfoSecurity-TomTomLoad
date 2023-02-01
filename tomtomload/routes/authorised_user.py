@@ -451,6 +451,9 @@ def media_upload(id):
 
             # -----------------  END OF MALWARE CHECKING ----------------- #
 
+            # -----------------  START OF UPLOADING TO GCS ----------------- #
+
+                print("hi")
 
                 storage.upload_blob(
                     bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
@@ -476,6 +479,8 @@ def media_upload(id):
                     source_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + id + ".png",
                     destination_file_name = temp_Mediafile_path
                 )
+
+                # -----------------  END OF UPLOADING TO GCS ----------------- #
 
                 with open(temp_Mediafile_path, "rb") as fs:
                     file_data = fs.read()
@@ -503,8 +508,6 @@ def media_upload(id):
 
         else:
             abort(403)
-
-        # -----------------  END OF UPLOADING TO GCS ----------------- #
 
         return redirect(url_for('authorised_user.media_id', id=media_upload_id))
 
