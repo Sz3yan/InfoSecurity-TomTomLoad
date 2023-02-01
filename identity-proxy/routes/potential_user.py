@@ -249,6 +249,9 @@ def authorisation():
                 "TTL-Context-Aware-Access-Client-Certificate": TTLContextAwareAccessClientCertificate
             }
 
+            print(context_aware_access)
+            print(signed_header)
+
             response = make_response(redirect(CONSTANTS.ADMIN_URL, code=302))
 
             response.set_cookie(
