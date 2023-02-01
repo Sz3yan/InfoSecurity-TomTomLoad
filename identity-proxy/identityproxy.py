@@ -16,10 +16,11 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 from static.security.certificate_authority import CertificateAuthority, Certificates
 
+app = Flask(__name__)
 
 # -----------------  START OF IDENTITY PROXY  ----------------- #
 
-app = Flask(__name__)
+
 
 # -----------------  START OF FLASK CONFIGURATION  ----------------- #
 

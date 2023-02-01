@@ -33,8 +33,8 @@ services:
 
     identity-proxy:
         build:
-            context: .
-            dockerfile: ./identity-proxy/Dockerfile
+            context: ./identity-proxy
+            dockerfile: ./Dockerfile
         #container_name: identity-proxy
         #command: uvicorn identity-proxy:app --host 0.0.0.0 --port 80 --reload
         ports:
@@ -46,8 +46,8 @@ services:
 
     tomtomload:
         build:
-            context: .
-            dockerfile: ./tomtomload/Dockerfile
+            context: ./tomtomload
+            dockerfile: ./Dockerfile
         #container_name: tomtomload
         #command: uvicorn tomtomload:app --host 0.0.0.0 --port 80 --reload
         ports:
