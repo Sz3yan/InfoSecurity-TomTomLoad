@@ -43,8 +43,25 @@
                             autocomplete="email" value=""></div>
                     <div class="field-type password"><label for="field-password" class="field-label">Password<span
                                 class="required">*</span></label><input id="field-password" type="password"
-                            autocomplete="off" name="password" value=""></div><a href="/user/forget">Forgot
-                        password?</a>
+                            autocomplete="off" name="password" value=""></div>
+                    
+                    <div class="password"><input id="show-password" type="checkbox"
+                        name="password" value="">
+                    <label for="password" class="label">Show password</label></div>
+    
+                    <script>
+                    const showPassword = document.querySelector("#show-password");
+                    const passwordField = document.querySelector("#field-password");
+    
+                    showPassword.addEventListener('click',function(){
+                        const type = passwordField.getAttribute("type")
+                        === "password" ? "text" : "password";
+                        passwordField.setAttribute("type", type);
+    
+                    })
+    
+                    </script>        
+                  
                     <div class="form-submit">
                         <button class="btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right" type="submit"
                         data-callback='onSubmit' 
@@ -52,7 +69,7 @@
 
                         <!--<button class="g-recaptcha btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right" type="submit"
                         data-sitekey="6LcmXogjAAAAAOTMJEaOmWBAxklTmmUQdtEK0mMr" -->
-                    <p>New to TTL? <a href="/user/signup">Sign up</a></p>
+                        <p>New to TTL? <a href="/user/signup">Sign up</a> or <a href="/user/forget">Forgot password?</a></p>
                 </form>
             </div>
         </section>
