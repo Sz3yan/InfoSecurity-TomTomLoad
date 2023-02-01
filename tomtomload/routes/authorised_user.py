@@ -441,59 +441,63 @@ def media_delete(id):
 @check_signed_credential
 @check_role_read
 def post():
-    post_id = UniqueID()
+    
+    if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
+        post_id = UniqueID()
+        # -----------------  START OF RETRIEVING MEDIA ----------------- #
 
-    # -----------------  START OF RETRIEVING MEDIA ----------------- #
+        list_post = storage.list_blobs_with_prefix(
+            bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+            prefix = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/",
+            delimiter = "/"
+        )
 
-    list_post = storage.list_blobs_with_prefix(
-        bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
-        prefix = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/",
-        delimiter = "/"
-    )
+        id_list = []
 
-    id_list = []
+        for post in list_post:
+            remove_slash = post.split("/")[3]
+            remove_extension = remove_slash.split(".")[0]
+            id_list.append(remove_extension)
 
-    for post in list_post:
-        remove_slash = post.split("/")[3]
-        remove_extension = remove_slash.split(".")[0]
-        id_list.append(remove_extension)
+        # -----------------  START OF CHECKING LOCAL MEDIA ----------------- #
 
-    # -----------------  START OF CHECKING LOCAL MEDIA ----------------- #
+        for id in id_list:
+            temp_Postfile_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "post", id)
+            temp_Postfile_path = temp_Postfile_path + ".json"
 
-    for id in id_list:
-        temp_Postfile_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "post", id)
-        temp_Postfile_path = temp_Postfile_path + ".json"
+            if os.path.isfile(temp_Postfile_path):
+                return render_template('authorised_admin/post.html', post_id=post_id, id_list=id_list, post=list_post, pic=decoded_jwt["picture"])
 
-        if os.path.isfile(temp_Postfile_path):
-            return render_template('authorised_admin/post.html', post_id=post_id, id_list=id_list, post=list_post, pic=decoded_jwt["picture"])
+            else:
 
-        else:
+                storage.download_blob(
+                    bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+                    source_blob_name = "Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + id + ".json",
+                    destination_file_name = temp_Postfile_path
+                )
 
-            storage.download_blob(
-                bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
-                source_blob_name = "Admins/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + id + ".json",
-                destination_file_name = temp_Postfile_path
-            )
+                return redirect(url_for('authorised_user.post'))
 
-            return redirect(url_for('authorised_user.post'))
+        # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
 
-    # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
-
-    return render_template('authorised_admin/post.html', post_id=post_id, id_list=id_list, post=list_post, pic=decoded_jwt["picture"])
+        return render_template('authorised_admin/post.html', post_id=post_id, id_list=id_list, post=list_post, pic=decoded_jwt["picture"])
+    else:
+        abort(403)
 
 
 @authorised_user.route("/posts/<regex('[0-9a-f]{32}'):id>")
 @check_signed_credential
 def post_id(id):
-    post_id = id
-    create_new_post_id = UniqueID()
-
-    path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "post" , post_id)
-    path = path + ".json"
-
-    # -----------------  START OF RETRIEVING FROM GCS ----------------- #
-
     if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
+        post_id = id
+        create_new_post_id = UniqueID()
+
+        path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "post" , post_id)
+        path = path + ".json"
+
+        # -----------------  START OF RETRIEVING FROM GCS ----------------- #
+
+    
 
         metadata = storage.blob_metadata(
             bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
@@ -531,80 +535,81 @@ def post_id(id):
         )
 
         return redirect(url_for('authorised_user.post_id'))
+        # return render_template('authorised_admin/post_id.html', post_id=post_id, create_new_post_id=create_new_post_id, pic=decoded_jwt["picture"])
 
     else:
         abort(403)
-
-    return render_template('authorised_admin/post_id.html', post_id=post_id, create_new_post_id=create_new_post_id, pic=decoded_jwt["picture"])
 
 
 @authorised_user.route("/posts/upload/<regex('[0-9a-f]{32}'):id>", methods=['GET', 'POST'])
 @check_signed_credential
 @check_role_write
 def post_upload(id):
-    post_upload_id = id
+    if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
+        post_upload_id = id
 
-    if request.method == 'POST':
-        post_content = request.form['post_content']
+        if request.method == 'POST':
+            post_content = request.form['post_content']
 
-        # -----------------  START OF SAVING FILE LOCALLY ----------------- #
+            # -----------------  START OF SAVING FILE LOCALLY ----------------- #
 
-        temp_post_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "post", post_upload_id)
-        temp_post_path = temp_post_path + ".json"
+            temp_post_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "post", post_upload_id)
+            temp_post_path = temp_post_path + ".json"
 
-        post_data = {
-            "post_content": post_content,
-        }
+            post_data = {
+                "post_content": post_content,
+            }
 
-        DLP = DataLossPrevention(post_data["post_content"])
-        DLP.detect_sensitive_data()
+            DLP = DataLossPrevention(post_data["post_content"])
+            DLP.detect_sensitive_data()
+            
+            with open(temp_post_path, 'wb') as outfile:
+
+                # -----------------  START OF ENCRYPTION ---------------- #
+
+                encrypted_content = encryption.encrypt_symmetric(
+                    project_id = CONSTANTS.GOOGLE_PROJECT_ID,
+                    location_id = CONSTANTS.GOOGLE_LOCATION_ID,
+                    key_ring_id = CONSTANTS.KMS_TTL_KEY_RING_ID,
+                    key_id = CONSTANTS.KMS_KEY_ID,
+                    plaintext = DLP.replace_sensitive_data()
+                )
+
+                # -----------------  END OF ENCRYPTION ---------------- #
+
+                # save encrypted content to file in json format
+                outfile.write(encrypted_content.ciphertext)
+
+            # -----------------  END OF SAVING FILE LOCALLY ----------------- #
+
+            # -----------------  START OF UPLOADING TO GCS ---------------- #
+
+            
+
+                storage.upload_blob(
+                    bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+                    source_file_name = temp_post_path,
+                    destination_blob_name = decoded_jwt["role"] + "/"  + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + post_upload_id + ".json",
+                )
+
+            
+
+            # -----------------  END OF UPLOADING TO GCS ----------------- #
+
+            return redirect(url_for('authorised_user.post_id', id=post_upload_id))
         
-        with open(temp_post_path, 'wb') as outfile:
-
-            # -----------------  START OF ENCRYPTION ---------------- #
-
-            encrypted_content = encryption.encrypt_symmetric(
-                project_id = CONSTANTS.GOOGLE_PROJECT_ID,
-                location_id = CONSTANTS.GOOGLE_LOCATION_ID,
-                key_ring_id = CONSTANTS.KMS_TTL_KEY_RING_ID,
-                key_id = CONSTANTS.KMS_KEY_ID,
-                plaintext = DLP.replace_sensitive_data()
-            )
-
-            # -----------------  END OF ENCRYPTION ---------------- #
-
-            # save encrypted content to file in json format
-            outfile.write(encrypted_content.ciphertext)
-
-        # -----------------  END OF SAVING FILE LOCALLY ----------------- #
-
-        # -----------------  START OF UPLOADING TO GCS ---------------- #
-
-        if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
-
-            storage.upload_blob(
-                bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
-                source_file_name = temp_post_path,
-                destination_blob_name = decoded_jwt["role"] + "/"  + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + post_upload_id + ".json",
-            )
-
-        else:
-            abort(403)
-
-        # -----------------  END OF UPLOADING TO GCS ----------------- #
-
-        return redirect(url_for('authorised_user.post_id', id=post_upload_id))
-    
-    return render_template('authorised_admin/post_upload.html', post_id=post_upload_id, pic=decoded_jwt["picture"])
+        return render_template('authorised_admin/post_upload.html', post_id=post_upload_id, pic=decoded_jwt["picture"])
+    else:
+        abort(403)
 
 
 @authorised_user.route("/posts/delete/<regex('[0-9a-f]{32}'):id>", methods=['GET', 'POST'])
 @check_signed_credential
 @check_role_delete
 def post_delete(id):
-    post_delete_id = id
-
+    
     if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
+        post_delete_id = id
 
         storage.delete_blob(
             bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
@@ -631,59 +636,61 @@ def post_delete(id):
 @check_signed_credential
 @check_role_write
 def post_update(id):
-    post_update_id = id
+    if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
+        post_update_id = id
 
-    if request.method == 'POST':
-        post_content = request.form['post_content']
+        if request.method == 'POST':
+            post_content = request.form['post_content']
 
-        # -----------------  START OF SAVING FILE LOCALLY ----------------- #
+            # -----------------  START OF SAVING FILE LOCALLY ----------------- #
 
-        temp_post_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "post", post_update_id)
-        temp_post_path = temp_post_path + ".json"
+            temp_post_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "post", post_update_id)
+            temp_post_path = temp_post_path + ".json"
 
-        post_data = {
-            "post_content": post_content,
-        }
+            post_data = {
+                "post_content": post_content,
+            }
 
-        DLP = DataLossPrevention(post_data["post_content"])
-        DLP.detect_sensitive_data()
+            DLP = DataLossPrevention(post_data["post_content"])
+            DLP.detect_sensitive_data()
 
-        with open(temp_post_path, 'wb') as outfile:
+            with open(temp_post_path, 'wb') as outfile:
 
-            # -----------------  START OF ENCRYPTION ---------------- #
+                # -----------------  START OF ENCRYPTION ---------------- #
 
-            encrypted_content = encryption.encrypt_symmetric(
-                project_id = CONSTANTS.GOOGLE_PROJECT_ID,
-                location_id = CONSTANTS.GOOGLE_LOCATION_ID,
-                key_ring_id = CONSTANTS.KMS_TTL_KEY_RING_ID,
-                key_id = CONSTANTS.KMS_KEY_ID,
-                plaintext = DLP.replace_sensitive_data()
-            )
+                encrypted_content = encryption.encrypt_symmetric(
+                    project_id = CONSTANTS.GOOGLE_PROJECT_ID,
+                    location_id = CONSTANTS.GOOGLE_LOCATION_ID,
+                    key_ring_id = CONSTANTS.KMS_TTL_KEY_RING_ID,
+                    key_id = CONSTANTS.KMS_KEY_ID,
+                    plaintext = DLP.replace_sensitive_data()
+                )
 
-            # -----------------  END OF ENCRYPTION ---------------- #
+                # -----------------  END OF ENCRYPTION ---------------- #
 
-            outfile.write(encrypted_content.ciphertext)
+                outfile.write(encrypted_content.ciphertext)
 
-        # -----------------  END OF SAVING FILE LOCALLY ----------------- #
+            # -----------------  END OF SAVING FILE LOCALLY ----------------- #
 
-        # -----------------  START OF UPLOADING TO GCS ---------------- #
+            # -----------------  START OF UPLOADING TO GCS ---------------- #
 
-        if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
+            
 
-            storage.upload_blob(
-                bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
-                source_file_name = temp_post_path,
-                destination_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + post_update_id + ".json",
-            )
+                storage.upload_blob(
+                    bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+                    source_file_name = temp_post_path,
+                    destination_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + post_update_id + ".json",
+                )
 
-        else:
-            abort(403)
+            
 
-        # -----------------  END OF UPLOADING TO GCS ----------------- #
+            # -----------------  END OF UPLOADING TO GCS ----------------- #
+
+            return redirect(url_for('authorised_user.post_id', id=post_update_id))
 
         return redirect(url_for('authorised_user.post_id', id=post_update_id))
-
-    return redirect(url_for('authorised_user.post_id', id=post_update_id))
+    else:
+        abort(403)
 
 
 @authorised_user.route("/users")
