@@ -447,10 +447,7 @@ def media_upload(id):
             # -----------------  START OF MALWARE CHECKING ----------------- #
 
             malwareAnalysis(original_hash)
-            if not malwareAnalysis:
-
-            # -----------------  END OF MALWARE CHECKING ----------------- #
-
+            if malwareAnalysis == 0:
             # -----------------  START OF UPLOADING TO GCS ----------------- #
 
                 print("hi")
@@ -495,16 +492,16 @@ def media_upload(id):
                     new_hash = hash_object.hexdigest()
                     print("new:", new_hash)
 
-
-                # Compare the original hash to the downloaded hash
-                if original_hash == new_hash:
-                    print(f"{temp_Mediafile_path} has not been tampered with during upload. Hash matches.")
-                else:
-                    print(f"{temp_Mediafile_path} has been tampered with during upload. Hash does not match.")
-
             else:
-                print("bad object")
+                print("malwarewareware")
                 abort(403)
+
+
+            # Compare the original hash to the downloaded hash
+            if original_hash == new_hash:
+                print(f"{temp_Mediafile_path} has not been tampered with during upload. Hash matches.")
+            else:
+                print(f"{temp_Mediafile_path} has been tampered with during upload. Hash does not match.")
 
         else:
             abort(403)
