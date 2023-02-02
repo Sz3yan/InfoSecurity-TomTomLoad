@@ -447,7 +447,8 @@ def media_upload(id):
             # -----------------  START OF MALWARE CHECKING ----------------- #
 
             malwareAnalysis(original_hash)
-            if malwareAnalysis == 0:
+            
+            if malwareAnalysis:
             # -----------------  START OF UPLOADING TO GCS ----------------- #
 
                 print("hi")
