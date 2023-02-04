@@ -7,7 +7,7 @@ import ipinfo
 from datetime import datetime, timedelta
 import google.auth.transport.requests
 
-from flask import Blueprint, request, session, redirect, abort, make_response, jsonify, url_for
+from flask import Blueprint, request, session, redirect, abort, make_response, jsonify
 
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 from static.classes.storage import GoogleCloudStorage
@@ -19,10 +19,6 @@ from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
 from functools import wraps
-
-# todo
-# 1. setup certificate authority 
-# 2. setup certificate for identity proxy and tomtomload, run if valid
 
 
 potential_user = Blueprint('potential_user', __name__, template_folder="templates", static_folder='static')
@@ -61,18 +57,14 @@ def login():
         prompt='consent'
     )
     ttlSession.write_data_to_session("state",state)
-    # session["state"] = state
-    
-    # print(authorization_url)
-    # print(state)
+
     return redirect(authorization_url)
 
 
 @potential_user.route("/callback")
 def callback():
     flow.fetch_token(authorization_response=request.url)
-    print(request.args["state"])
-    print(not ttlSession.get_data_from_session("state",data=True) == request.args["state"])
+
     if not ttlSession.get_data_from_session("state",data=True) == request.args["state"] and ttlSession.verfiy_Ptoken("state"):
         abort(500)
 
@@ -89,8 +81,6 @@ def callback():
     )
 
     ttlSession.write_data_to_session('id_info',id_info)
-    # session['id_info'] = id_info
-
     ttlSession.write_data_to_session("route_from","web")
 
     return redirect("/authorisation")
@@ -249,50 +239,50 @@ def authorisation():
                 "TTL-Context-Aware-Access-Client-Certificate": TTLContextAwareAccessClientCertificate
             }
 
-            print(context_aware_access)
-            print(signed_header)
-
             response = make_response(redirect(CONSTANTS.ADMIN_URL, code=302))
 
             response.set_cookie(
                 'TTL-Authenticated-User-Name',
                 value=base64.b64encode(str(ttlSession.get_data_from_session('id_info', data=True).get("name")).encode("utf-8")),
                 httponly=True,
-                secure=True
+                secure=True,
+                domain=CONSTANTS.DOMAIN
             )
 
             response.set_cookie(
                 'TTL-JWTAuthenticated-User',
                 value=base64.b64encode(str(signed_header).encode("utf-8")),
                 httponly=True,
-                secure=True
+                secure=True,
+                domain=CONSTANTS.DOMAIN
             )
 
             response.set_cookie(
                 'TTL-Context-Aware-Access',
                 value=base64.b64encode(str(context_aware_access).encode("utf-8")),
                 httponly=True,
-                secure=True
+                secure=True,
+                domain=CONSTANTS.DOMAIN
             )
 
             return response
 
         elif ttlSession.get_data_from_session("route_from", data=True) == "api" and ttlSession.verfiy_Ptoken("route_from"):
             print("\nEntering api back route\n")
-            ttlJwtToken =jwt.encode(
-                            {
-                                "iss": "public",
-                                "exp": ttlSession.get_data_from_session('id_info', data=True).get("exp"),
-                                "iat":  ttlSession.get_data_from_session('id_info', data=True).get("iat"),
-                                "google_id": ttlSession.get_data_from_session('id_info', data=True).get("sub"),
-                                "name": ttlSession.get_data_from_session('id_info', data=True).get("name"),
-                                "email": ttlSession.get_data_from_session('id_info', data=True).get("email"),
-                                "picture": ttlSession.get_data_from_session('id_info', data=True).get("picture"),
-                                "role" : role,
-                            },
-                        SECRET_CONSTANTS.JWT_SECRET_KEY,
-                        algorithm=CONSTANTS.JWT_ALGORITHM
-                    )
+            ttlJwtToken = jwt.encode(
+                    {
+                        "iss": "public",
+                        "exp": ttlSession.get_data_from_session('id_info', data=True).get("exp"),
+                        "iat":  ttlSession.get_data_from_session('id_info', data=True).get("iat"),
+                        "google_id": ttlSession.get_data_from_session('id_info', data=True).get("sub"),
+                        "name": ttlSession.get_data_from_session('id_info', data=True).get("name"),
+                        "email": ttlSession.get_data_from_session('id_info', data=True).get("email"),
+                        "picture": ttlSession.get_data_from_session('id_info', data=True).get("picture"),
+                        "role" : role,
+                    },
+                SECRET_CONSTANTS.JWT_SECRET_KEY,
+                algorithm=CONSTANTS.JWT_ALGORITHM
+            )
 
             return jsonify(token=ttlJwtToken)
         

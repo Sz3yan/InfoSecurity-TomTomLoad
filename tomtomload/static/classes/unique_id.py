@@ -1,15 +1,9 @@
 import uuid
+
 from typing import Optional
 
 
 class UniqueID:
-    # -----------------  USAGE OF UniqueID  ----------------- #
-
-    # Generates a unique ID (16 bytes)
-    #     | -- default is 1
-    #     | -- if you want more than 1, pass the number of times you want to generate a 16 byte ID
-
-    # -----------------  END USAGE OF UniqueID ----------------- #
 
     def __init__(self, NumOfSixteenBytes:Optional[int]=1):
         self.NumOfSixteenBytes = NumOfSixteenBytes
@@ -35,4 +29,3 @@ class UniqueID:
 #     a = UniqueID()
 
 #     print(a.generate_id())
-#     print(len(a))

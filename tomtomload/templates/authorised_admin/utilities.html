@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block bodyContent %}
+    <div class="collection-list">
+        <div class="eyebrow">
+            <div class="gutter--left gutter--right eyebrow__wrap">
+                <nav class="step-nav"><a href="/admin"><span>Dashboard</span><svg class="icon icon--chevron"
+                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                            <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
+                        </svg></a><span>Utilities</span></nav>
+            </div>
+        </div>
+        <div class="gutter--left gutter--right collection-list__wrap">
+            <header class="collection-list__header">
+                <h1>Block IP Addresses</h1><a class="pill pill--style-light pill--has-link pill--has-action"
+                    href="/admin/utilities/addBlockIPAddresses">Add New</a>
+            </header>
+
+            <header class="collection-list__header">
+                <h1>Ban Admin</h1><a class="pill pill--style-light pill--has-link pill--has-action"
+                    href="/admin/utilities/addBlockIPAddresses">Add New</a>
+            </header>
+        </div>
+    </div>
+{% endblock %}

@@ -3,7 +3,6 @@ import pathlib
 
 from flask import Flask
 from flask_session import Session
-from flask_paranoid import Paranoid
 from flask_limiter import Limiter
 from flask_reggie import Reggie
 from flask_limiter.util import get_remote_address
@@ -163,7 +162,7 @@ if __name__ == "__main__":
             CONSTANTS.IP_CONFIG_FOLDER.joinpath("certificates/IDENTITY_PROXY_key.pem")
         )
         host = None
-        #host = "0.0.0.0"
+
     else:
         SSL_CONTEXT = None
         host = "0.0.0.0"

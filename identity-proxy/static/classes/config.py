@@ -12,6 +12,8 @@ DEBUG_MODE = True
 class Constants:
     DEBUG_MODE: bool = DEBUG_MODE 
 
+    DOMAIN: str = "127.0.0.1" if DEBUG_MODE else "tomtomload.com"
+
     CALLBACK_URL: str = "https://127.0.0.1:8080/callback" if DEBUG_MODE else "https://tomtomload.com/callback"
     API_CALLBACK_URL: str = "https://127.0.0.1:8080/api/callback" if DEBUG_MODE else "https://tomtomload.com/api/callback"
     ADMIN_URL: str = "https://127.0.0.1:5000/admin" if DEBUG_MODE else "https://www.tomtomload.com/admin"

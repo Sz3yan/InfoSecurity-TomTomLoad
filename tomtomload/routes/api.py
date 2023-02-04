@@ -1,13 +1,16 @@
+import jwt
+import json
+import os
+
+from static.functions.check_authentication import ttl_redirect_user, ttl_jwt_authentication
+from flask import Blueprint, request, jsonify
+
 from static.classes.config import CONSTANTS
 from static.classes.storage import GoogleCloudStorage
 from static.security.secure_data import GoogleCloudKeyManagement
 from static.security.session_management import TTLSession
-from static.functions.check_authentication import ttl_redirect_user, ttl_jwt_authentication
-from flask import Blueprint, render_template, request, redirect, abort, jsonify
+
 from ast import literal_eval
-import jwt
-import json
-import os
 
 
 api = Blueprint('api', __name__, url_prefix="/api", template_folder="templates", static_folder='static')

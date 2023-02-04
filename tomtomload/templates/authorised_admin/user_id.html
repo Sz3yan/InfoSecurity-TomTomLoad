@@ -2,61 +2,49 @@
 
 {% block bodyContent %}
     <div class="collection-edit collection-edit--is-editing">
-        <form novalidate="" method="patch"
-            action="https://demo.ttlcms.com/api/users/63909c60eb18a6399e33f560?locale=en&amp;depth=0&amp;fallback-locale=null"
-            class="collection-edit__form form">
+        <form class="collection-edit__form form">
             <div class="collection-edit__main">
                 <div class="eyebrow">
                     <div class="gutter--left gutter--right eyebrow__wrap">
-                        <nav class="step-nav"><a href="/admin"><span>Dashboard</span><svg
-                                    class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 25 25">
+                        <nav class="step-nav">
+                            <a href="/admin"><span>Dashboard</span>
+                                <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
                                     <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                </svg></a><a href="/admin/users"><span>Users</span><svg
-                                    class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 25 25">
+                                </svg>
+                            </a>
+                            
+                            <a href="/admin/users"><span>Users</span>
+                                <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
                                     <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                </svg></a><span>demo@ttlcms.com</span></nav>
+                                </svg>
+                            </a>
+                            
+                            <span>{{ email }}</span>
+                        </nav>
                     </div>
                 </div>
                 <div class="gutter--left gutter--right collection-edit__edit">
                     <header class="collection-edit__header">
                         <h1><span class="render-title">{{ email }}</span></h1>
                     </header>
+
                     <div class="auth-fields">
-                        <div class="field-type email"><label for="field-email"
-                                class="field-label">Email<span class="required">*</span></label><input
-                                id="field-email" type="email" name="email" autocomplete="email"
-                                value="{{ email }}"></div><button type="button"
+                        <div class="field-type email">
+                            <label for="field-email" class="field-label">Email<span class="required">*</span></label>
+                            <input id="field-email" type="email" name="email" autocomplete="email" value="{{ email }}">
+                        </div>
+                        
+                        <button type="button"
                             class="btn btn--style-secondary btn--icon-style-without-border btn--size-small btn--icon-position-right"><span
                                 class="btn__content"><span class="btn__label">Change
                                     Password</span></span></button><button type="button"
                             class="btn btn--style-secondary btn--icon-style-without-border btn--size-small btn--icon-position-right"><span
                                 class="btn__content"><span class="btn__label">Force
                                     Unlock</span></span></button>
-                        <div class="auth-fields__api-key">
-                            <div class="field-type checkbox">
-                                <div class="checkbox__error-wrap"></div><input id="field-enableAPIKey"
-                                    type="checkbox" name="enableAPIKey" readonly=""><button
-                                    type="button"><span class="checkbox__input"><svg
-                                            class="icon icon--check" xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 25 25">
-                                            <path d="M10.6092 16.0192L17.6477 8.98076" class="stroke"
-                                                stroke-linecap="square" stroke-linejoin="bevel"></path>
-                                            <path d="M7.35229 12.7623L10.6092 16.0192" class="stroke"
-                                                stroke-linecap="square" stroke-linejoin="bevel"></path>
-                                        </svg></span><span class="checkbox__label">Enable API
-                                        Key</span></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="render-fields">
-                        <div class="field-type text"><label for="field-name"
-                                class="field-label">Name</label><input id="field-name" type="text"
-                                name="name" value="Demo User"></div>
                     </div>
                 </div>
             </div>
+
             <div class="collection-edit__sidebar-wrap">
                 <div class="collection-edit__sidebar">
                     <div class="collection-edit__sidebar-sticky-wrap">
@@ -72,9 +60,7 @@
                                         class="btn__content"><span
                                             class="btn__label">Save</span></span></button></div>
                         </div>
-                        <div class="collection-edit__sidebar-fields">
-                            <div class="render-fields"></div>
-                        </div>
+
                         <ul class="collection-edit__meta">
                             <li class="collection-edit__api-url"><span class="collection-edit__label">API
                                     URL <button type="button" class="copy-to-clipboard"><svg

@@ -6,7 +6,6 @@ import hashlib
 import schedule
 import datetime
 
-
 from static.classes.config import CONSTANTS
 from static.classes.unique_id import UniqueID
 from static.classes.storage import GoogleCloudStorage
@@ -51,7 +50,7 @@ def check_signed_credential(func):
 
             # -----------------  START OF DECODING  ----------------- #
 
-            global decoded_jwt
+            global decoded_jwt, decoded_contextaware, decoded_name
 
             try:
                 decoded_jwt = jwt.decode(
@@ -65,11 +64,37 @@ def check_signed_credential(func):
                     )
                 )
 
+                decoded_contextaware = jwt.decode(
+                    ttlSession.get_data_from_session("TTLJWTAuthenticatedUser",data=True)["TTL-Context-Aware-Access"],
+                    algorithms = "HS256",
+                    key = KeyManagement.retrieve_key(
+                        project_id = CONSTANTS.GOOGLE_PROJECT_ID,
+                        location_id = CONSTANTS.GOOGLE_LOCATION_ID,
+                        key_ring_id = CONSTANTS.KMS_IP_KEY_RING_ID,
+                        key_id = CONSTANTS.JWT_ACCESS_TOKEN_SECRET_KEY
+                    )
+                )
+
+                decoded_name = jwt.decode(
+                    ttlSession.get_data_from_session("TTLJWTAuthenticatedUser",data=True)["TTL-Authenticated-User-Name"],
+                    algorithms = "HS256",
+                    key = KeyManagement.retrieve_key(
+                        project_id = CONSTANTS.GOOGLE_PROJECT_ID,
+                        location_id = CONSTANTS.GOOGLE_LOCATION_ID,
+                        key_ring_id = CONSTANTS.KMS_IP_KEY_RING_ID,
+                        key_id = CONSTANTS.JWT_ACCESS_TOKEN_SECRET_KEY
+                    )
+                )
+
+
             except jwt.ExpiredSignatureError:
                 return abort(401)
 
             except jwt.InvalidTokenError:
                 return abort(403)
+
+            except:
+                return redirect(CONSTANTS.IDENTITY_PROXY_URL)
 
             return func(*args, **kwargs)
 
@@ -884,8 +909,9 @@ def post_export():
 @check_signed_credential
 def users():
     user_id = decoded_jwt["google_id"]
+    role = decoded_jwt["role"]
 
-    return render_template('authorised_admin/users.html', user_id=user_id, email=decoded_jwt["email"], pic=decoded_jwt["picture"])
+    return render_template('authorised_admin/users.html', user_id=user_id, email=decoded_jwt["email"], role=role, pic=decoded_jwt["picture"])
 
 
 @authorised_user.route("/users/<regex('[0-9]{21}'):id>")
@@ -907,8 +933,6 @@ def create_users(id):
 @check_signed_credential
 def profile():
     return render_template('authorised_admin/profile.html', pic=decoded_jwt["picture"])
-
-# -----------------  END OF AUTHENTICATED SIGNED TRAFFIC ----------------- #
 
 
 @authorised_user.route("/users/edit_access", methods=['GET', 'POST'])
@@ -967,15 +991,16 @@ def edit_access():
     return render_template('authorised_admin/user_access.html', pic=decoded_jwt["picture"], email=decoded_jwt["email"], access=decoded_jwt['role'], access_list=access_list)
 
 
-@authorised_user.route("/users/blockIPAddresses", methods=['GET', 'POST'])
+@authorised_user.route("/utilities/")
 @check_signed_credential
-def block_IPAddresses():
+def utilities():
+    return render_template('authorised_admin/utilities.html', email=decoded_jwt["email"], pic=decoded_jwt["picture"])
 
-    return render_template('authorised_admin/blockIPAddresses.html', email=decoded_jwt["email"], pic=decoded_jwt["picture"])
 
-
-@authorised_user.route("/users/addBlockIPAddresses", methods=['GET', 'POST'])
+@authorised_user.route("/utilities/addBlockIPAddresses", methods=['GET', 'POST'])
 @check_signed_credential
 def addBlock_IPAddresses():
 
     return render_template('authorised_admin/blockIPAddressesAdd.html', email=decoded_jwt["email"], pic=decoded_jwt["picture"])
+
+# -----------------  END OF AUTHENTICATED SIGNED TRAFFIC ----------------- #

@@ -1,13 +1,11 @@
 import re
 import pyotp
-import random 
 
 from static.classes.config import CONSTANTS
-from static.classes.unique_id import UniqueID
 from static.classes.storage import GoogleCloudStorage
 from static.security.session_management import TTLSession
-from static.classes.form import Login, SignUp, Forget, Otp
-from flask import Blueprint, render_template, request, redirect, abort, url_for, session, flash
+from static.classes.form import Login, SignUp, Otp
+from flask import Blueprint, render_template, redirect, url_for, flash
 
 
 admin_user = Blueprint('admin_user', __name__, url_prefix="/user", template_folder="templates", static_folder='static')
@@ -81,10 +79,6 @@ def api_admin_user_forget():
 
     return render_template('user/forget.html')
 
-# @admin_user.route("/mfa", method=["POST", "GET"])
-# def api_admin_user_mfa():
-
-#     return render_template('user/mfa.html')
 
 @admin_user.route("/otp")
 def api_admin_user_otp():

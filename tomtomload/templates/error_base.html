@@ -16,7 +16,15 @@
                         <br>
 
                         {% if title == "400 Bad Request" %}
-                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="{{ endpoint }}">
+                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="{{ IP }}">
+                                <span class="btn__content"><span class="btn__label">Go Back</span></span>
+                            </a>
+                        {% elif title == "401 Unauthorised" %}
+                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="{{ IP }}">
+                                <span class="btn__content"><span class="btn__label">Go Back</span></span>
+                            </a>
+                        {% elif title == "403 Forbidden" %}
+                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="{{ IP }}">
                                 <span class="btn__content"><span class="btn__label">Go Back</span></span>
                             </a>
                         {% elif title == "404 Not Found" %}
@@ -24,6 +32,14 @@
                                 <span class="btn__content"><span class="btn__label">Go Back</span></span>
                             </a>
                         {% elif title == "405 Method Not Allowed" %}
+                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="{{ endpoint }}">
+                                <span class="btn__content"><span class="btn__label">Go Back</span></span>
+                            </a>
+                        {% elif title == "429 Too Many Requests" %}
+                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="{{ IP }}">
+                                <span class="btn__content"><span class="btn__label">Go Back</span></span>
+                            </a>
+                        {% elif title == "500 Internal Server Error" %}
                             <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="{{ endpoint }}">
                                 <span class="btn__content"><span class="btn__label">Go Back</span></span>
                             </a>
