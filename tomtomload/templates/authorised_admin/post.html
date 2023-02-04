@@ -4,42 +4,76 @@
     <div class="collection-list">
         <div class="eyebrow">
             <div class="gutter--left gutter--right eyebrow__wrap">
-                <nav class="step-nav"><a href="/admin"><span>Dashboard</span><svg class="icon icon--chevron"
-                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                <nav class="step-nav">
+                    <a href="/admin">
+                        <span>Dashboard</span>
+                        <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
                             <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                        </svg></a><span>Posts</span></nav>
+                        </svg>
+                    </a>
+                    <span>Posts</span>
+                </nav>
             </div>
         </div>
+
         <div class="gutter--left gutter--right collection-list__wrap">
             <header class="collection-list__header">
                 <h1>Posts</h1>
             </header>
+
             <div class="list-controls">
                 <div class="list-controls__wrap">
-                    <div class="search-filter"><input class="search-filter__input"
-                            placeholder="Search by Title" type="text" value=""><svg viewBox="0 0 25 25"
-                            fill="none" xmlns="http://www.w3.org/2000/svg" class="icon icon--search">
+                    <div class="search-filter">
+                        <input class="search-filter__input" id="myInput" onkeyup="myFunction()" placeholder="Search by Title" type="text" value=""><svg
+                            viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon icon--search">
                             <circle cx="11.2069" cy="10.7069" r="5" class="stroke"></circle>
                             <line x1="14.914" y1="13.9998" x2="20.5002" y2="19.586" class="stroke"></line>
-                        </svg></div>
+                        </svg>
+                    </div>
+
+                    <script>
+                        function myFunction() {
+                            var input, filter, table, tr, td, i, txtValue;
+                            input = document.getElementById("myInput");
+                            filter = input.value.toUpperCase();
+                            table = document.getElementById("myTable");
+                            tr = table.getElementsByTagName("tr");
+                            for (i = 0; i < tr.length; i++) {
+                                td = tr[i].getElementsByTagName("td")[0];
+                                if (td) {
+                                    txtValue = td.textContent || td.innerText;
+                                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                                        tr[i].style.display = "";
+                                    } else {
+                                        tr[i].style.display = "none";
+                                    }
+                                }
+                            }
+                        }
+                    </script>
 
                     <div class="list-controls__buttons">
                         <div class="list-controls__buttons-wrap">
-                            <button type="button" class="btn list-controls__toggle-where btn--style-secondary btn--icon btn--icon-style-none btn--size-medium btn--icon-position-right">
-                                <span class="btn__content"><span class="btn__label"><a href="/admin/posts/upload/{{ post_id }}">Create New</a></span>
+                            <button type="button"
+                                class="btn list-controls__toggle-where btn--style-secondary btn--icon btn--icon-style-none btn--size-medium btn--icon-position-right">
+                                <span class="btn__content"><span class="btn__label"><a
+                                            href="/admin/posts/upload/{{ post_id }}">Create New</a></span>
                                     <span class="btn__icon">
-                                        <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                        <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 25 25">
                                             <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
                                         </svg>
                                     </span>
                                 </span>
                             </button>
 
-                            <button type="button" class="btn list-controls__toggle-sort btn--style-secondary btn--icon btn--icon-style-none btn--size-medium btn--icon-position-right">
+                            <button type="button"
+                                class="btn list-controls__toggle-sort btn--style-secondary btn--icon btn--icon-style-none btn--size-medium btn--icon-position-right">
                                 <span class="btn__content">
-                                    <span class="btn__label">Export</span>
+                                    <span class="btn__label"><a href="/admin/posts/export">Export</a></span>
                                     <span class="btn__icon">
-                                        <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                        <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 25 25">
                                             <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
                                         </svg>
                                     </span>
@@ -48,151 +82,21 @@
                         </div>
                     </div>
                 </div>
-                <div class="rah-static rah-static--height-zero list-controls__columns" aria-hidden="true"
-                    style="height: 0px; overflow: hidden;">
-                    <div style="display: none;">
-                        <div class="column-selector"><button
-                                class="pill pill--style-light column-selector__column pill--has-action pill--has-icon pill--align-icon-left"
-                                type="button"><svg class="icon icon--plus"
-                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                    <line x1="12.4589" y1="16.9175" x2="12.4589" y2="8.50115"
-                                        class="stroke"></line>
-                                    <line x1="8.05164" y1="12.594" x2="16.468" y2="12.594" class="stroke">
-                                    </line>
-                                </svg>ID</button><button
-                                class="pill pill--style-light column-selector__column column-selector__column--active pill--has-action pill--has-icon pill--align-icon-left"
-                                type="button"><svg width="25" height="25" class="icon icon--x"
-                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                    <line class="stroke" x1="8.74612" y1="16.347" x2="16.3973" y2="8.69584">
-                                    </line>
-                                    <line class="stroke" x1="8.6027" y1="8.69585" x2="16.2539" y2="16.3471">
-                                    </line>
-                                </svg>Title</button><button
-                                class="pill pill--style-light column-selector__column pill--has-action pill--has-icon pill--align-icon-left"
-                                type="button"><svg class="icon icon--plus"
-                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                    <line x1="12.4589" y1="16.9175" x2="12.4589" y2="8.50115"
-                                        class="stroke"></line>
-                                    <line x1="8.05164" y1="12.594" x2="16.468" y2="12.594" class="stroke">
-                                    </line>
-                                </svg>Author</button><button
-                                class="pill pill--style-light column-selector__column column-selector__column--active pill--has-action pill--has-icon pill--align-icon-left"
-                                type="button"><svg width="25" height="25" class="icon icon--x"
-                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                    <line class="stroke" x1="8.74612" y1="16.347" x2="16.3973" y2="8.69584">
-                                    </line>
-                                    <line class="stroke" x1="8.6027" y1="8.69585" x2="16.2539" y2="16.3471">
-                                    </line>
-                                </svg>Publish Date</button><button
-                                class="pill pill--style-light column-selector__column column-selector__column--active pill--has-action pill--has-icon pill--align-icon-left"
-                                type="button"><svg width="25" height="25" class="icon icon--x"
-                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                    <line class="stroke" x1="8.74612" y1="16.347" x2="16.3973" y2="8.69584">
-                                    </line>
-                                    <line class="stroke" x1="8.6027" y1="8.69585" x2="16.2539" y2="16.3471">
-                                    </line>
-                                </svg>Category</button><button
-                                class="pill pill--style-light column-selector__column pill--has-action pill--has-icon pill--align-icon-left"
-                                type="button"><svg class="icon icon--plus"
-                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                    <line x1="12.4589" y1="16.9175" x2="12.4589" y2="8.50115"
-                                        class="stroke"></line>
-                                    <line x1="8.05164" y1="12.594" x2="16.468" y2="12.594" class="stroke">
-                                    </line>
-                                </svg>Page Layout</button><button
-                                class="pill pill--style-light column-selector__column pill--has-action pill--has-icon pill--align-icon-left"
-                                type="button"><svg class="icon icon--plus"
-                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                    <line x1="12.4589" y1="16.9175" x2="12.4589" y2="8.50115"
-                                        class="stroke"></line>
-                                    <line x1="8.05164" y1="12.594" x2="16.468" y2="12.594" class="stroke">
-                                    </line>
-                                </svg>SEO</button><button
-                                class="pill pill--style-light column-selector__column pill--has-action pill--has-icon pill--align-icon-left"
-                                type="button"><svg class="icon icon--plus"
-                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                    <line x1="12.4589" y1="16.9175" x2="12.4589" y2="8.50115"
-                                        class="stroke"></line>
-                                    <line x1="8.05164" y1="12.594" x2="16.468" y2="12.594" class="stroke">
-                                    </line>
-                                </svg>Status</button><button
-                                class="pill pill--style-light column-selector__column pill--has-action pill--has-icon pill--align-icon-left"
-                                type="button"><svg class="icon icon--plus"
-                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                    <line x1="12.4589" y1="16.9175" x2="12.4589" y2="8.50115"
-                                        class="stroke"></line>
-                                    <line x1="8.05164" y1="12.594" x2="16.468" y2="12.594" class="stroke">
-                                    </line>
-                                </svg>Created At</button><button
-                                class="pill pill--style-light column-selector__column pill--has-action pill--has-icon pill--align-icon-left"
-                                type="button"><svg class="icon icon--plus"
-                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                    <line x1="12.4589" y1="16.9175" x2="12.4589" y2="8.50115"
-                                        class="stroke"></line>
-                                    <line x1="8.05164" y1="12.594" x2="16.468" y2="12.594" class="stroke">
-                                    </line>
-                                </svg>Updated At</button></div>
-                    </div>
-                </div>
             </div>
-            <div class="table">
+
+            <div class="table" id="myTable">
                 <table cellpadding="0" cellspacing="0">
                     <thead>
                         <tr>
-                            <th id="heading-title">
-                                <div class="sort-column"><span class="sort-column__label">Title</span><span
-                                        class="sort-column__buttons"><button type="button"
-                                            class="btn sort-column__asc btn--style-none btn--icon-style-without-border btn--round btn--size-medium btn--icon-position-right"><span
-                                                class="btn__content"><span class="btn__label"><svg
-                                                        class="icon icon--chevron"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 25 25">
-                                                        <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5">
-                                                        </path>
-                                                    </svg></span></span></button><button type="button"
-                                            class="btn sort-column__desc btn--style-none btn--icon-style-without-border btn--round btn--size-medium btn--icon-position-right"><span
-                                                class="btn__content"><span class="btn__label"><svg
-                                                        class="icon icon--chevron"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 25 25">
-                                                        <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5">
-                                                        </path>
-                                                    </svg></span></span></button></span></div>
-                            </th>
-                            <th id="heading-category">
-                                <div class="sort-column"><span
-                                        class="sort-column__label">Category</span><span
-                                        class="sort-column__buttons"><button type="button"
-                                            class="btn sort-column__asc btn--style-none btn--icon-style-without-border btn--round btn--size-medium btn--icon-position-right"><span
-                                                class="btn__content"><span class="btn__label"><svg
-                                                        class="icon icon--chevron"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 25 25">
-                                                        <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5">
-                                                        </path>
-                                                    </svg></span></span></button><button type="button"
-                                            class="btn sort-column__desc btn--style-none btn--icon-style-without-border btn--round btn--size-medium btn--icon-position-right"><span
-                                                class="btn__content"><span class="btn__label"><svg
-                                                        class="icon icon--chevron"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 25 25">
-                                                        <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5">
-                                                        </path>
-                                                    </svg></span></span></button></span></div>
-                            </th>
+                            <th id="heading-title">ID</th>
                         </tr>
                     </thead>
-                    <tbody>
+
+                    <tbody class="table-data">
                         {% for content in post %}
                             <tr class="row-1">
                                 <td class="cell-title">
                                     <a href="/admin/posts/{{ id_list[loop.index - 1] }}">{{ id_list[loop.index - 1] }}</a>
-                                </td>
-
-                                <td class="cell-category">
-                                    <span>
-                                        <div class="relationship-cell">feature</div>
-                                    </span>
                                 </td>
                             </tr>
                         {% endfor %}

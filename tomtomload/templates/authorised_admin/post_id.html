@@ -134,61 +134,22 @@
 
                     <div class="collection-edit__sidebar-sticky-wrap">
                         <ul class="collection-edit__collection-actions">
-                            <li><a id="action-create" href="/admin/posts/upload/{{ create_new_post_id }}">Create New</a>
-                            </li>
+                            <li><a id="action-create" href="/admin/posts/upload/{{ create_new_post_id }}">Create New</a></li>
                             <li><a href="/admin/posts/delete/{{ post_id }}" class="delete-document__toggle">Delete</a></li>
                         </ul>
                         <div class="collection-edit__document-actions collection-edit__document-actions--has-2">
-                            <div class="form-submit">
-                                <a href="" class="btn save-draft btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" >
-                                    <span class="btn__content"><span class="btn__label">Save draft</span></span>
-                                </a>
-                            </div>
                             <div class="form-submit">
                                 <button type="submit" class="btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right">
                                     <span class="btn__content"><span class="btn__label">Publish changes</span></span>
                                 </button>
                             </div>
                         </div><br/>
-                        <div class="collection-edit__sidebar-fields">
-                            <div class="status">
-                                <div class="status__value-wrap"><span class="status__value">Published</span>&nbsp;—&nbsp;<button type="button" class="btn status__action btn--style-none btn--icon-style-without-border btn--size-medium btn--icon-position-right"><span class="btn__content"><span class="btn__label">Unpublish</span></span></button></div>
-                            </div>
-                            <div class="render-fields">
-                                <div class="field-type date-time-field">
-                                    <div class="date-time-field__error-wrap"></div><label for="publishDate" class="field-label">Publish Date</label>
-                                    <div id="field-publishDate" class="date-time-field__input-wrapper">
-                                        <div class="date-time-picker date-time-picker__appearance--dayAndTime">
-                                            <div class="date-time-picker__icon-wrap"><button type="button" class="date-time-picker__clear-button"><svg width="25" height="25" class="icon icon--x" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                                        <line class="stroke" x1="8.74612" y1="16.347" x2="16.3973" y2="8.69584"></line>
-                                                        <line class="stroke" x1="8.6027" y1="8.69585" x2="16.2539" y2="16.3471"></line>
-                                                    </svg></button><svg class="icon icon--calendar" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                                    <rect x="4.5" y="6.11401" width="16" height="14" class="stroke"></rect>
-                                                    <line x1="8.625" y1="8.02026" x2="8.625" y2="3.70776" class="stroke"></line>
-                                                    <line x1="16.375" y1="8.02026" x2="16.375" y2="3.70776" class="stroke"></line>
-                                                    <line x1="4.5" y1="11.114" x2="20.5" y2="11.114" class="stroke"></line>
-                                                </svg></div>
-                                            <div class="date-time-picker__input-wrapper">
-                                                <div class="react-datepicker-wrapper">
-                                                    <div class="react-datepicker__input-container"><input type="text" class="" value="Feb 1, 2022 1:00 PM"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="field-description">Posts will not be public until this date
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <div class="collection-edit__sidebar-fields"><p>md5: {{ metadata["md5_hash"] }}</p></div>
 
                         <ul class="collection-edit__meta">
-                            <li class="collection-edit__api-url"><span class="collection-edit__label">API
-                                    URL <button type="button" class="copy-to-clipboard"><svg class="icon icon--copy" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                            <rect x="6.5" y="10" width="8" height="8" class="stroke"></rect>
-                                            <path d="M10 9.98438V6.5H18V14.5H14" class="stroke"></path>
-                                        </svg>
-                                        <aside class="tooltip">copy<span></span></aside><textarea readonly="">https://tomtomload.com/api/posts/{{ post_id }}</textarea>
-                                    </button></span><a href="https://tomtomload.com/api/posts/{{ post_id }}" target="_blank" rel="noopener noreferrer">https://tomtomload.com/api/posts/{{ post_id }}</a>
+                            <li class="collection-edit__api-url">
+                                <span class="collection-edit__label">API URL 
+                                </span><a href="{{ API_POSTS_URL }}" target="_blank" rel="noopener noreferrer">{{ API_POSTS_URL }}</a>
                             </li>
                             <li>
                                 <div class="collection-edit__label">Last Modified</div>

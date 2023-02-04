@@ -23,6 +23,9 @@ class Constants:
     ADMIN_URL: str = "https://127.0.0.1:5000/admin" if DEBUG_MODE else "https://www.tomtomload.com/admin"
     IDENTITY_PROXY_URL: str = "https://127.0.0.1:8080/" if DEBUG_MODE else "https://tomtomload.com/"
 
+    API_MEDIA_URL: str = "https://127.0.0.1:5000/api/view_media" if DEBUG_MODE else "https://www.tomtomload.com/api/view_media"
+    API_POSTS_URL: str = "https://127.0.0.1:5000/api/view_post" if DEBUG_MODE else "https://www.tomtomload.com/api/view_post"
+
     # --- GOOGLE CLOUD ---
     GOOGLE_PROJECT_ID: str = "infosec-62c05"
     GOOGLE_LOCATION_ID: str = "global"

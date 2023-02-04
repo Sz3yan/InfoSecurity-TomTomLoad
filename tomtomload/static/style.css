@@ -7554,9 +7554,9 @@ html[data-theme=dark] .relationship-add-new-modal__close {
     margin-right:.9615384615rem
 }
 
-.collection-edit__document-actions--has-2 > :last-child {
+/* .collection-edit__document-actions--has-2 > :last-child {
     margin-left:.9615384615rem
-}
+} */
 
 .collection-edit__document-actions--has-2 .form-submit .btn {
     padding-left: .9615384615rem;

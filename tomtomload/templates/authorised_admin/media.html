@@ -24,12 +24,31 @@
             <div class="list-controls">
                 <div class="list-controls__wrap">
                     <div class="search-filter">
-                        <input class="search-filter__input" placeholder="Search by Filename" type="text" value="">
+                        <input class="search-filter__input" id="myInput" onkeyup="myFunction()" placeholder="Search by Filename" type="text" value="">
                         <svg viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon icon--search">
                             <circle cx="11.2069" cy="10.7069" r="5" class="stroke"></circle>
                             <line x1="14.914" y1="13.9998" x2="20.5002" y2="19.586" class="stroke"></line>
                         </svg>
                     </div>
+
+                    <script>
+                        function myFunction() {
+                            var input, filter, ul, li, a, i, txtValue;
+                            input = document.getElementById("myInput");
+                            filter = input.value.toUpperCase();
+                            ul = document.getElementsByClassName("upload-gallery");
+                            li = ul[0].getElementsByTagName("li");
+                            for (i = 0; i < li.length; i++) {
+                                a = li[i].getElementsByTagName("a")[0];
+                                txtValue = a.textContent || a.innerText;
+                                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                                    li[i].style.display = "";
+                                } else {
+                                    li[i].style.display = "none";
+                                }
+                            }
+                        }
+                    </script>
 
                     <div class="list-controls__buttons">
                         <div class="list-controls__buttons-wrap">
@@ -45,7 +64,7 @@
                             
                             <button type="button" class="btn list-controls__toggle-sort btn--style-secondary btn--icon btn--icon-style-none btn--size-medium btn--icon-position-right">
                                 <span class="btn__content">
-                                    <span class="btn__label">Export</span>
+                                    <span class="btn__label"><a href="/admin/media/export">Export</a></span>
                                     <span class="btn__icon">
                                         <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
                                             <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
@@ -64,13 +83,15 @@
                         <a href="/admin/media/{{ id_list[loop.index - 1] }}">
                             <div class="upload-card upload-card--has-on-click">
                                 <div class="thumbnail thumbnail--size-expand">
-                                    <img src="./../static/config_files/media/{{ id_list[loop.index - 1] }}.png" alt="{{ metadata["metadata"]["name"] }}">
+                                    <img src="./../static/config_files/media/{{ id_list[loop.index - 1] }}.png" alt="{{ metadata['metadata']['name'] }}">
                                 </div>
+                                <div class="upload-card__filename">{{ id_list[loop.index - 1] }}</div>
                             </div>
                         </a>
                     </li>
                 {% endfor %}
             </ul>
+
         </div>
     </div>
 {% endblock %}

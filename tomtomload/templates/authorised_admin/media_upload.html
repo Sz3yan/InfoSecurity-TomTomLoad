@@ -21,7 +21,7 @@
                                     <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
                                 </svg>
                             </a>
-                            <span>CMS.jpg</span>
+                            <span>{{ upload_id }}</span>
                         </nav>
                     </div>
                 </div>
@@ -39,16 +39,8 @@
                                 <button type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-small btn--icon-position-right">
                                     <span class="btn__content"><label for="upload-image" class="btn__label">Select a file</label></span>
                                 </button>
-                                <span class="file-field__drag-label">or drag and drop a file here</span>
                             </div>
                             <input type="file" name="file" id="upload-image" accept="image/png, image/jpg">
-                        </div>
-                    </div>
-
-                    <div class="render-fields">
-                        <div class="field-type text read-only">
-                            <label for="field-alt" class="field-label">Alt Text<span class="required">*</span></label>
-                            <input id="field-alt" type="text" name="alt" value="CMS">
                         </div>
                     </div>
                 </div>

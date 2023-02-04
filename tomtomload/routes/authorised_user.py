@@ -4,8 +4,6 @@ import json
 import base64
 import hashlib
 import schedule
-import time
-import shutil
 import datetime
 
 
@@ -20,8 +18,7 @@ from static.security.DatalossPrevention import DataLossPrevention
 from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort
 from functools import wraps
 from werkzeug.utils import secure_filename
-from datetime import datetime, timedelta
-
+from datetime import datetime
 
 
 authorised_user = Blueprint('authorised_user', __name__, url_prefix="/admin", template_folder="templates", static_folder='static')
@@ -181,6 +178,7 @@ def home():
             print(current_time)
 
             # -----------------  START OF RETRIEVING MEDIA ----------------- #
+
             storage = GoogleCloudStorage()
             list_media = storage.list_blobs_with_prefix(
                 bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
@@ -190,7 +188,6 @@ def home():
 
             id_list = []
 
-            # default route: SuperAdmins/Sz3yan/media/{{ id }}}}.png
             for media in list_media:
                 remove_slash = media.split("/")[3]
                 remove_extension = remove_slash.split(".")[0]
@@ -214,6 +211,7 @@ def home():
                         destination_bucket_name='ttl_backup',
                         destination_blob_name='archive/' + decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + id + ".png",
                 )
+
             # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
 
             # -----------------  END OF RETRIEVING MEDIA ----------------- #
@@ -304,7 +302,6 @@ def logout_screen():
     return render_template('authorised_admin/logout.html')
 
 
-# file name not showing correctly. only showed the first one
 @authorised_user.route("/media")
 @check_signed_credential
 @check_role_read
@@ -322,7 +319,6 @@ def media():
 
     id_list = []
 
-    # default route: SuperAdmins/Sz3yan/media/{{ id }}}}.png
     for media in list_media:
         remove_slash = media.split("/")[3]
         remove_extension = remove_slash.split(".")[0]
@@ -363,6 +359,8 @@ def media_id(id):
     media_id = id
     create_new_media_id = UniqueID()
 
+    API_MEDIA_URL = CONSTANTS.API_MEDIA_URL + '/' + str(media_id)
+
     path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "media" , media_id)
     path = path + ".png"
 
@@ -378,7 +376,7 @@ def media_id(id):
         # -----------------  START OF CHECK FILE EXIST ----------------- #
 
         if os.path.isfile(path):
-            return render_template('authorised_admin/media_id.html', media_id=media_id, metadata=metadata, pic=decoded_jwt["picture"])
+            return render_template('authorised_admin/media_id.html', media_id=media_id, metadata=metadata, api=API_MEDIA_URL, pic=decoded_jwt["picture"])
 
         storage.download_blob(
             bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
@@ -393,7 +391,7 @@ def media_id(id):
 
     # -----------------  END OF RETRIEVING FROM GCS ----------------- #
 
-    return render_template('authorised_admin/media_id.html', media_id=media_id, metadata=metadata, create_new_media_id=create_new_media_id, pic=decoded_jwt["picture"])
+    return render_template('authorised_admin/media_id.html', media_id=media_id, metadata=metadata, create_new_media_id=create_new_media_id, api=API_MEDIA_URL, pic=decoded_jwt["picture"])
 
 
 @authorised_user.route("/media/upload/<regex('[0-9a-f]{32}'):id>", methods=['GET', 'POST'])
@@ -448,9 +446,8 @@ def media_upload(id):
 
             malwareAnalysis(original_hash)
             if malwareAnalysis(original_hash) == 0:
-            # -----------------  START OF UPLOADING TO GCS ----------------- #
 
-                print("hi")
+            # -----------------  START OF UPLOADING TO GCS ----------------- #
 
                 storage.upload_blob(
                     bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
@@ -470,7 +467,6 @@ def media_upload(id):
 
                 # -----------------  END OF REMOVING FILE LOCALLY ----------------- #
 
-                # Download the file from the server
                 storage.download_blob(
                     bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
                     source_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + id + ".png",
@@ -495,7 +491,6 @@ def media_upload(id):
             else:
                 print("malwarewareware")
                 abort(403)
-
 
             # Compare the original hash to the downloaded hash
             if original_hash == new_hash:
@@ -533,6 +528,47 @@ def media_delete(id):
     return redirect(url_for('authorised_user.media'))
 
 
+@authorised_user.route("/media/export")
+@check_signed_credential
+def media_export():
+    if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
+        list_media = storage.list_blobs_with_prefix(
+            bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+            prefix = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/",
+            delimiter = "/"
+        )
+
+        id_list = []
+
+        for media in list_media:
+            remove_slash = media.split("/")[3]
+            remove_extension = remove_slash.split(".")[0]
+            id_list.append(remove_extension)
+
+        # -----------------  START OF CHECKING LOCAL MEDIA ----------------- #
+
+        for id in id_list:
+            temp_Mediafile_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "media", id)
+            temp_Mediafile_path = temp_Mediafile_path + ".png"
+
+            # get system download folder path
+            download_folder_path = os.path.join(os.path.expanduser('~'), 'Downloads', id)
+            download_folder_path = download_folder_path + ".png"
+
+            storage.download_blob(
+                bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+                source_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + id + ".png",
+                destination_file_name = download_folder_path
+            )
+
+        # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
+
+        return redirect(url_for('authorised_user.media'))
+
+    else:
+        abort(403)
+
+
 @authorised_user.route("/posts")
 @check_signed_credential
 @check_role_read
@@ -540,6 +576,7 @@ def post():
     
     if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
         post_id = UniqueID()
+
         # -----------------  START OF RETRIEVING MEDIA ----------------- #
 
         list_post = storage.list_blobs_with_prefix(
@@ -588,12 +625,12 @@ def post_id(id):
         post_id = id
         create_new_post_id = UniqueID()
 
+        API_POSTS_URL = CONSTANTS.API_POSTS_URL + "/" + post_id
+
         path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "post" , post_id)
         path = path + ".json"
 
         # -----------------  START OF RETRIEVING FROM GCS ----------------- #
-
-    
 
         metadata = storage.blob_metadata(
             bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
@@ -620,7 +657,7 @@ def post_id(id):
 
                 # -----------------  END OF DECRYPTION ----------------- #
 
-            return render_template('authorised_admin/post_id.html', post_id=post_id, metadata=metadata, post_data=post_data, create_new_post_id=create_new_post_id, pic=decoded_jwt["picture"])
+            return render_template('authorised_admin/post_id.html', post_id=post_id, metadata=metadata, post_data=post_data, create_new_post_id=create_new_post_id, API_POSTS_URL=API_POSTS_URL, pic=decoded_jwt["picture"])
 
         # -----------------  END OF CHECK FILE EXIST ----------------- #
 
@@ -631,7 +668,6 @@ def post_id(id):
         )
 
         return redirect(url_for('authorised_user.post_id'))
-        # return render_template('authorised_admin/post_id.html', post_id=post_id, create_new_post_id=create_new_post_id, pic=decoded_jwt["picture"])
 
     else:
         abort(403)
@@ -680,15 +716,11 @@ def post_upload(id):
 
             # -----------------  START OF UPLOADING TO GCS ---------------- #
 
-            
-
                 storage.upload_blob(
                     bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
                     source_file_name = temp_post_path,
                     destination_blob_name = decoded_jwt["role"] + "/"  + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + post_upload_id + ".json",
                 )
-
-            
 
             # -----------------  END OF UPLOADING TO GCS ----------------- #
 
@@ -770,21 +802,80 @@ def post_update(id):
 
             # -----------------  START OF UPLOADING TO GCS ---------------- #
 
-            
-
                 storage.upload_blob(
                     bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
                     source_file_name = temp_post_path,
                     destination_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + post_update_id + ".json",
                 )
 
-            
-
             # -----------------  END OF UPLOADING TO GCS ----------------- #
 
             return redirect(url_for('authorised_user.post_id', id=post_update_id))
 
         return redirect(url_for('authorised_user.post_id', id=post_update_id))
+    else:
+        abort(403)
+
+
+@authorised_user.route("/posts/export")
+@check_signed_credential
+@check_role_read
+def post_export():
+    if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
+
+        list_post = storage.list_blobs_with_prefix(
+            bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+            prefix = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/",
+            delimiter = "/"
+        )
+
+        id_list = []
+
+        for post in list_post:
+            remove_slash = post.split("/")[3]
+            remove_extension = remove_slash.split(".")[0]
+            id_list.append(remove_extension)
+
+        # -----------------  START OF CHECKING LOCAL MEDIA ----------------- #
+
+        for id in id_list:
+            temp_post_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "post", id)
+            temp_post_path = temp_post_path + ".json"
+
+            if not os.path.isfile(temp_post_path):
+                storage.download_blob(
+                    bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+                    source_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + id + ".json",
+                    destination_file_name = temp_post_path,
+                )
+
+            with open(temp_post_path, 'rb') as outfile:
+                encrypted_content = outfile.read()
+
+                # -----------------  START OF DECRYPTION ---------------- #
+
+                decrypted_content = encryption.decrypt_symmetric(
+                    project_id = CONSTANTS.GOOGLE_PROJECT_ID,
+                    location_id = CONSTANTS.GOOGLE_LOCATION_ID,
+                    key_ring_id = CONSTANTS.KMS_TTL_KEY_RING_ID,
+                    key_id = CONSTANTS.KMS_KEY_ID,
+                    ciphertext = encrypted_content
+                )
+
+                # -----------------  END OF DECRYPTION ---------------- #
+
+                # -----------------  START OF SAVING FILE LOCALLY ----------------- #
+
+                download_folder_path = os.path.join(os.path.expanduser('~'), 'Downloads', id)
+                download_folder_path = download_folder_path + ".txt"
+
+                with open(download_folder_path, 'w') as outfile:
+                    outfile.write(str(decrypted_content))
+
+                # -----------------  END OF SAVING FILE LOCALLY ----------------- #
+
+        return redirect(url_for('authorised_user.post'))
+
     else:
         abort(403)
 
@@ -888,8 +979,3 @@ def block_IPAddresses():
 def addBlock_IPAddresses():
 
     return render_template('authorised_admin/blockIPAddressesAdd.html', email=decoded_jwt["email"], pic=decoded_jwt["picture"])
-
-
-
-
-
