@@ -64,28 +64,27 @@ def check_signed_credential(func):
                     )
                 )
 
-                decoded_contextaware = jwt.decode(
-                    ttlSession.get_data_from_session("TTLJWTAuthenticatedUser",data=True)["TTL-Context-Aware-Access"],
-                    algorithms = "HS256",
-                    key = KeyManagement.retrieve_key(
-                        project_id = CONSTANTS.GOOGLE_PROJECT_ID,
-                        location_id = CONSTANTS.GOOGLE_LOCATION_ID,
-                        key_ring_id = CONSTANTS.KMS_IP_KEY_RING_ID,
-                        key_id = CONSTANTS.JWT_ACCESS_TOKEN_SECRET_KEY
-                    )
-                )
+                # decoded_contextaware = jwt.decode(
+                #     ttlSession.get_data_from_session("TTLJWTAuthenticatedUser",data=True)["TTL-Context-Aware-Access"],
+                #     algorithms = "HS256",
+                #     key = KeyManagement.retrieve_key(
+                #         project_id = CONSTANTS.GOOGLE_PROJECT_ID,
+                #         location_id = CONSTANTS.GOOGLE_LOCATION_ID,
+                #         key_ring_id = CONSTANTS.KMS_IP_KEY_RING_ID,
+                #         key_id = CONSTANTS.JWT_ACCESS_TOKEN_SECRET_KEY
+                #     )
+                # )
 
-                decoded_name = jwt.decode(
-                    ttlSession.get_data_from_session("TTLJWTAuthenticatedUser",data=True)["TTL-Authenticated-User-Name"],
-                    algorithms = "HS256",
-                    key = KeyManagement.retrieve_key(
-                        project_id = CONSTANTS.GOOGLE_PROJECT_ID,
-                        location_id = CONSTANTS.GOOGLE_LOCATION_ID,
-                        key_ring_id = CONSTANTS.KMS_IP_KEY_RING_ID,
-                        key_id = CONSTANTS.JWT_ACCESS_TOKEN_SECRET_KEY
-                    )
-                )
-
+                # decoded_name = jwt.decode(
+                #     ttlSession.get_data_from_session("TTLJWTAuthenticatedUser",data=True)["TTL-Authenticated-User-Name"],
+                #     algorithms = "HS256",
+                #     key = KeyManagement.retrieve_key(
+                #         project_id = CONSTANTS.GOOGLE_PROJECT_ID,
+                #         location_id = CONSTANTS.GOOGLE_LOCATION_ID,
+                #         key_ring_id = CONSTANTS.KMS_IP_KEY_RING_ID,
+                #         key_id = CONSTANTS.JWT_ACCESS_TOKEN_SECRET_KEY
+                #     )
+                # )
 
             except jwt.ExpiredSignatureError:
                 return abort(401)
@@ -994,7 +993,11 @@ def edit_access():
 @authorised_user.route("/utilities/")
 @check_signed_credential
 def utilities():
-    return render_template('authorised_admin/utilities.html', email=decoded_jwt["email"], pic=decoded_jwt["picture"])
+
+    role = decoded_jwt["role"]
+    print(role)
+
+    return render_template('authorised_admin/utilities.html', email=decoded_jwt["email"], role=role, pic=decoded_jwt["picture"])
 
 
 @authorised_user.route("/utilities/addBlockIPAddresses", methods=['GET', 'POST'])

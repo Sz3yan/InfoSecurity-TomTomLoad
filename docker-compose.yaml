@@ -1,35 +1,6 @@
 version: '3'
 
 services:
-    #  run SELinux in permissive mode
-#    selinux:
-#        image: fedora:latest
-#        privileged: true
-#        command: /usr/sbin/setenforce 0
-#        volumes:
-#        - /sys/fs/cgroup:/sys/fs/cgroup:ro
-#        tmpfs:
-#        - /run
-#        - /tmp
-#        network_mode: host
-
-    #install and configure docker
-    docker:
-        image: fedora:latest
-        privileged: true
-        volumes:
-        - /sys/fs/cgroup:/sys/fs/cgroup:ro
-        tmpfs:
-        - /run
-        - /tmp
-        network_mode: host
-#        depends_on:
-#        - selinux
-        command: |
-            dnf install -y docker
-            systemctl enable docker
-            systemctl start docker
-            usermod
 
     identity-proxy:
         build:
