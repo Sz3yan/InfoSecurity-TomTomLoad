@@ -3,6 +3,7 @@ import pathlib
 
 
 from google.cloud import storage
+from ..security.logging import IDLogger
 
 
 config_file = pathlib.Path(__file__).parent.parent.absolute()

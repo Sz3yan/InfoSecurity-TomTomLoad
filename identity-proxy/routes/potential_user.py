@@ -13,6 +13,7 @@ from static.classes.config import CONSTANTS, SECRET_CONSTANTS
 from static.classes.storage import GoogleCloudStorage
 from static.security.session_management import TTLSession
 from static.security.certificate_authority import CertificateAuthority, Certificates
+from static.security.logging import IDLogger
 from static.functions.check_authentication import authenticated
 
 from google.oauth2 import id_token
@@ -23,10 +24,15 @@ from functools import wraps
 
 potential_user = Blueprint('potential_user', __name__, template_folder="templates", static_folder='static')
 
+
+# -----------------  START OF INITIALISE SERVICES ----------------- #
+
+IdentityProxyLogging = IDLogger("potential_user")
+
 ttlSession = TTLSession()
 storage = GoogleCloudStorage()
 certificate_authority = CertificateAuthority()
-certificate = Certificates()
+certificate = Certificates() 
 
 client_secrets_file = CONSTANTS.IP_CONFIG_FOLDER.joinpath("client_secret.json")
 flow = Flow.from_client_secrets_file(
@@ -35,9 +41,13 @@ flow = Flow.from_client_secrets_file(
     redirect_uri = CONSTANTS.CALLBACK_URL
 )
 
+# -----------------  END OF INITIALISE SERVICES ----------------- #
+
+
 # -----------------  START OF WRAPPER ----------------- #
 
 def authenticated(func):
+
     @wraps(func)
     def decorated_function(*args, **kwargs):
         if "id_info" in session and ttlSession.verfiy_Ptoken("id_info"):
@@ -56,6 +66,7 @@ def login():
         access_type='offline',
         prompt='consent'
     )
+
     ttlSession.write_data_to_session("state",state)
 
     return redirect(authorization_url)
@@ -93,6 +104,7 @@ def callback():
 @potential_user.route("/authorisation", methods=["GET", "POST"])
 @authenticated
 def authorisation():
+
     # -----------------  START OF CONTEXT-AWARE ACCESS ----------------- #
 
     handler = ipinfo.getHandler(SECRET_CONSTANTS.IPINFO_TOKEN)
@@ -114,6 +126,7 @@ def authorisation():
     # -----------------  START OF BLACKLIST ----------------- #
 
     storage.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, CONSTANTS.BLACKLISTED_FILE_NAME, CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"))
+    IdentityProxyLogging.info("Blacklisted file downloaded")
 
     with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"), "r") as f:
         blacklisted = json.load(f)
@@ -123,6 +136,7 @@ def authorisation():
     # -----------------  START OF ACCESS CONTROL LIST ----------------- #
 
     storage.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, CONSTANTS.ACL_FILE_NAME, CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"))
+    IdentityProxyLogging.info("ACL file downloaded")
 
     with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
         acl = json.load(s)
@@ -154,16 +168,19 @@ def authorisation():
                     source_file_name=CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"),
                     destination_blob_name="acl.json"
                 )
+                IdentityProxyLogging.info("updated ACL file")
 
             else:
-                print("You are already Admin.")
+                IdentityProxyLogging.info("You are already Admin.")
 
         else:
-            print("You are already SuperAdmin.")
+            IdentityProxyLogging.info("You are already Super Admin.")
 
         # -----------------  END OF ACCESS CONTROL LIST ----------------- #
 
         # -----------------  START OF CERTIFICATE AUTHORITY ----------------- #
+
+        IdentityProxyLogging.info("Initialising Certificate Authority")
 
         certificate_directory = CONSTANTS.IP_CONFIG_FOLDER.joinpath("certificates")
 
@@ -180,12 +197,15 @@ def authorisation():
 
             if used == 1:
                 if not os.path.exists(super_admin):
-                    print("SUPER ADMIN ACCESS DENIED")
+                    IdentityProxyLogging.warning("super admin certificate not found")
+                    IdentityProxyLogging.warning("super admin access denied")
 
                     return abort(401)
 
                 else:
-                    print("SUPER ADMIN ACCESS GRANTED")
+                    IdentityProxyLogging.info("super admin certificate found")
+                    IdentityProxyLogging.info("super admin access granted")
+
                     TTLContextAwareAccessClientCertificate = str(super_admin)
 
             if used == 0:
@@ -195,6 +215,7 @@ def authorisation():
                     ca_name=sub_certificate,
                     ca_duration=100 * 24 * 60 * 60
                 )
+                IdentityProxyLogging.INFO("super admin certificate created")
 
                 used = 1
 
@@ -208,6 +229,8 @@ def authorisation():
                     source_file_name=CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"),
                     destination_blob_name="acl.json"
                 )
+
+                IdentityProxyLogging.info("updated ACL file")
 
         # -----------------  END OF CERTIFICATE AUTHORITY ----------------- #
 
@@ -233,11 +256,15 @@ def authorisation():
                 )
             }
 
+            IdentityProxyLogging.info("set signed header")
+
             context_aware_access = {
                 "TTL-Context-Aware-Access-Client-IP": TTLContextAwareAccessClientIP,
                 "TTL-Context-Aware-Access-Client-User-Agent": TTLContextAwareAccessClientUserAgent,
                 "TTL-Context-Aware-Access-Client-Certificate": TTLContextAwareAccessClientCertificate
             }
+
+            IdentityProxyLogging.info("set context aware access")
 
             response = make_response(redirect(CONSTANTS.ADMIN_URL, code=302))
 
@@ -265,10 +292,14 @@ def authorisation():
                 domain=CONSTANTS.DOMAIN
             )
 
+            IdentityProxyLogging.info("directing to https://www.tomtomload.com/admin/")
+
             return response
 
         elif ttlSession.get_data_from_session("route_from", data=True) == "api" and ttlSession.verfiy_Ptoken("route_from"):
-            print("\nEntering api back route\n")
+
+            IdentityProxyLogging.info("route from api")
+
             ttlJwtToken = jwt.encode(
                     {
                         "iss": "public",
@@ -283,6 +314,8 @@ def authorisation():
                 SECRET_CONSTANTS.JWT_SECRET_KEY,
                 algorithm=CONSTANTS.JWT_ALGORITHM
             )
+
+            IdentityProxyLogging.info("returning token ttlJwtToken")
 
             return jsonify(token=ttlJwtToken)
         

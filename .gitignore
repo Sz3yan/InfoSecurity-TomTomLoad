@@ -4,6 +4,7 @@
 .idea/
 *.crt
 *.pem
+*.log
 
 *.json
 identity-proxy/static/config_files/certificates/
