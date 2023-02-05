@@ -52,7 +52,7 @@ def check_signed_credential(func):
     def decorated_function(*args, **kwargs):
         if "TTLJWTAuthenticatedUser" not in session:
 
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')} not authenticated. Redirecting to {CONSTANTS.IDENTITY_PROXY_URL}")
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)} not authenticated. Redirecting to {CONSTANTS.IDENTITY_PROXY_URL}")
 
             return abort(401)
 
@@ -74,23 +74,23 @@ def check_signed_credential(func):
                     )
                 )
 
-                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Decoded TTLJWTAuthenticatedUser")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Decoded TTLJWTAuthenticatedUser")
 
             except jwt.ExpiredSignatureError:
 
-                TomTomLoadLogging.warning(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. TTLJWTAuthenticatedUser has expired. Redirecting to {CONSTANTS.IDENTITY_PROXY_URL}")
+                TomTomLoadLogging.warning(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. TTLJWTAuthenticatedUser has expired. Redirecting to {CONSTANTS.IDENTITY_PROXY_URL}")
 
                 return abort(401)
 
             except jwt.InvalidTokenError:
 
-                TomTomLoadLogging.warning(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. TTLJWTAuthenticatedUser is invalid. Redirecting to {CONSTANTS.IDENTITY_PROXY_URL}")
+                TomTomLoadLogging.warning(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. TTLJWTAuthenticatedUser is invalid. Redirecting to {CONSTANTS.IDENTITY_PROXY_URL}")
 
                 return abort(403)
 
             except:
 
-                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. TTLJWTAuthenticatedUser error (not expired nor invalid). Redirecting to {CONSTANTS.IDENTITY_PROXY_URL}")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. TTLJWTAuthenticatedUser error (not expired nor invalid). Redirecting to {CONSTANTS.IDENTITY_PROXY_URL}")
 
                 return redirect(CONSTANTS.IDENTITY_PROXY_URL)
 
@@ -203,7 +203,7 @@ def home():
                 )
         )
 
-        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')} decoded TTLJWTAuthenticatedUser")
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)} decoded TTLJWTAuthenticatedUser")
 
         def retention_policy():
             current_time_pre = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -218,7 +218,7 @@ def home():
                 delimiter = "/"
             )
 
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Retrieved {len(list_media)} media from {CONSTANTS.STORAGE_BUCKET_NAME}")
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Retrieved {len(list_media)} media from {CONSTANTS.STORAGE_BUCKET_NAME}")
 
             id_list = []
 
@@ -245,7 +245,7 @@ def home():
                         destination_blob_name='archive/' + decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + id + ".png",
                     )
 
-                    TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Moved media {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to archive")
+                    TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Moved media {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to archive")
 
             # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
 
@@ -259,7 +259,7 @@ def home():
                 delimiter = "/"
             )
 
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Retrieved {len(list_post)} post from {CONSTANTS.STORAGE_BUCKET_NAME}")
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Retrieved {len(list_post)} post from {CONSTANTS.STORAGE_BUCKET_NAME}")
 
             id_list = []
 
@@ -331,7 +331,7 @@ def home():
 @check_signed_credential
 def logout():
 
-    TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Logged out")
+    TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Logged out")
 
     session.clear()
 
@@ -369,7 +369,7 @@ def media():
         delimiter = "/"
     )
 
-    TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Retrieved {len(list_media)} media from {CONSTANTS.STORAGE_BUCKET_NAME}")
+    TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Retrieved {len(list_media)} media from {CONSTANTS.STORAGE_BUCKET_NAME}")
 
     id_list = []
 
@@ -390,7 +390,7 @@ def media():
             blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/media/" + id + ".png"
         )
 
-        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Retrieved metadata for media {id} from {CONSTANTS.STORAGE_BUCKET_NAME}")
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Retrieved metadata for media {id} from {CONSTANTS.STORAGE_BUCKET_NAME}")
 
         if os.path.isfile(temp_Mediafile_path):
             return render_template('authorised_admin/media.html', media_id=media_id, id_list=id_list, media=list_media, metadata=metadata, pic=decoded_jwt["picture"])
@@ -402,7 +402,7 @@ def media():
                 destination_file_name = temp_Mediafile_path
             )
 
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Downloaded media {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to {temp_Mediafile_path}")
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Downloaded media {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to {temp_Mediafile_path}")
 
     # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
     
@@ -431,7 +431,7 @@ def media_id(id):
             blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_id + ".png"
         )
 
-        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Retrieved metadata for media {id} from {CONSTANTS.STORAGE_BUCKET_NAME}")
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Retrieved metadata for media {id} from {CONSTANTS.STORAGE_BUCKET_NAME}")
 
         # -----------------  START OF CHECK FILE EXIST ----------------- #
 
@@ -444,13 +444,13 @@ def media_id(id):
             destination_file_name = path
         )
 
-        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Downloaded media {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to {path}")
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Downloaded media {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to {path}")
 
         # -----------------  END OF CHECK FILE EXIST ----------------- #
         
     else:
 
-        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. User is not authenticated")
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. User is not authenticated")
 
         abort(403)
 
@@ -477,8 +477,8 @@ def media_upload(id):
         file_extension = f.filename.rsplit('.', 1)[1].lower()
         if file_extension not in CONSTANTS.ALLOWED_MEDIA_EXTENSIONS:
 
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. File extension {file_extension} is not allowed")
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Redirected to {CONSTANTS.IDENTITY_PROXY_URL}")
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. File extension {file_extension} is not allowed")
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Redirected to {CONSTANTS.IDENTITY_PROXY_URL}")
 
             abort(415)
 
@@ -502,7 +502,7 @@ def media_upload(id):
                 # Create a new hash object
                 hash_object = hashlib.sha256()
 
-                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Integrity Check Initialised on {temp_Mediafile_path}")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Integrity Check Initialised on {temp_Mediafile_path}")
 
                 # Update the hash object with the file's data
                 hash_object.update(file_data)
@@ -513,7 +513,7 @@ def media_upload(id):
 
             # -----------------  START OF MALWARE CHECKING ----------------- #
 
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Malware Check Initialised on {temp_Mediafile_path}")
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Malware Check Initialised on {temp_Mediafile_path}")
 
             malwareAnalysis(original_hash)
             if malwareAnalysis(original_hash) == 0:
@@ -570,11 +570,11 @@ def media_upload(id):
             else:
                 print("malwarewareware")
 
-                TomTomLoadLogging.error(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Malware found in media {id}. Aborting upload.")
+                TomTomLoadLogging.error(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Malware found in media {id}. Aborting upload.")
 
                 abort(403)
 
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. End of Malware Analysis on {temp_Mediafile_path}")
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. End of Malware Analysis on {temp_Mediafile_path}")
 
             if original_hash == new_hash:
                 TomTomLoadLogging.info(f"Integrity check of media {id} passed. {temp_Mediafile_path} has not been tampered with during upload. Hash matches.")
@@ -585,12 +585,12 @@ def media_upload(id):
                 TomTomLoadLogging.error(f"Integrity check of media {id} failed. {temp_Mediafile_path} has been tampered with during upload. Hash does not match.")
                 print(f"{temp_Mediafile_path} has been tampered with during upload. Hash does not match.")
 
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. End of Integrity Check on {temp_Mediafile_path}")
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. End of Integrity Check on {temp_Mediafile_path}")
 
         else:
 
             TomTomLoadLogging.error(f"User not logged in, aborting upload media {id}")
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Redirected to {CONSTANTS.IDENTITY_PROXY_URL}")
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Redirected to {CONSTANTS.IDENTITY_PROXY_URL}")
 
             abort(403)
 
@@ -637,7 +637,7 @@ def media_export():
             delimiter = "/"
         )
 
-        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Retrieved {len(list_media)} media from {CONSTANTS.STORAGE_BUCKET_NAME}")
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Retrieved {len(list_media)} media from {CONSTANTS.STORAGE_BUCKET_NAME}")
 
         id_list = []
 
@@ -661,7 +661,7 @@ def media_export():
                 destination_file_name = download_folder_path
             )
 
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Downloaded media {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to {download_folder_path}")
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Downloaded media {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to {download_folder_path}")
 
         # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
 
@@ -690,7 +690,7 @@ def post():
             delimiter = "/"
         )
 
-        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Retrieved {len(list_post)} post from {CONSTANTS.STORAGE_BUCKET_NAME}")
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Retrieved {len(list_post)} post from {CONSTANTS.STORAGE_BUCKET_NAME}")
 
         id_list = []
 
@@ -716,7 +716,7 @@ def post():
                     destination_file_name = temp_Postfile_path
                 )
 
-                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Downloaded post {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to {temp_Postfile_path}")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Downloaded post {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to {temp_Postfile_path}")
 
                 return redirect(url_for('authorised_user.post'))
 
@@ -750,7 +750,7 @@ def post_id(id):
             blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + post_id + ".json"
         )
 
-        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Retrieved metadata for post {id} from {CONSTANTS.STORAGE_BUCKET_NAME}")
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Retrieved metadata for post {id} from {CONSTANTS.STORAGE_BUCKET_NAME}")
 
         # -----------------  START OF CHECK FILE EXIST ----------------- #
 
@@ -767,7 +767,7 @@ def post_id(id):
                     ciphertext = f.read()
                 )
 
-                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Decrypted post {id} from {CONSTANTS.STORAGE_BUCKET_NAME}")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Decrypted post {id} from {CONSTANTS.STORAGE_BUCKET_NAME}")
 
                 post_data = decrypted_content.plaintext.decode("utf-8")
                 post_data = json.loads(post_data)
@@ -784,7 +784,7 @@ def post_id(id):
             destination_file_name = path
         )
 
-        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Downloaded post {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to {path}")
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Downloaded post {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to {path}")
 
         return redirect(url_for('authorised_user.post_id'))
 
@@ -814,12 +814,12 @@ def post_upload(id):
                 "post_content": post_content,
             }
 
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Data Loss Prevention Intialised on post {post_upload_id}")
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Data Loss Prevention Intialised on post {post_upload_id}")
 
             DLP = DataLossPrevention(post_data["post_content"])
             DLP.detect_sensitive_data()
 
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. detecting sensitive data on post {post_upload_id}")
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. detecting sensitive data on post {post_upload_id}")
 
             with open(temp_post_path, 'wb') as outfile:
 
@@ -833,8 +833,8 @@ def post_upload(id):
                     plaintext = DLP.replace_sensitive_data()
                 )
 
-                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Encrypted post {post_upload_id} to {temp_post_path}")
-                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. End of Data Loss Prevention on post {post_upload_id}")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Encrypted post {post_upload_id} to {temp_post_path}")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. End of Data Loss Prevention on post {post_upload_id}")
 
                 # -----------------  END OF ENCRYPTION ---------------- #
 
@@ -850,7 +850,7 @@ def post_upload(id):
                     destination_blob_name = decoded_jwt["role"] + "/"  + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + post_upload_id + ".json",
                 )
 
-                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Uploaded post {post_upload_id} to {CONSTANTS.STORAGE_BUCKET_NAME} from {temp_post_path}")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Uploaded post {post_upload_id} to {CONSTANTS.STORAGE_BUCKET_NAME} from {temp_post_path}")
 
             # -----------------  END OF UPLOADING TO GCS ----------------- #
 
@@ -878,7 +878,7 @@ def post_delete(id):
             blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + post_delete_id + ".json",
         )
 
-        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Deleted post {post_delete_id} from {CONSTANTS.STORAGE_BUCKET_NAME}")
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Deleted post {post_delete_id} from {CONSTANTS.STORAGE_BUCKET_NAME}")
 
         # -----------------  START OF DELETING FILE LOCALLY ----------------- #
 
@@ -918,12 +918,12 @@ def post_update(id):
                 "post_content": post_content,
             }
 
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Data Loss Prevention Intialised on post {post_update_id}")
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Data Loss Prevention Intialised on post {post_update_id}")
 
             DLP = DataLossPrevention(post_data["post_content"])
             DLP.detect_sensitive_data()
 
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. detecting sensitive data on post {post_update_id}")
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. detecting sensitive data on post {post_update_id}")
 
             with open(temp_post_path, 'wb') as outfile:
 
@@ -937,8 +937,8 @@ def post_update(id):
                     plaintext = DLP.replace_sensitive_data()
                 )
 
-                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Encrypted post {post_update_id} to {temp_post_path}")
-                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. End of Data Loss Prevention on post {post_update_id}")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Encrypted post {post_update_id} to {temp_post_path}")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. End of Data Loss Prevention on post {post_update_id}")
 
                 # -----------------  END OF ENCRYPTION ---------------- #
 
@@ -954,7 +954,7 @@ def post_update(id):
                     destination_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + post_update_id + ".json",
                 )
 
-                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Uploaded post {post_update_id} to {CONSTANTS.STORAGE_BUCKET_NAME}")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Uploaded post {post_update_id} to {CONSTANTS.STORAGE_BUCKET_NAME}")
 
             # -----------------  END OF UPLOADING TO GCS ----------------- #
 
@@ -981,7 +981,7 @@ def post_export():
             delimiter = "/"
         )
 
-        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Retrieved {len(list_post)} post from {CONSTANTS.STORAGE_BUCKET_NAME}")
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Retrieved {len(list_post)} post from {CONSTANTS.STORAGE_BUCKET_NAME}")
 
         id_list = []
 
@@ -1003,7 +1003,7 @@ def post_export():
                     destination_file_name = temp_post_path,
                 )
 
-                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Downloaded post {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to {temp_post_path}")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Downloaded post {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to {temp_post_path}")
 
             with open(temp_post_path, 'rb') as outfile:
 
@@ -1019,7 +1019,7 @@ def post_export():
                     ciphertext = encrypted_content
                 )
 
-                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName')}. Decrypted post {id} from {temp_post_path}")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Decrypted post {id} from {temp_post_path}")
 
                 # -----------------  END OF DECRYPTION ---------------- #
 
@@ -1138,7 +1138,23 @@ def utilities():
 
     role = decoded_jwt["role"]
 
-    return render_template('authorised_admin/utilities.html', email=decoded_jwt["email"], role=role, pic=decoded_jwt["picture"])
+    with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("tomtomload.log"), "r") as f:
+        tomtomload_log = f.read()
+
+        tomtomload_logs = []
+
+        for line in tomtomload_log.splitlines():
+            tomtomload_logs.append(line)
+
+    with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("identity-proxy.log"), "r") as f:
+        identityproxy_log = f.read()
+
+        identityproxy_logs = []
+
+        for line in identityproxy_log.splitlines():
+            identityproxy_logs.append(line)
+
+    return render_template('authorised_admin/utilities.html', email=decoded_jwt["email"], role=role, tomtomloadlogs=tomtomload_logs, identityproxylogs=identityproxy_logs, pic=decoded_jwt["picture"])
 
 
 @authorised_user.route("/utilities/addBlockIPAddresses", methods=['GET', 'POST'])

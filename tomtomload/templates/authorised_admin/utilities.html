@@ -1,34 +1,84 @@
 {% extends "base.html" %}
 
 {% block bodyContent %}
-    <div class="collection-list">
-        <div class="eyebrow">
-            <div class="gutter--left gutter--right eyebrow__wrap">
-                <nav class="step-nav"><a href="/admin"><span>Dashboard</span><svg class="icon icon--chevron"
-                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                            <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                        </svg></a><span>Utilities</span></nav>
-            </div>
-        </div>
-        <div class="gutter--left gutter--right collection-list__wrap">
-            <header class="collection-list__header">
-                <h1>Block IP Addresses</h1><a class="pill pill--style-light pill--has-link pill--has-action"
-                    href="/admin/utilities/addBlockIPAddresses">Add New</a>
-            </header>
-
-            <header class="collection-list__header">
-                <h1>Ban Admin</h1><a class="pill pill--style-light pill--has-link pill--has-action"
-                    href="/admin/utilities/addBlockIPAddresses">Add New</a>
-            </header>
-
-            {% if role == 'SuperAdmins' %}
-
-                <header class="collection-list__header">
-                    <h1>Revoke Cert</h1><a class="pill pill--style-light pill--has-link pill--has-action"
-                        href="/admin/utilities/addBlockIPAddresses">Add New</a>
-                </header>
-
-            {% endif %}
+<div class="collection-list">
+    <div class="eyebrow">
+        <div class="gutter--left gutter--right eyebrow__wrap">
+            <nav class="step-nav"><a href="/admin"><span>Dashboard</span><svg class="icon icon--chevron"
+                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                        <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
+                    </svg></a><span>Utilities</span></nav>
         </div>
     </div>
+    <div class="gutter--left gutter--right collection-list__wrap">
+        <header class="collection-list__header">
+            <h1>Block IP Addresses</h1><a class="pill pill--style-light pill--has-link pill--has-action"
+                href="/admin/utilities/addBlockIPAddresses">Add New</a>
+        </header>
+
+        <header class="collection-list__header">
+            <h1>Ban Admin</h1><a class="pill pill--style-light pill--has-link pill--has-action"
+                href="/admin/utilities/addBlockIPAddresses">Add New</a>
+        </header>
+
+        {% if role == 'SuperAdmins' %}
+
+        <header class="collection-list__header">
+            <h1>Revoke Cert</h1><a class="pill pill--style-light pill--has-link pill--has-action"
+                href="/admin/utilities/addBlockIPAddresses">Add New</a>
+        </header>
+
+        {% endif %}
+
+        <div class="account__payload-settings" >
+            <h3>Identity Proxy Events</h3>
+            <div class="lolz" style="max-height: 500px; overflow-y: scroll; -ms-overflow-style: none;">
+                <div class="table" id="myTable">
+                    <table cellpadding="0" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>logs</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for logs in identityproxylogs | reverse %}
+                                <tr class="row-1">
+                                    <td>{{ logs }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <br><br>
+
+            <style>
+                .lolz::-webkit-scrollbar {
+                    display: none;
+                }
+            </style>
+
+            <h3>TomTomLoad Events</h3>
+            <div class="lolz" style="max-height: 500px; overflow-y: scroll; -ms-overflow-style: none;">
+                <div class="table" id="myTable">
+                    <table cellpadding="0" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>logs</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for logs in tomtomloadlogs | reverse %}
+                                <tr class="row-1">
+                                    <td>{{ logs }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

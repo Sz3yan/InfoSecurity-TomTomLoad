@@ -18,6 +18,7 @@ class Constants:
     TTL_CONFIG_MEDIA_FOLDER: pathlib.Path = TTL_CONFIG_FOLDER / "media"
     TTL_CONFIG_POSTS_FOLDER: pathlib.Path = TTL_CONFIG_FOLDER / "post"
     TTL_MALWARELOGS_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.absolute() / "malwarelogs"
+    IP_CONFIG_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.parent.parent.absolute() / "identity-proxy/static/config_files"
 
     ADMIN_URL: str = "https://127.0.0.1:5000/admin" if DEBUG_MODE else "https://www.tomtomload.com/admin"
     API_MEDIA_URL: str = "https://127.0.0.1:5000/api/view_media" if DEBUG_MODE else "https://www.tomtomload.com/api/view_media"
