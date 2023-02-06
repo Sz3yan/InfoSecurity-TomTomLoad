@@ -9,7 +9,6 @@ ENV PYTHONUNBUFFERED True
 ENV APP_HOME .
 WORKDIR $APP_HOME
 COPY . ./
-COPY tomtomloadapp.py .
 
 # Install production dependencies.
 RUN pip install -r requirements.txt
