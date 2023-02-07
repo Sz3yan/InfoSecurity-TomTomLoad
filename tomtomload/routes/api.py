@@ -3,12 +3,13 @@ import json
 import os
 
 from static.functions.check_authentication import ttl_redirect_user, ttl_jwt_authentication
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, redirect, url_for
 
 from static.classes.config import CONSTANTS
 from static.classes.storage import GoogleCloudStorage
 from static.security.secure_data import GoogleCloudKeyManagement
 from static.security.session_management import TTLSession
+from static.security.ttl_limiter import TTL_Limiter
 
 from ast import literal_eval
 
@@ -18,6 +19,7 @@ api = Blueprint('api', __name__, url_prefix="/api", template_folder="templates",
 KeyManagement = GoogleCloudKeyManagement()
 ttlSession = TTLSession()
 storage = GoogleCloudStorage()
+ttlLimiter = TTL_Limiter()
 
 def decoded_jwt():
     try:
@@ -54,6 +56,7 @@ def decoded_jwt():
 @api.route("/create_user", methods=["POST"])
 @ttl_redirect_user
 @ttl_jwt_authentication
+@ttlLimiter.limit_user(limit_value="10/day")
 def api_create_user():
     return jsonify(message="Work in progress"),200
 
@@ -61,6 +64,7 @@ def api_create_user():
 @api.route("/view_user", methods=["GET"])
 @ttl_redirect_user
 @ttl_jwt_authentication
+@ttlLimiter.limit_user(limit_value="10/day")
 def api_view_users():
     return jsonify(message="Work in progress"),200
 
@@ -68,6 +72,7 @@ def api_view_users():
 @api.route("/view_user/<regex('[0-9]{21}'):id>", methods=["GET"])
 @ttl_redirect_user
 @ttl_jwt_authentication
+@ttlLimiter.limit_user(limit_value="10/day")
 def api_view_user(id):
     return jsonify(message="Work in progress"),200
 
@@ -75,6 +80,7 @@ def api_view_user(id):
 @api.route("/edit_user/<regex('[0-9]{21}'):id>", methods=["PUT"])
 @ttl_redirect_user
 @ttl_jwt_authentication
+@ttlLimiter.limit_user(limit_value="10/day")
 def api_edit_user(id):
     return jsonify(message="Work in progress"),200
 
@@ -82,6 +88,7 @@ def api_edit_user(id):
 @api.route("/delete_user/<regex('[0-9]{21}'):id>", methods=["DELETE"])
 @ttl_redirect_user
 @ttl_jwt_authentication
+@ttlLimiter.limit_user(limit_value="10/day")
 def api_delete_user(id):
     return jsonify(message="Work in progress"),200
 
@@ -90,6 +97,7 @@ def api_delete_user(id):
 @api.route("/create_admin", methods=["POST"])
 @ttl_redirect_user
 @ttl_jwt_authentication
+@ttlLimiter.limit_user(limit_value="10/day")
 def api_create_admin():
     return jsonify(message="Work in progress"),200
 
@@ -97,6 +105,7 @@ def api_create_admin():
 @api.route("/view_admin", methods=["GET"])
 @ttl_redirect_user
 @ttl_jwt_authentication
+@ttlLimiter.limit_user(limit_value="10/day")
 def api_view_admins():
     with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r") as acl:
         decoded_dict = decoded_jwt()
@@ -116,16 +125,23 @@ def api_view_admins():
         return jsonify(admin_details=return_dict),200
 
 
-@api.route("/view_admin/<regex('[0-9]{21}'):id>", methods=["GET"])
-@ttl_redirect_user
-@ttl_jwt_authentication
-def api_view_admin(id):
-    return jsonify(message="Work in progress"),200
+# @api.route("/view_admin/<regex('[0-9]{21}'):id>", methods=["GET"])
+# @ttl_redirect_user
+# @ttl_jwt_authentication
+# @ttlLimiter.limit_user(limit_value="10/day")
+# def api_view_admin(id):
+#     if decoded_jwt()["role"] == "SuperAdmins":
+#         pass
+#     else:
+#         return jsonify(Error="Unauthorized access"),401
+
+#     return jsonify(message="Work in progress"),200
 
 
 @api.route("/edit_admin/<regex('[0-9]{21}'):id>", methods=["PUT"])
 @ttl_redirect_user
 @ttl_jwt_authentication
+@ttlLimiter.limit_user(limit_value="10/day")
 def api_edit_admin(id):
     return jsonify(message="Work in progress"),200
 
@@ -133,6 +149,7 @@ def api_edit_admin(id):
 @api.route("/delete_admin/<regex('[0-9]{21}'):id>", methods=["DELETE"])
 @ttl_redirect_user
 @ttl_jwt_authentication
+@ttlLimiter.limit_user(limit_value="10/day")
 def api_delete_admin(id):
     decoded_dict = decoded_jwt()
     if id != decoded_dict['google_id'] and decoded_dict['role'] == "SuperAdmins":
@@ -163,8 +180,6 @@ def api_delete_admin(id):
             
         except:
             return jsonify(Error="Please add a confirmation to delete")
-
-
     else:
         return jsonify(message="Work in progress"),200
 
@@ -173,13 +188,17 @@ def api_delete_admin(id):
 @api.route("/create_post", methods=["POST"])
 @ttl_redirect_user
 @ttl_jwt_authentication
+@ttlLimiter.limit_user(limit_value="10/day")
 def api_create_post():
+    if "Chrome" in request.headers["User-agent"]:
+        return redirect(url_for("authorised_user."))
     return jsonify(message="Work in progress"),200
 
 
 @api.route("/view_post", methods=["GET"])
 @ttl_redirect_user
 @ttl_jwt_authentication
+@ttlLimiter.limit_user(limit_value="10/day")
 def api_view_posts():
     decoded_dict = decoded_jwt()
     if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
@@ -195,6 +214,7 @@ def api_view_posts():
 @api.route("/view_post/<regex('[0-9a-f]{32}'):id>", methods=["GET"])
 @ttl_redirect_user
 @ttl_jwt_authentication
+@ttlLimiter.limit_user(limit_value="10/day")
 def api_view_post(id):
     return jsonify(message="Work in progress"),200
 
@@ -202,6 +222,7 @@ def api_view_post(id):
 @api.route("/update_post/<regex('[0-9a-f]{32}'):id>", methods=["PUT"])
 @ttl_redirect_user
 @ttl_jwt_authentication
+@ttlLimiter.limit_user(limit_value="10/day")
 def api_update_post(id):
     return jsonify(message="Work in progress"),200
 
@@ -209,6 +230,7 @@ def api_update_post(id):
 @api.route("/delete_post/<regex('[0-9a-f]{32}'):id>", methods=["DELETE"])
 @ttl_redirect_user
 @ttl_jwt_authentication
+@ttlLimiter.limit_user(limit_value="10/day")
 def api_delete_post(id):
     return jsonify(message="Work in progress"),200
 
@@ -217,6 +239,7 @@ def api_delete_post(id):
 @api.route("/create_media", methods=["POST"])
 @ttl_redirect_user
 @ttl_jwt_authentication
+@ttlLimiter.limit_user(limit_value="10/day")
 def api_create_media():
     return jsonify(message="Work in progress"),200
 
@@ -224,6 +247,7 @@ def api_create_media():
 @api.route("/view_media", methods=["GET"])
 @ttl_redirect_user
 @ttl_jwt_authentication
+@ttlLimiter.limit_user(limit_value="10/day")
 def api_view_medias():
     decoded_dict = decoded_jwt()
 
@@ -242,20 +266,23 @@ def api_view_medias():
 @api.route("/view_media/<regex('[0-9a-f]{32}'):id>", methods=["GET"])
 @ttl_redirect_user
 @ttl_jwt_authentication
+@ttlLimiter.limit_user(limit_value="10/day")
 def api_view_media(id):
     return jsonify(message="Work in progress"),200
 
 
-@api.route("/update_media/<regex('[0-9a-f]{32}'):id>", methods=["PUT"])
-@ttl_redirect_user
-@ttl_jwt_authentication
-def api_update_media(id):
-    return jsonify(message="Work in progress"),200
+# @api.route("/update_media/<regex('[0-9a-f]{32}'):id>", methods=["PUT"])
+# @ttl_redirect_user
+# @ttl_jwt_authentication
+# @ttlLimiter.limit_user(limit_value="10/day")
+# def api_update_media(id):
+#     return jsonify(message="Work in progress"),200
 
 
 @api.route("/delete_media/<regex('[0-9a-f]{32}'):id>", methods=["DELETE"])
 @ttl_redirect_user
 @ttl_jwt_authentication
+@ttlLimiter.limit_user(limit_value="10/day")
 def api_delete_media(id):
     return jsonify(message="Work in progress"),200
 
