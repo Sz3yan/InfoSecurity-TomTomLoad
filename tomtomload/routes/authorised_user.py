@@ -1,4 +1,5 @@
 import os
+import shutil
 import jwt
 import json
 import base64
@@ -15,10 +16,10 @@ from static.security.malware_analysis import malwareAnalysis
 from static.security.DatalossPrevention import DataLossPrevention
 from static.security.logging import TTLLogger
 
-from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort
+from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort, send_file
 from functools import wraps
 from werkzeug.utils import secure_filename
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 authorised_user = Blueprint('authorised_user', __name__, url_prefix="/admin", template_folder="templates", static_folder='static')
@@ -663,20 +664,23 @@ def media_export():
             temp_Mediafile_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "media", id)
             temp_Mediafile_path = temp_Mediafile_path + ".png"
 
-            download_folder_path = os.path.join(os.path.expanduser('~'), 'Downloads', id)
+            download_folder_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "downloads", id)
             download_folder_path = download_folder_path + ".png"
 
-            storage.download_blob(
-                bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
-                source_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + id + ".png",
-                destination_file_name = download_folder_path
-            )
-
+            if not os.path.isfile(download_folder_path):
+                storage.download_blob(
+                    bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+                    source_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + id + ".png",
+                    destination_file_name = download_folder_path
+                )
+            
             TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Downloaded media {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to {download_folder_path}")
 
-        # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
+        shutil.make_archive(os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "downloads"), 'zip', os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "downloads"))
 
-        return redirect(url_for('authorised_user.media'))
+        return send_file(os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "downloads.zip"), as_attachment=True)
+
+        # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
 
     else:
 
@@ -1007,11 +1011,14 @@ def post_export():
             temp_post_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "post", id)
             temp_post_path = temp_post_path + ".json"
 
+            download_folder_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "downloads", id)
+            download_folder_path = download_folder_path + ".json"
+
             if not os.path.isfile(temp_post_path):
                 storage.download_blob(
                     bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
                     source_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + id + ".json",
-                    destination_file_name = temp_post_path,
+                    destination_file_name = download_folder_path,
                 )
 
                 TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Downloaded post {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to {temp_post_path}")
