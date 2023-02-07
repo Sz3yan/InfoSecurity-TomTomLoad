@@ -660,6 +660,9 @@ def media_export():
 
         # -----------------  START OF CHECKING LOCAL MEDIA ----------------- #
 
+        if not os.path.isdir(os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "downloads")):
+            os.mkdir(os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "downloads"))
+
         for id in id_list:
             temp_Mediafile_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "media", id)
             temp_Mediafile_path = temp_Mediafile_path + ".png"
