@@ -18,7 +18,7 @@ from static.security.logging import TTLLogger
 from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort
 from functools import wraps
 from werkzeug.utils import secure_filename
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 authorised_user = Blueprint('authorised_user', __name__, url_prefix="/admin", template_folder="templates", static_folder='static')
@@ -205,10 +205,25 @@ def home():
 
         TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)} decoded TTLJWTAuthenticatedUser")
 
+
+
+        list_media = storage.list_blobs_with_prefix(
+            bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+            prefix = decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/",
+            delimiter = "/"
+        )
+
+        id_list = []
+
+        for media in list_media:
+            remove_slash = media.split("/")[3]
+            remove_extension = remove_slash.split(".")[0]
+
+            id_list.append(remove_extension)
+
         def retention_policy():
             current_time_pre = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            current_time = datetime.strptime(current_time_pre ,"%Y-%m-%d %H:%M:%S")
-            print(current_time)
+            current_time = datetime.strptime(current_time_pre,"%Y-%m-%d %H:%M:%S")
 
             # -----------------  START OF RETRIEVING MEDIA ----------------- #
 
@@ -232,17 +247,16 @@ def home():
 
             for id in id_list:
                 file_time = storage.blob_metadata(CONSTANTS.STORAGE_BUCKET_NAME, decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/media/" + id + ".png")["updated"]
-                print(file_time.strftime("%Y-%m-%d %H:%M:%S"))
 
-                # convert file_time to datetime
-                # file_time = datetime.strptime(file_time.strftime("%Y-%m-%d %H:%M:%S"), "%Y-%m-%d %H:%M:%S")
+                file_time_pre = file_time.strftime("%Y-%m-%d %H:%M:%S")
+                file_time = datetime.strptime(file_time_pre, "%Y-%m-%d %H:%M:%S")
 
-                if id(current_time - file_time.strftime("%Y-%m-%d %H:%M:%S")).days >= 365:
+                if (current_time - file_time).days >= 365:
                     storage.move_blob(
-                        bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
-                        blob_name= decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/media/" + id + ".png",
-                        destination_bucket_name='ttl_backup',
-                        destination_blob_name='archive/' + decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + id + ".png",
+                        bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+                        blob_name = decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/media/" + id + ".png",
+                        destination_bucket_name = 'ttl_backup',
+                        destination_blob_name = 'archive/' + decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + id + ".png",
                     )
 
                     TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Moved media {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to archive")
@@ -271,20 +285,17 @@ def home():
             # -----------------  START OF CHECKING LOCAL MEDIA ----------------- #
 
             for id in id_list:
-                file_time = storage.blob_metadata(CONSTANTS.STORAGE_BUCKET_NAME, decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/post/" + id + ".json")["updated"]
+                file_time = storage.blob_metadata(CONSTANTS.STORAGE_BUCKET_NAME, decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/post/" + id + ".json")["updated"]
 
-                # convert file_time to datetime
-                # file_time = datetime.strptime(file_time.strftime("%Y-%m-%d %H:%M:%S"), "%Y-%m-%d %H:%M:%S")
+                file_time_pre = file_time.strftime("%Y-%m-%d %H:%M:%S")
+                file_time = datetime.strptime(file_time_pre, "%Y-%m-%d %H:%M:%S")
 
-                print(f"file time: {file_time}")
-
-                # if id(current_time - file_time) >= 365:
-                if id(current_time - file_time.strftime("%Y-%m-%d %H:%M:%S")).days >= 365:
+                if (current_time - file_time).days >= 365:
                     storage.move_blob(
-                        bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
-                        blob_name= decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/post/" + id + ".json",
-                        destination_bucket_name='ttl_backup',
-                        destination_blob_name='archive/' + decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + id + ".json",
+                        bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+                        blob_name = decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/post/" + id + ".json",
+                        destination_bucket_name = 'ttl_backup',
+                        destination_blob_name = 'archive/' + decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + id + ".json",
                     )
 
                     TomTomLoadLogging.info(f"Moved post {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to archive")
@@ -297,7 +308,7 @@ def home():
             # and delete files from archive folder older than 365 days
 
             schedule.every().day.at("03:29").do(retention_policy)
-            # retention_policy()
+            retention_policy()
             print('Data Retention Policy Started')
 
             # while True:
