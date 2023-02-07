@@ -526,7 +526,7 @@ def media_upload(id):
                     destination_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_upload_id + "." + file_extension,
                 )
 
-                TomTomLoadLogging.info(f'{ttlSession.get_data_from_session("TTLAuthenticatedUserName")}. Uploaded media {id} to {CONSTANTS.STORAGE_BUCKET_NAME}')
+                TomTomLoadLogging.info(f'{ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True)}. Uploaded media {id} to {CONSTANTS.STORAGE_BUCKET_NAME}')
 
                 storage.set_blob_metadata(
                     bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
@@ -534,7 +534,7 @@ def media_upload(id):
                     metadata_dict = {"name": secure_filename(f.filename), "hash": original_hash}
                 )
 
-                TomTomLoadLogging.info(f'{ttlSession.get_data_from_session("TTLAuthenticatedUserName")}. Uploaded media {id} metadata to {CONSTANTS.STORAGE_BUCKET_NAME}')
+                TomTomLoadLogging.info(f'{ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True)}. Uploaded media {id} metadata to {CONSTANTS.STORAGE_BUCKET_NAME}')
 
                 # -----------------  START OF REMOVING FILE LOCALLY ----------------- #
 
@@ -555,7 +555,7 @@ def media_upload(id):
                 with open(temp_Mediafile_path, "rb") as fs:
                     file_data = fs.read()
 
-                    TomTomLoadLogging.info(f'{ttlSession.get_data_from_session("TTLAuthenticatedUserName")}. Integrity Check Initialised on {temp_Mediafile_path}')
+                    TomTomLoadLogging.info(f'{ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True)}. Integrity Check Initialised on {temp_Mediafile_path}')
 
                     # Create a new hash object
                     hash_object = hashlib.sha256()
@@ -613,7 +613,7 @@ def media_delete(id):
             blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_delete_id + ".png"
         )
 
-        TomTomLoadLogging.info(f'{ttlSession.get_data_from_session("TTLAuthenticatedUserName")}. Deleted media {id} from {CONSTANTS.STORAGE_BUCKET_NAME}')
+        TomTomLoadLogging.info(f'{ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True)}. Deleted media {id} from {CONSTANTS.STORAGE_BUCKET_NAME}')
 
     else:
 
