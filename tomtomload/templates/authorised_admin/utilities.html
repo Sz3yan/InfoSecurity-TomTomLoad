@@ -16,12 +16,11 @@
                 href="/admin/utilities/addBlockIPAddresses">Add New</a>
         </header>
 
+        {% if role == 'SuperAdmins' %}
         <header class="collection-list__header">
             <h1>Ban Admin</h1><a class="pill pill--style-light pill--has-link pill--has-action"
-                href="/admin/utilities/addBlockIPAddresses">Add New</a>
+                href="/admin/utilities/addBanAdmin">Add New</a>
         </header>
-
-        {% if role == 'SuperAdmins' %}
 
         <header class="collection-list__header">
             <h1>Revoke Cert</h1><a class="pill pill--style-light pill--has-link pill--has-action"
@@ -31,6 +30,7 @@
         {% endif %}
 
         <div class="account__payload-settings" >
+            {% if role == 'SuperAdmins' %}
             <h3>Identity Proxy Events</h3>
             <div class="lolz" style="max-height: 500px; overflow-y: scroll; -ms-overflow-style: none;">
                 <div class="table" id="myTable">
@@ -58,6 +58,8 @@
                     display: none;
                 }
             </style>
+
+            {% endif %}
 
             <h3>TomTomLoad Events</h3>
             <div class="lolz" style="max-height: 500px; overflow-y: scroll; -ms-overflow-style: none;">

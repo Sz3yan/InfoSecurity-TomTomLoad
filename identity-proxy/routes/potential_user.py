@@ -140,12 +140,12 @@ def authorisation():
 
     with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
         acl = json.load(s)
-    
+
     if (ttlSession.get_data_from_session('id_info', data=True).get("name") not in blacklisted["blacklisted_users"]) and \
         (TTLContextAwareAccessClientUserAgent not in blacklisted["blacklisted_useragent"]) and \
-        (TTLContextAwareAccessClientIP not in blacklisted["blacklisted_ip"]) and \
+        (TTLContextAwareAccessClientIP["ip"] not in blacklisted["blacklisted_ip"]) and \
         (ttlSession.verfiy_Ptoken('id_info')):
-        
+
         role = 'Admins'
 
         for user, value in acl['SuperAdmins'].items():

@@ -175,6 +175,7 @@ class GoogleCloudStorage:
         # Note: The call returns a response only when the iterator is consumed.
         for blob in blobs:
             print(blob.name)
+        return blobs
 
     def list_blobs_with_prefix(self, bucket_name, prefix, delimiter=None):
         """Lists all the blobs in the bucket that begin with the prefix.

@@ -3,7 +3,6 @@ import jwt
 import json
 import base64
 import hashlib
-import schedule
 import datetime
 
 from static.classes.config import CONSTANTS
@@ -18,7 +17,8 @@ from static.security.logging import TTLLogger
 from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort
 from functools import wraps
 from werkzeug.utils import secure_filename
-from datetime import datetime, timedelta
+from datetime import datetime
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 authorised_user = Blueprint('authorised_user', __name__, url_prefix="/admin", template_folder="templates", static_folder='static')
@@ -44,6 +44,99 @@ TomTomLoadLogging.info(f"Downloaded ACL from {CONSTANTS.STORAGE_BUCKET_NAME} to 
 
 # -----------------  END OF INITIALISATION ----------------- #
 
+def retention_policy():
+    print("Retention policy is running")
+    current_time_pre = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    current_time = datetime.strptime(current_time_pre,"%Y-%m-%d %H:%M:%S")
+
+    # -----------------  START OF RETRIEVING MEDIA ----------------- #
+
+    list_media = storage.list_blobs_with_prefix(
+        bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+        prefix = decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/",
+        delimiter = "/"
+    )
+
+    TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Retrieved {len(list_media)} media from {CONSTANTS.STORAGE_BUCKET_NAME}")
+
+    id_list = []
+
+    for media in list_media:
+        remove_slash = media.split("/")[3]
+        remove_extension = remove_slash.split(".")[0]
+
+        id_list.append(remove_extension)
+
+    # -----------------  START OF CHECKING LOCAL MEDIA ----------------- #
+
+    for id in id_list:
+        file_time = storage.blob_metadata(CONSTANTS.STORAGE_BUCKET_NAME, decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/media/" + id + ".png")["updated"]
+
+        file_time_pre = file_time.strftime("%Y-%m-%d %H:%M:%S")
+        file_time = datetime.strptime(file_time_pre, "%Y-%m-%d %H:%M:%S")
+
+        if (current_time - file_time).days >= 365:
+            storage.move_blob(
+                bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+                blob_name = decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/media/" + id + ".png",
+                destination_bucket_name = 'ttl_backup',
+                destination_blob_name = 'archive/' + decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + id + ".png",
+            )
+
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Moved media {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to archive")
+
+    # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
+
+    # -----------------  END OF RETRIEVING MEDIA ----------------- #
+
+    # -----------------  START OF RETRIEVING POST ----------------- #
+
+        list_post = storage.list_blobs_with_prefix(
+            bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+            prefix = decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/",
+            delimiter = "/"
+        )
+
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Retrieved {len(list_post)} post from {CONSTANTS.STORAGE_BUCKET_NAME}")
+
+        id_list = []
+
+        for post in list_post:
+            remove_slash = post.split("/")[3]
+            remove_extension = remove_slash.split(".")[0]
+            id_list.append(remove_extension)
+
+        # -----------------  START OF CHECKING LOCAL MEDIA ----------------- #
+
+        for id in id_list:
+            file_time = storage.blob_metadata(CONSTANTS.STORAGE_BUCKET_NAME, decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/post/" + id + ".json")["updated"]
+
+            file_time_pre = file_time.strftime("%Y-%m-%d %H:%M:%S")
+            file_time = datetime.strptime(file_time_pre, "%Y-%m-%d %H:%M:%S")
+
+            if (current_time - file_time).days >= 365:
+                storage.move_blob(
+                    bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+                    blob_name = decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/post/" + id + ".json",
+                    destination_bucket_name = 'ttl_backup',
+                    destination_blob_name = 'archive/' + decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + id + ".json",
+                )
+
+                TomTomLoadLogging.info(f"Moved post {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to archive")
+
+        # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
+
+        TomTomLoadLogging.info("Data Retention Policy Initialised")
+
+
+scheduler = BackgroundScheduler()
+scheduler.configure(timezone="Asia/Singapore")
+
+scheduler.add_job(
+    retention_policy,
+    "interval", hours=23, minutes=58, seconds=0
+)
+scheduler.start()
 
 # -----------------  START OF WRAPPER ----------------- #
 
@@ -192,6 +285,7 @@ def home():
     # -----------------  END OF SESSION ----------------- #
 
     try:
+        global decoded_TTLJWTAuthenticatedUser
         decoded_TTLJWTAuthenticatedUser = jwt.decode(
             TTLJWTAuthenticatedUser["TTL-JWTAuthenticated-User"],
             algorithms = CONSTANTS.JWT_ALGORITHM,
@@ -204,120 +298,6 @@ def home():
         )
 
         TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)} decoded TTLJWTAuthenticatedUser")
-
-
-
-        list_media = storage.list_blobs_with_prefix(
-            bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
-            prefix = decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/",
-            delimiter = "/"
-        )
-
-        id_list = []
-
-        for media in list_media:
-            remove_slash = media.split("/")[3]
-            remove_extension = remove_slash.split(".")[0]
-
-            id_list.append(remove_extension)
-
-        def retention_policy():
-            current_time_pre = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            current_time = datetime.strptime(current_time_pre,"%Y-%m-%d %H:%M:%S")
-
-            # -----------------  START OF RETRIEVING MEDIA ----------------- #
-
-            list_media = storage.list_blobs_with_prefix(
-                bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
-                prefix = decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/",
-                delimiter = "/"
-            )
-
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Retrieved {len(list_media)} media from {CONSTANTS.STORAGE_BUCKET_NAME}")
-
-            id_list = []
-
-            for media in list_media:
-                remove_slash = media.split("/")[3]
-                remove_extension = remove_slash.split(".")[0]
-
-                id_list.append(remove_extension)
-
-            # -----------------  START OF CHECKING LOCAL MEDIA ----------------- #
-
-            for id in id_list:
-                file_time = storage.blob_metadata(CONSTANTS.STORAGE_BUCKET_NAME, decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/media/" + id + ".png")["updated"]
-
-                file_time_pre = file_time.strftime("%Y-%m-%d %H:%M:%S")
-                file_time = datetime.strptime(file_time_pre, "%Y-%m-%d %H:%M:%S")
-
-                if (current_time - file_time).days >= 365:
-                    storage.move_blob(
-                        bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
-                        blob_name = decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/media/" + id + ".png",
-                        destination_bucket_name = 'ttl_backup',
-                        destination_blob_name = 'archive/' + decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + id + ".png",
-                    )
-
-                    TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Moved media {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to archive")
-
-            # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
-
-            # -----------------  END OF RETRIEVING MEDIA ----------------- #
-
-            # -----------------  START OF RETRIEVING POST ----------------- #
-
-            list_post = storage.list_blobs_with_prefix(
-                bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
-                prefix = decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/",
-                delimiter = "/"
-            )
-
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Retrieved {len(list_post)} post from {CONSTANTS.STORAGE_BUCKET_NAME}")
-
-            id_list = []
-
-            for post in list_post:
-                remove_slash = post.split("/")[3]
-                remove_extension = remove_slash.split(".")[0]
-                id_list.append(remove_extension)
-
-            # -----------------  START OF CHECKING LOCAL MEDIA ----------------- #
-
-            for id in id_list:
-                file_time = storage.blob_metadata(CONSTANTS.STORAGE_BUCKET_NAME, decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/post/" + id + ".json")["updated"]
-
-                file_time_pre = file_time.strftime("%Y-%m-%d %H:%M:%S")
-                file_time = datetime.strptime(file_time_pre, "%Y-%m-%d %H:%M:%S")
-
-                if (current_time - file_time).days >= 365:
-                    storage.move_blob(
-                        bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
-                        blob_name = decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/post/" + id + ".json",
-                        destination_bucket_name = 'ttl_backup',
-                        destination_blob_name = 'archive/' + decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + id + ".json",
-                    )
-
-                    TomTomLoadLogging.info(f"Moved post {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to archive")
-
-            # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
-
-        def data_retention_policy():
-
-            # move files older than 365 days to archive folder
-            # and delete files from archive folder older than 365 days
-
-            schedule.every().day.at("03:29").do(retention_policy)
-            retention_policy()
-            print('Data Retention Policy Started')
-
-            # while True:
-            #     schedule.run_pending()
-            #     time.sleep(1)
-
-        data_retention_policy()
-
-        TomTomLoadLogging.info("Data Retention Policy Initialised")
 
     except jwt.ExpiredSignatureError:
 
@@ -1059,7 +1039,21 @@ def users():
     user_id = decoded_jwt["google_id"]
     role = decoded_jwt["role"]
 
-    return render_template('authorised_admin/users.html', user_id=user_id, email=decoded_jwt["email"], role=role, pic=decoded_jwt["picture"])
+    with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
+        acl = json.load(s)
+
+    SuperAdmins_list = []
+    Admins_list = []
+
+    for value in acl["SuperAdmins"]:
+        if value not in SuperAdmins_list:
+            SuperAdmins_list.append(value)
+
+    for value in acl["Admins"]:
+        if value not in Admins_list:
+            Admins_list.append(value)
+
+    return render_template('authorised_admin/users.html', user_id=user_id, email=decoded_jwt["email"], role=role, pic=decoded_jwt["picture"], SuperAdmins_list=SuperAdmins_list, Admins_list=Admins_list)
 
 
 @authorised_user.route("/users/<regex('[0-9]{21}'):id>")
@@ -1132,6 +1126,8 @@ def edit_access():
                     destination_blob_name="acl.json"
                 )
 
+                TomTomLoadLogging.info("updated ACL file")
+
                 return redirect(url_for('authorised_user.home'))
 
     else:
@@ -1155,7 +1151,8 @@ def utilities():
         tomtomload_logs = []
 
         for line in tomtomload_log.splitlines():
-            tomtomload_logs.append(line)
+            if ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) in line:
+                tomtomload_logs.append(line)
 
     with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("identity-proxy.log"), "r") as f:
         identityproxy_log = f.read()
@@ -1171,7 +1168,48 @@ def utilities():
 @authorised_user.route("/utilities/addBlockIPAddresses", methods=['GET', 'POST'])
 @check_signed_credential
 def addBlock_IPAddresses():
+    with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"), "r") as f:
+        blacklisted = json.load(f)
+
+
+
+    if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
+        if request.method == 'POST':
+            ipaddress = request.form.get('ipaddress')
+
+            if ipaddress not in blacklisted["blacklisted_ip"]:
+                w = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"), "r")
+                dict_IPaddress = json.loads(w.read())
+                dict_IPaddress["blacklisted_ip"].append(ipaddress)
+                w.close()
+
+                r = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"), "w")
+                r.write(json.dumps(dict_IPaddress))
+                r.close()
+
+                storage.upload_blob(
+                    bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+                    source_file_name=CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"),
+                    destination_blob_name="blacklisted.json"
+                )
+                TomTomLoadLogging.info("updated Blacklisted file")
+
+            return redirect(url_for('authorised_user.home'))
+
+    else:
+
+        TomTomLoadLogging.error(f"User not logged in, aborting post")
+
+        abort(403)
 
     return render_template('authorised_admin/blockIPAddressesAdd.html', email=decoded_jwt["email"], pic=decoded_jwt["picture"])
+
+
+@authorised_user.route("/utilities/addBanAdmin", methods=['GET', 'POST'])
+@check_signed_credential
+def addBan_Admin():
+
+    return render_template('authorised_admin/banAdmin.html', email=decoded_jwt["email"], pic=decoded_jwt["picture"])
+
 
 # -----------------  END OF AUTHENTICATED SIGNED TRAFFIC ----------------- #

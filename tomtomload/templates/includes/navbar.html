@@ -56,10 +56,17 @@
                     <div>
                         <div class="nav-group__content">
                             <a class="nav__link" id="nav-users" href="/admin/users">
+                                {% if role == 'Admins' %}
                                 <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
                                     <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
                                 </svg>
                                 Users
+                                {% else %}
+                                <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                                    <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
+                                </svg>
+                                Access Control
+                                {% endif %}
                             </a>
                         </div>
                     </div>

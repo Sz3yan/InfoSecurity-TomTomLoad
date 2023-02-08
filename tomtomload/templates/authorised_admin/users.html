@@ -10,7 +10,11 @@
                             <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
                         </svg>
                     </a>
+                    {% if role == 'Admins' %}
                     <span>Users</span>
+                    {% else %}
+                    <span>Access Control</span>
+                    {% endif %}
                 </nav>
             </div>
         </div>
@@ -56,6 +60,7 @@
 
             <div class="table" id="myTable">
                 <table cellpadding="0" cellspacing="0">
+                    {% if role == 'Admins' %}
                     <thead>
                         <tr>
                             <th id="heading-email">Email</th>
@@ -65,13 +70,42 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="row-1">
+                        <tr>
                             <td class="cell-email"><a href="/admin/users/{{ user_id }}">{{ email }}</a></td>
                             <td class="cell-id"><span>{{ user_id }}</span></td>
                             <td class="cell-name"><span>{{ role }}</span></td>
                             <td><a type="button" class="btn btn--style-secondary btn--size-small" href="users/edit_access">
                             <span class="btn__content"><span class="btn__label">Edit Access</span></span></a></td>
                         </tr>
+                    {% else %}
+                    <thead>
+                        <tr>
+                            <th id="heading-email">Email</th>
+<!--                            <th id="heading-id">ID</th>-->
+                            <th id="heading-role">Role</th>
+                            <th id="heading-access">Access</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in SuperAdmins_list %}
+                            <tr class="row-1">
+                                <td class="cell-email"><a href="">{{ user }}</a></td>
+                                <td class="cell-name"><span>SuperAdmins</span></td>
+                                <td><a type="button" class="btn btn--style-secondary btn--size-small" href="users/edit_access">
+                                <span class="btn__content"><span class="btn__label">Edit Access</span></span></a></td>
+                            </tr>
+                        {% endfor %}
+                        {% for user in Admins_list %}
+                            <tr class="row-1">
+                                <td class="cell-email"><a href="">{{ user }}</a></td>
+                                <td class="cell-name"><span>Admins</span></td>
+                                <td><a type="button" class="btn btn--style-secondary btn--size-small" href="users/edit_access">
+                                <span class="btn__content"><span class="btn__label">Edit Access</span></span></a></td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+
+
                     </tbody>
                 </table>
             </div>

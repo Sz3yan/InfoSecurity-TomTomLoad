@@ -48,11 +48,10 @@ class TTLSession(Paranoid):
                 return literal_eval(decoded_data)
             except:
                 if ValueError:
-                    print(decoded_data)
+                    # print(decoded_data)
                     return decoded_data
         else:
             return json.loads(session[session_name])
     
     def verfiy_Ptoken(self, session_name:str=None):
         return self.__get_token() == json.loads(session[session_name])["Ptoken"]
-        
