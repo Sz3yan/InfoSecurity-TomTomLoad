@@ -2,6 +2,9 @@ import os
 import logging
 
 from ..classes.config import CONSTANTS
+# from ..classes.storage import GoogleCloudStorage
+
+# storage = GoogleCloudStorage()
 
 
 log_destination = os.path.join(CONSTANTS.IP_CONFIG_FOLDER, "identity-proxy.log")
@@ -13,6 +16,8 @@ class IDLogger:
         self.logger.setLevel(logging.DEBUG)
 
         handler = logging.FileHandler(log_destination)
+
+
         handler.setLevel(logging.DEBUG)
 
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')

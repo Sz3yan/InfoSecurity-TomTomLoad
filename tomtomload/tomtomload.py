@@ -120,6 +120,17 @@ def remove_media() -> None:
         except Exception as e:
             print(e)
 
+def remove_download() -> None:
+    for file in os.listdir(app.config["CONSTANTS"].TTL_CONFIG_DOWNLOAD_FOLDER):
+        file_path = os.path.join(app.config["CONSTANTS"].TTL_CONFIG_DOWNLOAD_FOLDER, file)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+                print("system deleted download file: " + file_path)
+
+        except Exception as e:
+            print(e)
+
 def remove_post() -> None:
     for file in os.listdir(app.config["CONSTANTS"].TTL_CONFIG_POSTS_FOLDER):
         file_path = os.path.join(app.config["CONSTANTS"].TTL_CONFIG_POSTS_FOLDER, file)
@@ -146,7 +157,12 @@ if __name__ == "__main__":
 
     scheduler.add_job(
         remove_media,
-        "interval", hours=23, minutes=58, seconds=0
+        "interval", minutes=10, seconds=0
+    )
+
+    scheduler.add_job(
+        remove_download,
+        "interval", minutes=1
     )
 
     scheduler.add_job(
