@@ -19,4 +19,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 # For environments with multiple CPU cores, increase the number of workers
 # to be equal to the cores available.
 # Timeout is set to 0 to disable the timeouts of the workers to allow Cloud Run to handle instance scaling.
-CMD exec gunicorn --bind 0.0.0.0:8080 --workers 1 --threads 8 --timeout 0 identityproxy:app
+CMD exec gunicorn --certfile=static/config_files/certificates/TOMTOMLOAD.crt --keyfile=static/config_files/certificates/TOMTOMLOAD_key.pem --bind 127.0.0.1:8080 --workers 1 --threads 8 --timeout 0 identityproxy:app
