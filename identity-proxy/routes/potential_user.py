@@ -215,7 +215,7 @@ def authorisation():
                     ca_name=sub_certificate,
                     ca_duration=100 * 24 * 60 * 60
                 )
-                IdentityProxyLogging.INFO("super admin certificate created")
+                IdentityProxyLogging.info("super admin certificate created")
 
                 used = 1
 
