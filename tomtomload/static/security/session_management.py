@@ -2,6 +2,7 @@ from flask_paranoid import Paranoid
 from flask import session, Flask, request
 from datetime import datetime
 from ast import literal_eval
+from static.classes.config import CONSTANTS
 import requests
 import base64
 import hashlib
@@ -12,8 +13,8 @@ import json
 class TTLSession(Paranoid):
     def __init__(self):
         
-        app = Flask('tomtomload')
-        self.__server = 'tomtomload'
+        app = Flask(CONSTANTS.APP_NAME)
+        self.__server = CONSTANTS.APP_NAME
         super().__init__(app)
     
     def __get_token(self):

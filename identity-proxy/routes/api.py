@@ -15,7 +15,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from pip._vendor import cachecontrol
 
 
-api = Blueprint('api', __name__, url_prefix="/api", template_folder="templates", static_folder='static')
+api = Blueprint('api', __name__, url_prefix="/v1/api", template_folder="templates", static_folder='static')
 
 client_secrets_file = CONSTANTS.IP_CONFIG_FOLDER.joinpath("client_secret_2.json")
 flow = InstalledAppFlow.from_client_secrets_file(
@@ -88,7 +88,7 @@ def verification():
     return redirect(url_for("potential_user.authorisation"))
     
 
-@api.route("/v1/<route>", methods=['GET', 'POST'])
+@api.route("/<route>", methods=['GET', 'POST'])
 @ttl_redirect_user
 @ttl_jwt_authentication
 @ttlLimiter.limit_user(limit_value="10/day")
@@ -101,7 +101,7 @@ def ip_api_route(route):
     return response
 
 
-@api.route("/v1/<route>/<regex('(\d{21})|([0-9a-z]{32})'):id>", methods=['GET', 'PUT', 'DELETE'])
+@api.route("/<route>/<regex('(\d{21})|([0-9a-z]{32})'):id>", methods=['GET', 'PUT', 'DELETE'])
 @ttl_redirect_user
 @ttl_jwt_authentication
 @ttlLimiter.limit_user(limit_value="10/day")

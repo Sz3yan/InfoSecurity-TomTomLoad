@@ -19,8 +19,11 @@ class Constants:
     DOMAIN: str = "127.0.0.1" if DEBUG_MODE else "tomtomload.com"
 
     CALLBACK_URL: str = "https://127.0.0.1:8080/callback" if DEBUG_MODE else "https://tomtomload.com/callback"
-    API_ROUTE_URL: str = "https://127.0.0.1:5000/api" if DEBUG_MODE else "https://tomtomload.com/api"
+    API_ROUTE_URL: str = "https://127.0.0.1:5000/v1/api" if DEBUG_MODE else "https://tomtomload.com/v1/api"
     ADMIN_URL: str = "https://127.0.0.1:5000/admin" if DEBUG_MODE else "https://www.tomtomload.com/admin"
+
+    # -----------------  APP NAME ----------------- #
+    APP_NAME = 'identity-proxy'
 
     # -----------------  GOOGLE CLOUD ----------------- #
     GOOGLE_PROJECT_ID: str = "infosec-62c05"
