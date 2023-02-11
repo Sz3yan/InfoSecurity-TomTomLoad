@@ -1,113 +1,136 @@
 {% extends "base.html" %}
 
 {% block bodyContent %}
-    <div class="collection-list">
-        <div class="eyebrow">
-            <div class="gutter--left gutter--right eyebrow__wrap">
-                <nav class="step-nav">
-                    <a href="/admin"><span>Dashboard</span>
-                        <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                            <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                        </svg>
-                    </a>
-                    {% if role == 'Admins' %}
-                    <span>Users</span>
+    <div class="eyebrow">
+        <div class="gutter--left gutter--right eyebrow__wrap">
+            <nav class="step-nav">
+                <a href="/admin"><span>Dashboard</span>
+                    <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
+                        <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
+                    </svg>
+                </a>
+                <span>
+                    {% if role == 'SuperAdmins' %}
+                        Access Control
                     {% else %}
-                    <span>Access Control</span>
+                        Users
                     {% endif %}
-                </nav>
-            </div>
+                </span>
+            </nav>
         </div>
+    </div>
 
+    <div class="collection-list">
         <div class="gutter--left gutter--right collection-list__wrap">
             <header class="collection-list__header">
-                <h1>Users</h1><a class="pill pill--style-light pill--has-link pill--has-action"
-                    href="/admin/users/create/{{ user_id }}">Create New</a>
+                <h1>Block IP Addresses</h1><a class="pill pill--style-light pill--has-link pill--has-action"
+                    href="/admin/users/addBlockIPAddresses">Add New</a>
             </header>
+    
+            {% if role == 'SuperAdmins' %}
+            <header class="collection-list__header">
+                <h1>Ban Admin</h1><a class="pill pill--style-light pill--has-link pill--has-action"
+                    href="/admin/users/addBanAdmin">Add New</a>
+            </header>
+    
+            <header class="collection-list__header">
+                <h1>Revoke Cert</h1><a class="pill pill--style-light pill--has-link pill--has-action"
+                    href="/admin/users/addBlockIPAddresses">Add New</a>
+            </header>
+    
+            {% endif %}
 
-            <div class="list-controls">
-                <div class="list-controls__wrap">
-                    <div class="search-filter">
-                        <input class="search-filter__input" id="myInput" onkeyup="myFunction()" placeholder="Search by Email" type="text" value="">
-                        <svg viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon icon--search">
-                            <circle cx="11.2069" cy="10.7069" r="5" class="stroke"></circle>
-                            <line x1="14.914" y1="13.9998" x2="20.5002" y2="19.586" class="stroke"></line>
-                        </svg>
+            <div class="collection-list__wrap">
+                <div class="account__payload-settings" style="margin-top: 0 !important;">
+                    <header class="collection-list__header">
+                        <h1>
+                            {% if role == 'SuperAdmins' %}
+                                Manage Admins
+                            {% else %}
+                                Users
+                            {% endif %}
+                        </h1>
+
+                        {% if role == 'Admins' %}
+                            <a class="pill pill--style-light pill--has-link pill--has-action" href="/admin/users/create/{{ user_id }}">Create New</a>
+                        {% endif %}
+                    </header>
+        
+                    <div class="list-controls">
+                        <div class="list-controls__wrap">
+                            <div class="search-filter">
+                                <input class="search-filter__input" id="myInput" onkeyup="myFunction()" placeholder="Search by Email" type="text" value="">
+                                <svg viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon icon--search">
+                                    <circle cx="11.2069" cy="10.7069" r="5" class="stroke"></circle>
+                                    <line x1="14.914" y1="13.9998" x2="20.5002" y2="19.586" class="stroke"></line>
+                                </svg>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-
-            <script>
-                function myFunction() {
-                    var input, filter, table, tr, td, i, txtValue;
-                    input = document.getElementById("myInput");
-                    filter = input.value.toUpperCase();
-                    table = document.getElementById("myTable");
-                    tr = table.getElementsByTagName("tr");
-                    for (i = 0; i < tr.length; i++) {
-                        td = tr[i].getElementsByTagName("td")[0];
-                        if (td) {
-                            txtValue = td.textContent || td.innerText;
-                            if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                                tr[i].style.display = "";
-                            } else {
-                                tr[i].style.display = "none";
+        
+                    <script>
+                        function myFunction() {
+                            var input, filter, table, tr, td, i, txtValue;
+                            input = document.getElementById("myInput");
+                            filter = input.value.toUpperCase();
+                            table = document.getElementById("myTable");
+                            tr = table.getElementsByTagName("tr");
+                            for (i = 0; i < tr.length; i++) {
+                                td = tr[i].getElementsByTagName("td")[0];
+                                if (td) {
+                                    txtValue = td.textContent || td.innerText;
+                                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                                        tr[i].style.display = "";
+                                    } else {
+                                        tr[i].style.display = "none";
+                                    }
+                                }
                             }
                         }
-                    }
-                }
-            </script>
+                    </script>
+        
+                    <div class="table" id="myTable">
+                        <table cellpadding="0" cellspacing="0">
+                            {% if role == 'Admins' %}
+                            <thead>
+                                <tr>
+                                    <th id="heading-email">Email</th>
+                                    <th id="heading-id">ID</th>
+                                    <th id="heading-role">Role</th>
+                                    <th id="heading-access">Access</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="cell-email"><a href="/admin/users/{{ user_id }}">{{ email }}</a></td>
+                                    <td class="cell-id"><span>{{ user_id }}</span></td>
+                                    <td class="cell-name"><span>{{ role }}</span></td>
+                                    <td><a type="button" class="btn btn--style-secondary btn--size-small" href="users/edit_access">
+                                    <span class="btn__content"><span class="btn__label">Edit Access</span></span></a></td>
+                                </tr>
+                            {% else %}
+                            <thead>
+                                <tr>
+                                    <th id="heading-email">Email</th>
+                                    <th id="heading-role">Role</th>
+                                    <th id="heading-access">Access</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in Admins_list %}
+                                    <tr class="row-1">
+                                        <td class="cell-email"><a href="">{{ user }}</a></td>
+                                        <td class="cell-name"><span>Admins</span></td>
+                                        <td><a type="button" class="btn btn--style-secondary btn--size-small" href="users/edit_access">
+                                        <span class="btn__content"><span class="btn__label">Edit Access</span></span></a></td>
+                                    </tr>
+                                {% endfor %}
+                            {% endif %}
 
-            <div class="table" id="myTable">
-                <table cellpadding="0" cellspacing="0">
-                    {% if role == 'Admins' %}
-                    <thead>
-                        <tr>
-                            <th id="heading-email">Email</th>
-                            <th id="heading-id">ID</th>
-                            <th id="heading-role">Role</th>
-                            <th id="heading-access">Access</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="cell-email"><a href="/admin/users/{{ user_id }}">{{ email }}</a></td>
-                            <td class="cell-id"><span>{{ user_id }}</span></td>
-                            <td class="cell-name"><span>{{ role }}</span></td>
-                            <td><a type="button" class="btn btn--style-secondary btn--size-small" href="users/edit_access">
-                            <span class="btn__content"><span class="btn__label">Edit Access</span></span></a></td>
-                        </tr>
-                    {% else %}
-                    <thead>
-                        <tr>
-                            <th id="heading-email">Email</th>
-<!--                            <th id="heading-id">ID</th>-->
-                            <th id="heading-role">Role</th>
-                            <th id="heading-access">Access</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for user in SuperAdmins_list %}
-                            <tr class="row-1">
-                                <td class="cell-email"><a href="">{{ user }}</a></td>
-                                <td class="cell-name"><span>SuperAdmins</span></td>
-                                <td><a type="button" class="btn btn--style-secondary btn--size-small" href="users/edit_access">
-                                <span class="btn__content"><span class="btn__label">Edit Access</span></span></a></td>
-                            </tr>
-                        {% endfor %}
-                        {% for user in Admins_list %}
-                            <tr class="row-1">
-                                <td class="cell-email"><a href="">{{ user }}</a></td>
-                                <td class="cell-name"><span>Admins</span></td>
-                                <td><a type="button" class="btn btn--style-secondary btn--size-small" href="users/edit_access">
-                                <span class="btn__content"><span class="btn__label">Edit Access</span></span></a></td>
-                            </tr>
-                        {% endfor %}
-                    {% endif %}
-
-
-                    </tbody>
-                </table>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

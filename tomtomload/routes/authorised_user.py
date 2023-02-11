@@ -286,6 +286,7 @@ def home():
 
     try:
         global decoded_TTLJWTAuthenticatedUser
+
         decoded_TTLJWTAuthenticatedUser = jwt.decode(
             TTLJWTAuthenticatedUser["TTL-JWTAuthenticated-User"],
             algorithms = CONSTANTS.JWT_ALGORITHM,
@@ -315,7 +316,7 @@ def home():
     post_id = UniqueID()
     admin_user_id = UniqueID()
 
-    return render_template('authorised_admin/dashboard.html', user=TTLAuthenticatedUserName, media_id=media_id, post_id=post_id, admin_user_id=admin_user_id, pic=decoded_TTLJWTAuthenticatedUser["picture"])
+    return render_template('authorised_admin/dashboard.html', user=TTLAuthenticatedUserName, media_id=media_id, post_id=post_id, admin_user_id=admin_user_id, role=decoded_TTLJWTAuthenticatedUser['role'], pic=decoded_TTLJWTAuthenticatedUser["picture"])
 
 
 @authorised_user.route("/logout")
@@ -384,7 +385,7 @@ def media():
         TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Retrieved metadata for media {id} from {CONSTANTS.STORAGE_BUCKET_NAME}")
 
         if os.path.isfile(temp_Mediafile_path):
-            return render_template('authorised_admin/media.html', media_id=media_id, id_list=id_list, media=list_media, metadata=metadata, pic=decoded_jwt["picture"])
+            return render_template('authorised_admin/media.html', media_id=media_id, id_list=id_list, media=list_media, metadata=metadata, role = decoded_jwt["role"],pic=decoded_jwt["picture"])
 
         else:
             storage.download_blob(
@@ -399,7 +400,7 @@ def media():
     
     # -----------------  END OF RETRIEVING MEDIA ----------------- #
         
-    return render_template('authorised_admin/media.html', media_id=media_id, id_list=id_list, media=list_media, metadata=metadata, pic=decoded_jwt["picture"])
+    return render_template('authorised_admin/media.html', media_id=media_id, id_list=id_list, media=list_media, metadata=metadata,role = decoded_jwt["role"], pic=decoded_jwt["picture"])
 
 
 @authorised_user.route("/media/<regex('[0-9a-f]{32}'):id>")
@@ -427,7 +428,7 @@ def media_id(id):
         # -----------------  START OF CHECK FILE EXIST ----------------- #
 
         if os.path.isfile(path):
-            return render_template('authorised_admin/media_id.html', media_id=media_id, metadata=metadata, api=API_MEDIA_URL, new_id=create_new_media_id, pic=decoded_jwt["picture"])
+            return render_template('authorised_admin/media_id.html', media_id=media_id, metadata=metadata, api=API_MEDIA_URL, new_id=create_new_media_id,role = decoded_jwt["role"], pic=decoded_jwt["picture"])
 
         storage.download_blob(
             bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
@@ -447,7 +448,7 @@ def media_id(id):
 
     # -----------------  END OF RETRIEVING FROM GCS ----------------- #
 
-    return render_template('authorised_admin/media_id.html', media_id=media_id, metadata=metadata, new_id=create_new_media_id, api=API_MEDIA_URL, pic=decoded_jwt["picture"])
+    return render_template('authorised_admin/media_id.html', media_id=media_id, metadata=metadata, new_id=create_new_media_id, api=API_MEDIA_URL,role = decoded_jwt["role"], pic=decoded_jwt["picture"])
 
 
 @authorised_user.route("/media/upload/<regex('[0-9a-f]{32}'):id>", methods=['GET', 'POST'])
@@ -587,7 +588,7 @@ def media_upload(id):
 
         return redirect(url_for('authorised_user.media_id', id=media_upload_id))
 
-    return render_template('authorised_admin/media_upload.html', upload_id=media_upload_id, name="k", pic=decoded_jwt["picture"])
+    return render_template('authorised_admin/media_upload.html', upload_id=media_upload_id, name="k",role = decoded_jwt["role"], pic=decoded_jwt["picture"])
 
 
 @authorised_user.route("/media/delete/<regex('[0-9a-f]{32}'):id>")
@@ -697,7 +698,7 @@ def post():
             temp_Postfile_path = temp_Postfile_path + ".json"
 
             if os.path.isfile(temp_Postfile_path):
-                return render_template('authorised_admin/post.html', post_id=post_id, id_list=id_list, post=list_post, pic=decoded_jwt["picture"])
+                return render_template('authorised_admin/post.html', post_id=post_id, id_list=id_list, post=list_post, role = decoded_jwt["role"],pic=decoded_jwt["picture"])
 
             else:
 
@@ -713,7 +714,7 @@ def post():
 
         # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
 
-        return render_template('authorised_admin/post.html', post_id=post_id, id_list=id_list, post=list_post, pic=decoded_jwt["picture"])
+        return render_template('authorised_admin/post.html', post_id=post_id, id_list=id_list, post=list_post, role = decoded_jwt["role"],pic=decoded_jwt["picture"])
    
     else:
 
@@ -765,7 +766,7 @@ def post_id(id):
 
                 # -----------------  END OF DECRYPTION ----------------- #
 
-            return render_template('authorised_admin/post_id.html', post_id=post_id, metadata=metadata, post_data=post_data, create_new_post_id=create_new_post_id, API_POSTS_URL=API_POSTS_URL, pic=decoded_jwt["picture"])
+            return render_template('authorised_admin/post_id.html', post_id=post_id, metadata=metadata, post_data=post_data, create_new_post_id=create_new_post_id, API_POSTS_URL=API_POSTS_URL, role = decoded_jwt["role"],pic=decoded_jwt["picture"])
 
         # -----------------  END OF CHECK FILE EXIST ----------------- #
 
@@ -847,7 +848,7 @@ def post_upload(id):
 
             return redirect(url_for('authorised_user.post_id', id=post_upload_id))
         
-        return render_template('authorised_admin/post_upload.html', post_id=post_upload_id, pic=decoded_jwt["picture"])
+        return render_template('authorised_admin/post_upload.html', post_id=post_upload_id, role = decoded_jwt["role"],pic=decoded_jwt["picture"])
 
     else:
 
@@ -1042,18 +1043,13 @@ def users():
     with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
         acl = json.load(s)
 
-    SuperAdmins_list = []
     Admins_list = []
-
-    for value in acl["SuperAdmins"]:
-        if value not in SuperAdmins_list:
-            SuperAdmins_list.append(value)
 
     for value in acl["Admins"]:
         if value not in Admins_list:
             Admins_list.append(value)
 
-    return render_template('authorised_admin/users.html', user_id=user_id, email=decoded_jwt["email"], role=role, pic=decoded_jwt["picture"], SuperAdmins_list=SuperAdmins_list, Admins_list=Admins_list)
+    return render_template('authorised_admin/users.html', user_id=user_id, email=decoded_jwt["email"], role=role, pic=decoded_jwt["picture"], Admins_list=Admins_list)
 
 
 @authorised_user.route("/users/<regex('[0-9]{21}'):id>")
@@ -1061,20 +1057,31 @@ def users():
 def users_id(id):
     user_id = id
 
-    return render_template('authorised_admin/user_id.html', user_id=user_id, email=decoded_jwt["email"], pic=decoded_jwt["picture"])
+    return render_template('authorised_admin/user_id.html', user_id=user_id, email=decoded_jwt["email"],role = decoded_jwt["role"], pic=decoded_jwt["picture"])
 
 
 @authorised_user.route("/users/create/<regex('[0-9]{21}'):id>")
 @check_signed_credential
 @check_role_write
 def create_users(id):
-    return render_template('authorised_admin/user_create.html', pic=decoded_jwt["picture"])
+    return render_template('authorised_admin/user_create.html',role = decoded_jwt["role"], pic=decoded_jwt["picture"])
 
 
 @authorised_user.route("/account")
 @check_signed_credential
 def profile():
-    return render_template('authorised_admin/profile.html', pic=decoded_jwt["picture"])
+
+    new_user = UniqueID()
+
+    email = decoded_jwt["email"]
+
+    if decoded_jwt["role"] == "Admins":
+        id = decoded_jwt["google_id"]
+
+    else:
+        id = decoded_jwt["email"]
+
+    return render_template('authorised_admin/profile.html', email=email, new_user=new_user, id=id, role = decoded_jwt["role"], pic=decoded_jwt["picture"])
 
 
 @authorised_user.route("/users/edit_access", methods=['GET', 'POST'])
@@ -1136,12 +1143,12 @@ def edit_access():
 
         abort(403)
 
-    return render_template('authorised_admin/user_access.html', pic=decoded_jwt["picture"], email=decoded_jwt["email"], access=decoded_jwt['role'], access_list=access_list)
+    return render_template('authorised_admin/user_access.html', pic=decoded_jwt["picture"], email=decoded_jwt["email"], access=decoded_jwt['role'],role = decoded_jwt["role"], access_list=access_list)
 
 
-@authorised_user.route("/utilities/")
+@authorised_user.route("/logs/")
 @check_signed_credential
-def utilities():
+def logs():
 
     role = decoded_jwt["role"]
 
@@ -1162,16 +1169,14 @@ def utilities():
         for line in identityproxy_log.splitlines():
             identityproxy_logs.append(line)
 
-    return render_template('authorised_admin/utilities.html', email=decoded_jwt["email"], role=role, tomtomloadlogs=tomtomload_logs, identityproxylogs=identityproxy_logs, pic=decoded_jwt["picture"])
+    return render_template('authorised_admin/logs.html', email=decoded_jwt["email"], role=role, tomtomloadlogs=tomtomload_logs, identityproxylogs=identityproxy_logs, pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/utilities/addBlockIPAddresses", methods=['GET', 'POST'])
+@authorised_user.route("/users/addBlockIPAddresses", methods=['GET', 'POST'])
 @check_signed_credential
 def addBlock_IPAddresses():
     with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"), "r") as f:
         blacklisted = json.load(f)
-
-
 
     if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
         if request.method == 'POST':
@@ -1202,14 +1207,13 @@ def addBlock_IPAddresses():
 
         abort(403)
 
-    return render_template('authorised_admin/blockIPAddressesAdd.html', email=decoded_jwt["email"], pic=decoded_jwt["picture"])
+    return render_template('authorised_admin/blockIPAddressesAdd.html', email=decoded_jwt["email"], role = decoded_jwt["role"], pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/utilities/addBanAdmin", methods=['GET', 'POST'])
+@authorised_user.route("/users/addBanAdmin", methods=['GET', 'POST'])
 @check_signed_credential
 def addBan_Admin():
 
-    return render_template('authorised_admin/banAdmin.html', email=decoded_jwt["email"], pic=decoded_jwt["picture"])
-
+    return render_template('authorised_admin/banAdmin.html', email=decoded_jwt["email"], role = decoded_jwt["role"],pic=decoded_jwt["picture"])
 
 # -----------------  END OF AUTHENTICATED SIGNED TRAFFIC ----------------- #

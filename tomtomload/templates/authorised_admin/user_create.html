@@ -2,83 +2,68 @@
 
 {% block bodyContent %}
     <div class="collection-edit">
-        <form novalidate="" method="post"
-            action="https://demo.ttlcms.com/api/users?locale=en&amp;depth=0&amp;fallback-locale=null"
-            class="collection-edit__form form">
+        <form method="post" class="collection-edit__form form">
             <div class="collection-edit__main">
                 <div class="eyebrow">
                     <div class="gutter--left gutter--right eyebrow__wrap">
-                        <nav class="step-nav"><a href="/admin"><span>Dashboard</span><svg
-                                    class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 25 25">
+                        <nav class="step-nav">
+                            <a href="/admin"><span>Dashboard</span>
+                                <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
                                     <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                </svg></a><a href="/admin/users"><span>Users</span><svg
-                                    class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 25 25">
+                                </svg>
+                            </a>
+                            
+                            <a href="/admin/users"><span>Users</span>
+                                <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 25 25">
                                     <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                </svg></a><span>Create New</span></nav>
+                                </svg>
+                            </a>
+                            
+                            <span>Create New</span>
+                        </nav>
                     </div>
                 </div>
+
                 <div class="gutter--left gutter--right collection-edit__edit">
                     <header class="collection-edit__header">
                         <h1><span class="render-title">[Untitled]</span></h1>
                     </header>
+
                     <div class="auth-fields">
                         <div class="field-type email"><label for="field-email"
                                 class="field-label">Email<span class="required">*</span></label><input
                                 id="field-email" type="email" name="email" autocomplete="email" value="">
                         </div>
+
                         <div class="auth-fields__changing-password">
-                            <div class="field-type password"><label for="field-password"
-                                    class="field-label">New Password<span
-                                        class="required">*</span></label><input id="field-password"
-                                    type="password" autocomplete="off" name="password" value=""></div>
-                            <div class="field-type confirm-password"><label for="field-confirm-password"
-                                    class="field-label">Confirm Password<span
-                                        class="required">*</span></label><input type="password"
-                                    autocomplete="off" id="field-confirm-password" name="confirm-password"
-                                    value=""></div>
-                        </div>
-                        <div class="auth-fields__api-key">
-                            <div class="field-type checkbox">
-                                <div class="checkbox__error-wrap"></div><input id="field-enableAPIKey"
-                                    type="checkbox" name="enableAPIKey" readonly=""><button
-                                    type="button"><span class="checkbox__input"><svg
-                                            class="icon icon--check" xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 25 25">
-                                            <path d="M10.6092 16.0192L17.6477 8.98076" class="stroke"
-                                                stroke-linecap="square" stroke-linejoin="bevel"></path>
-                                            <path d="M7.35229 12.7623L10.6092 16.0192" class="stroke"
-                                                stroke-linecap="square" stroke-linejoin="bevel"></path>
-                                        </svg></span><span class="checkbox__label">Enable API
-                                        Key</span></button>
+                            <div class="field-type password">
+                                <label for="field-password" class="field-label">New Password<span class="required">*</span></label>
+                                <input id="field-password" type="password" autocomplete="off" name="password" value="">
+                            </div>
+
+                            <div class="field-type confirm-password">
+                                <label for="field-confirm-password" class="field-label">Confirm Password<span class="required">*</span></label>
+                                <input type="password" autocomplete="off" id="field-confirm-password" name="confirm-password" value="">
                             </div>
                         </div>
                     </div>
+
                     <div class="render-fields">
-                        <div class="field-type text"><label for="field-name"
-                                class="field-label">Name</label><input id="field-name" type="text"
-                                name="name" value=""></div>
+                        <div class="field-type text">
+                            <label for="field-name" class="field-label">Name</label>
+                            <input id="field-name" type="text" name="name" value="">
+                        </div>
                     </div>
                 </div>
             </div>
+
             <div class="collection-edit__sidebar-wrap">
                 <div class="collection-edit__sidebar">
                     <div class="collection-edit__sidebar-sticky-wrap">
                         <ul class="collection-edit__collection-actions">
                             <li><a id="action-create" href="/admin/collections/users/create">Create New</a>
                             </li>
-                            <li></li>
                         </ul>
-                        <div class="collection-edit__document-actions">
-                            <div class="form-submit"><button type="submit" id="action-save"
-                                    class="btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right"><span
-                                        class="btn__content"><span
-                                            class="btn__label">Save</span></span></button></div>
-                        </div>
-                        <div class="collection-edit__sidebar-fields">
-                            <div class="render-fields"></div>
-                        </div>
                     </div>
                 </div>
             </div>
