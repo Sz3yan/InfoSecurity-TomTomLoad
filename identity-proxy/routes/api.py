@@ -15,7 +15,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from pip._vendor import cachecontrol
 
 
-api = Blueprint('api', __name__, url_prefix="/v1/api", template_folder="templates", static_folder='static')
+api = Blueprint('api', __name__, url_prefix="/api/v1", template_folder="templates", static_folder='static')
 
 client_secrets_file = CONSTANTS.IP_CONFIG_FOLDER.joinpath("client_secret_2.json")
 flow = InstalledAppFlow.from_client_secrets_file(

@@ -15,7 +15,7 @@ from static.security.ttl_limiter import TTL_Limiter
 from ast import literal_eval
 
 
-api = Blueprint('api', __name__, url_prefix="/v1/api", template_folder="templates", static_folder='static')
+api = Blueprint('api', __name__, url_prefix="/api/v1", template_folder="templates", static_folder='static')
 
 KeyManagement = GoogleCloudKeyManagement()
 ttlSession = TTLSession()
@@ -247,7 +247,7 @@ def api_view_posts():
                 blob_name = decoded_dict["role"] + "/" + name + "/post/" + list_id + ".json"
             )
             metadata_dict["id"] = list_id
-            metadata_dict["api_uri"] = "/v1/api/view_post/"+list_id
+            metadata_dict["api_uri"] = "/api/v1/view_post/"+list_id
             metadata_dict["creator"] = name
             metadata_dict["time_created"] = metadata["time_created"]
             metadata_dict["updated"] = metadata["updated"]
