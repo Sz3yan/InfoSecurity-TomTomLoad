@@ -4,6 +4,7 @@ import json
 import base64
 import hashlib
 import datetime
+import shutil
 
 from static.classes.config import CONSTANTS
 from static.classes.unique_id import UniqueID
@@ -1233,5 +1234,61 @@ def addBlock_IPAddresses():
 def addBan_Admin():
 
     return render_template('authorised_admin/banAdmin.html', email=decoded_jwt["email"], role = decoded_jwt["role"],pic=decoded_jwt["picture"])
+
+
+@authorised_user.route("/users/revoke_cert", methods=['GET', 'POST'])
+@check_signed_credential
+def revoke_cert():
+
+    if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
+
+        # -----------------  START OF OVERWRITE ACL ---------------- #
+
+        with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
+            acl = json.load(s)
+
+        used = 0
+
+        w = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r")
+        dict_acl = json.loads(w.read())
+        dict_acl[decoded_jwt["role"]][decoded_jwt["email"]][4] = used
+        w.close()
+
+        r = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "w")
+        r.write(json.dumps(dict_acl))
+        r.close()
+
+        # -----------------  END OF OVERWRITE ACL ---------------- #
+
+        # -----------------  START OF REMOVING REVOKE CERT ---------------- #
+
+        super_admin_certificate = os.path.join(CONSTANTS.SUPER_CERTIFICATE_FOLDER, acl[decoded_jwt["role"]][decoded_jwt["email"]][3] + '_' + str(ttlSession.get_data_from_session("TTLContextAwareAccess", data=True)["TTL-Context-Aware-Access-Client-IP"]["ip"]).replace('.', '_'))
+        super_admin = os.path.join(super_admin_certificate, "SUPER_ADMIN.crt")
+
+        # print the full path
+        print("super_admin_certificate: " + super_admin_certificate)
+        print("super_admin: " + super_admin)
+
+        # remove the directory
+        shutil.rmtree(super_admin_certificate)
+
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)} has revoked their certificate")
+
+        # -----------------  END OF REMOVING REVOKE CERT ---------------- #
+
+        # -----------------  START OF UPLOADING TO GCS ---------------- #
+
+        storage.upload_blob(
+            bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+            source_file_name=CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"),
+            destination_blob_name="acl.json"
+        )
+
+        # -----------------  END OF UPLOADING TO GCS ---------------- #
+
+
+        return redirect(url_for('authorised_user.users'))
+
+    return redirect(url_for('authorised_user.users'))
 
 # -----------------  END OF AUTHENTICATED SIGNED TRAFFIC ----------------- #

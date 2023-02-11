@@ -21,6 +21,7 @@ class Constants:
     CALLBACK_URL: str = "https://127.0.0.1:8080/callback" if DEBUG_MODE else "https://tomtomload.com/callback"
     API_ROUTE_URL: str = "https://127.0.0.1:5000/api" if DEBUG_MODE else "https://tomtomload.com/api"
     ADMIN_URL: str = "https://127.0.0.1:5000/admin" if DEBUG_MODE else "https://www.tomtomload.com/admin"
+    IDENTITY_PROXY_URL: str = "https://127.0.0.1:8080" if DEBUG_MODE else "https://tomtomload.com"
 
     # -----------------  GOOGLE CLOUD ----------------- #
     GOOGLE_PROJECT_ID: str = "infosec-62c05"
