@@ -1,0 +1,56 @@
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+        <link href="{{ url_for('static', filename='../static/style.css') }}" rel="stylesheet">
+        <title>Logout - TTL</title>
+    </head>
+
+    <body>
+        <div id="app">
+            <section class="logout template-minimal template-minimal--width-normal">
+                <div class="template-minimal__wrap">
+                    <div class="logout__wrap">
+                        <h2>{{ title }}</h2>
+                        <p>{{ description }}</p>
+                        <br>
+
+                        {% if title == "400 Bad Request" %}
+                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="{{ IP }}">
+                                <span class="btn__content"><span class="btn__label">Go Back</span></span>
+                            </a>
+                        {% elif title == "401 Unauthorised" %}
+                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="{{ IP }}">
+                                <span class="btn__content"><span class="btn__label">Go Back</span></span>
+                            </a>
+                        {% elif title == "403 Forbidden" %}
+                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="{{ IP }}">
+                                <span class="btn__content"><span class="btn__label">Go Back</span></span>
+                            </a>
+                        {% elif title == "404 Not Found" %}
+                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="{{ IP }}">
+                                <span class="btn__content"><span class="btn__label">Go Back</span></span>
+                            </a>
+                        {% elif title == "405 Method Not Allowed" %}
+                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="{{ IP }}">
+                                <span class="btn__content"><span class="btn__label">Go Back</span></span>
+                            </a>
+                        {% elif title == "429 Too Many Requests" %}
+                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="{{ IP }}">
+                                <span class="btn__content"><span class="btn__label">Go Back</span></span>
+                            </a>
+                        {% elif title == "500 Internal Server Error" %}
+                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="{{ IP }}">
+                                <span class="btn__content"><span class="btn__label">Go Back</span></span>
+                            </a>
+                        {% else %}
+                            <a type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-medium btn--icon-position-right" href="{{ IP }}">
+                                <span class="btn__content"><span class="btn__label">Go Back</span></span>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+        </div>
+    </body>
+</html>

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from ..security.secure_data import GoogleSecretManager
 
 
-DEBUG_MODE = True
+DEBUG_MODE = False
 
 
 @dataclass(frozen=True, repr=False)
