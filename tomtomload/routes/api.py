@@ -2,9 +2,10 @@ import jwt
 import json
 import os
 
-from static.functions.check_authentication import ttl_redirect_user, ttl_jwt_authentication
 from flask import Blueprint, request, jsonify, redirect, url_for
+from static.classes.config import Constants
 
+from static.functions.check_authentication import ttl_redirect_user, ttl_jwt_authentication, ttl_check_user_agent
 from static.classes.config import CONSTANTS
 from static.classes.storage import GoogleCloudStorage
 from static.security.secure_data import GoogleCloudKeyManagement
@@ -105,10 +106,11 @@ def api_create_admin():
 @api.route("/view_admin", methods=["GET"])
 @ttl_redirect_user
 @ttl_jwt_authentication
-@ttlLimiter.limit_user(limit_value="10/day")
+# @ttlLimiter.limit_user(limit_value="10/day")
 def api_view_admins():
     with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r") as acl:
         decoded_dict = decoded_jwt()
+        print(decoded_dict)
         if decoded_jwt()["role"] == "SuperAdmins":
             return_dict1 = {"SuperAdmin_Details":{"id":decoded_dict['google_id'], "name":decoded_dict['name'], "email":decoded_dict['email'], "role":decoded_dict['role']}}
             return_dict2 = {}
@@ -122,7 +124,10 @@ def api_view_admins():
         
 
         return_dict = {"id":decoded_dict['google_id'], "name":decoded_dict['name'], "email":decoded_dict['email'], "role":decoded_dict['role']}
-        return jsonify(admin_details=return_dict),200
+        # return jsonify(admin_details=return_dict),200
+        return jsonify(admin_details="Truez"),200
+    
+    
 
 
 # @api.route("/view_admin/<regex('[0-9]{21}'):id>", methods=["GET"])
@@ -190,8 +195,10 @@ def api_delete_admin(id):
 @ttl_jwt_authentication
 @ttlLimiter.limit_user(limit_value="10/day")
 def api_create_post():
-    if "Chrome" in request.headers["User-agent"]:
-        return redirect(url_for("authorised_user."))
+    if ttl_check_user_agent():
+        return jsonify(message="Web Create post"),200
+        # return redirect(url_for("authorised_user.post"))
+    
     return jsonify(message="Work in progress"),200
 
 
@@ -201,13 +208,24 @@ def api_create_post():
 @ttlLimiter.limit_user(limit_value="10/day")
 def api_view_posts():
     decoded_dict = decoded_jwt()
-    if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
+    
+    if not ttl_check_user_agent():
+        print("\n\nHello world")
+        list_post = storage.list_blobs_with_prefix(
+            bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+            prefix = decoded_dict["role"] + "/" + decoded_dict["name"] + "/post/",
+            delimiter = "/"
+        )
+        
+        return jsonify(post=list_post)
+    elif ttl_check_user_agent() and ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
         list_post = storage.list_blobs_with_prefix(
             bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
             prefix = decoded_dict["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/",
             delimiter = "/"
         )
     else:
+        print("\n\nelse")
         return jsonify(Error="Unauthorized Access"),401
 
 

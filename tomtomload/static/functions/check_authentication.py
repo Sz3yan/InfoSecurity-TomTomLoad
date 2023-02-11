@@ -23,10 +23,11 @@ def authenticated(func):
 def ttl_jwt_authentication(func):
     @wraps(func)
     def decorated_function(*args, **kwargs):
+        print("hello")
         if not ttl_check_user_agent():
             try:
                 bearer_token = request.headers['Authorization'].split(" ")[1]
-                # print(bearer_token)
+                print(bearer_token)
                 jwt.decode(
                     bearer_token, 
                     algorithms = "HS256",
@@ -37,8 +38,10 @@ def ttl_jwt_authentication(func):
                             key_id = CONSTANTS.JWT_ACCESS_TOKEN_SECRET_KEY
                         ))
                 )
+                print("hd")
                 return func(*args, **kwargs)
             except KeyError:
+                print("heS")
                 return jsonify(message="Please input a authorization token"),401
             except jwt.ExpiredSignatureError:
                 return jsonify(message="Token has expired"),401
@@ -53,12 +56,14 @@ def ttl_redirect_user(func):
     @wraps(func)
     def decorated_function(*args, **kwargs):
         ttlSession = TTLSession()
-        ttlSession.write_data_to_session("route_from","api")
-        
-        if ttl_check_user_agent():
-            return redirect(url_for("potential_user.login"))
-        else:
-            return func(*args, **kwargs)
+        # ttlSession.write_data_to_session("route_from","api")
+        try:
+            if ttl_check_user_agent() and not ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
+                return redirect(CONSTANTS.IDENTITY_PROXY_URL)
+            else:
+                return func(*args, **kwargs)
+        except:
+            return redirect(CONSTANTS.IDENTITY_PROXY_URL)
 
     return decorated_function
 
