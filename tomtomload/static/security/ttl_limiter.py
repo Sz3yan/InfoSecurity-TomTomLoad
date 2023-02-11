@@ -19,5 +19,4 @@ class TTL_Limiter(Limiter):
 
 
     def __host_scope(self, endpoint_name):
-        print(request.host)
         return request.host
