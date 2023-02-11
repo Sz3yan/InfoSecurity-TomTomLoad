@@ -11,7 +11,7 @@ from static.classes.storage import GoogleCloudStorage
 from static.security.secure_data import GoogleCloudKeyManagement, Encryption
 from static.security.session_management import TTLSession
 from static.security.malware_analysis import malwareAnalysis
-from static.security.DatalossPrevention import DataLossPrevention
+from static.security.DatalossPrevention import DataLossPrevention, OpticalCharacterRecognition
 from static.security.logging import TTLLogger
 
 from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort
@@ -483,6 +483,21 @@ def media_upload(id):
         f.save(os.path.join(CONSTANTS.TTL_CONFIG_MEDIA_FOLDER, secure_filename(f.filename)))
 
         # -----------------  END OF SAVING FILE LOCALLY ----------------- #
+
+        # -----------------  START OF DATA LOSS PREVENTION ----------------- #
+
+        OCR = OpticalCharacterRecognition(temp_Mediafile_path)
+
+        DLP = DataLossPrevention(OCR.ocr())
+
+        if DLP.detect_sensitive_data():
+            print(DLP.replace_sensitive_data().encode('utf-8'))
+
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Data Loss Prevention detected sensitive data in {temp_Mediafile_path}")
+
+            abort(403)
+
+        # -----------------  END OF DATA LOSS PREVENTION ----------------- #
 
         # -----------------  START OF UPLOADING TO GCS ----------------- #
         
