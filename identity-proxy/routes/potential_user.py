@@ -156,7 +156,7 @@ def authorisation():
             if ttlSession.get_data_from_session('id_info', data=True).get("email") not in acl['Admins']:
                 w = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r")
                 dict_acl = json.loads(w.read())
-                dict_acl[ttlSession.get_data_from_session('id_info', data=True).get("email")] = ["read", "write", "delete"]
+                dict_acl['Admins'][ttlSession.get_data_from_session('id_info', data=True).get("email")] = ["read", "write", "delete", ttlSession.get_data_from_session('id_info', data=True).get("sub")]
                 w.close()
 
                 r = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "w")
@@ -193,7 +193,7 @@ def authorisation():
 
             w = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r")
             dict_acl = json.loads(w.read())
-            used = dict_acl['SuperAdmins'][ttlSession.get_data_from_session("id_info", data=True).get("email")][3]
+            used = dict_acl['SuperAdmins'][ttlSession.get_data_from_session("id_info", data=True).get("email")][4]
 
             if used == 1:
                 if not os.path.exists(super_admin):
@@ -220,7 +220,7 @@ def authorisation():
                 used = 1
 
                 r = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "w")
-                dict_acl['SuperAdmins'][ttlSession.get_data_from_session("id_info", data=True).get("email")][3] = used
+                dict_acl['SuperAdmins'][ttlSession.get_data_from_session("id_info", data=True).get("email")][4] = used
                 r.write(json.dumps(dict_acl))
                 r.close()
 
