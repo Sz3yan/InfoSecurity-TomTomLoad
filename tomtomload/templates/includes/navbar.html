@@ -25,6 +25,22 @@
                     </svg>
                 </button>
 
+                <script>
+                    var navGroupContent = document.getElementById("nav-group-Content");
+                    var navGroupContentToggle = navGroupContent.querySelector(".nav-group__toggle");
+
+                    navGroupContentToggle.addEventListener("click", function() {
+                        var navGroupContentContent = navGroupContent.querySelector(".rah-static");
+                        
+                        if (navGroupContentContent.style.display === "none") {
+                            navGroupContentContent.style.display = "block";
+                        } else {
+                            navGroupContentContent.style.display = "none";
+                        }
+
+                    });
+                </script>
+
                 <div aria-hidden="false" class="rah-static rah-static--height-auto">
                     <div>
                         <div class="nav-group__content">
@@ -52,27 +68,38 @@
                     </svg>
                 </button>
 
-                <div aria-hidden="false" class="rah-static rah-static--height-auto">
-                    <div>
-                        <div class="nav-group__content">
-                            <a class="nav__link" id="nav-users" href="/admin/users">
-                                <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                    <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
-                                </svg>
-                                Users
-                            </a>
-                        </div>
-                    </div>
-                </div>
+                <script>
+                    var navGroupAdmin = document.getElementById("nav-group-Admin");
+                    var navGroupAdminToggle = navGroupAdmin.querySelector(".nav-group__toggle");
+
+                    navGroupAdminToggle.addEventListener("click", function() {
+                        var navGroupAdminContent = navGroupAdmin.querySelector(".rah-static");
+                        
+                        if (navGroupAdminContent.style.display === "none") {
+                            navGroupAdminContent.style.display = "block";
+                        } else {
+                            navGroupAdminContent.style.display = "none";
+                        }
+
+                    });
+                </script>
 
                 <div aria-hidden="false" class="rah-static rah-static--height-auto">
                     <div>
                         <div class="nav-group__content">
-                            <a class="nav__link" id="nav-blockIPAddresses" href="/admin/utilities/">
+                            <a class="nav__link" id="nav-users" href="/admin/users">
+                                {% if role == 'Admins' %}
+                                    Users
+                                {% else %}
+                                    Access Control
+                                {% endif %}
+                            </a>
+
+                            <a class="nav__link" id="nav-users" href="/admin/logs/">
                                 <svg class="icon icon--chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
                                     <path class="stroke" d="M9 10.5L12.5 14.5L16 10.5"></path>
                                 </svg>
-                                Utilities
+                                Logs
                             </a>
                         </div>
                     </div>

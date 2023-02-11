@@ -5,6 +5,7 @@
 *.crt
 *.pem
 *.log
+*.zip
 
 *.json
 identity-proxy/static/config_files/certificates/
@@ -29,7 +30,6 @@ __pycache__/
 build/
 develop-eggs/
 dist/
-downloads/
 eggs/
 .eggs/
 lib/

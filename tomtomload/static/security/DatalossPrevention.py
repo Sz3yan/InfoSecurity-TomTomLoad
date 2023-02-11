@@ -1,5 +1,20 @@
 import re
 import json
+import pytesseract
+import numpy as np
+
+from PIL import Image
+
+
+class OpticalCharacterRecognition:
+    def __init__(self, filename):
+        self.filename = filename
+
+    def ocr(self):
+        img1 = np.array(Image.open(self.filename))
+        text = pytesseract.image_to_string(img1)
+
+        return text
 
 
 class DataLossPrevention:
@@ -46,7 +61,7 @@ class DataLossPrevention:
             "credit_card": creditcard
         }
 
-        return json.dumps(SensitiveData, indent=4)
+        return True if any(SensitiveData.values()) else False
 
 
     def replace_sensitive_data(self):

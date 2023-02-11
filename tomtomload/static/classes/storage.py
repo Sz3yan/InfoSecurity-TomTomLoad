@@ -262,3 +262,273 @@ class GoogleCloudStorage:
 
         # Handle the response
         print(response)
+
+    # Autoclass feature automatically transitions objects in your bucket to appropriate storage classes based on each object's access pattern
+    def set_autoclass(self, bucket_name, toggle):
+        """Disable Autoclass for a bucket.
+
+        Note: Only patch requests that disable autoclass are currently supported.
+        To enable autoclass, you must set it at bucket creation time.
+        """
+        # The ID of your GCS bucket
+        # bucket_name = "my-bucket"
+        # Boolean toggle - if true, enables Autoclass; if false, disables Autoclass
+        # toggle = False
+
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(bucket_name)
+
+        bucket.autoclass_enabled = toggle
+        bucket.patch()
+        print(f"Autoclass enabled is set to {bucket.autoclass_enabled} for {bucket.name} at {bucket.autoclass_toggle_time}.")
+
+        return bucket
+
+    def get_autoclass(self, bucket_name):
+        """Get the Autoclass setting for a bucket."""
+        # The ID of your GCS bucket
+        # bucket_name = "my-bucket"
+
+        storage_client = storage.Client()
+        bucket = storage_client.get_bucket(bucket_name)
+        autoclass_enabled = bucket.autoclass_enabled
+        autoclass_toggle_time = bucket.autoclass_toggle_time
+
+        print(f"Autoclass enabled is set to {autoclass_enabled} for {bucket.name} at {autoclass_toggle_time}.")
+
+        return bucket
+
+    def enable_versioning(self, bucket_name):
+        """Enable versioning for this bucket."""
+        # bucket_name = "my-bucket"
+
+        storage_client = storage.Client()
+
+        bucket = storage_client.get_bucket(bucket_name)
+        bucket.versioning_enabled = True
+        bucket.patch()
+
+        print(f"Versioning was enabled for bucket {bucket.name}")
+        return bucket
+
+    def disable_versioning(self, bucket_name):
+        """Disable versioning for this bucket."""
+        # bucket_name = "my-bucket"
+
+        storage_client = storage.Client()
+
+        bucket = storage_client.get_bucket(bucket_name)
+        bucket.versioning_enabled = False
+        bucket.patch()
+
+        print(f"Versioning was disabled for bucket {bucket}")
+        return bucket
+
+    def list_file_archived_generations(self, bucket_name):
+        """Lists all the blobs in the bucket with generation."""
+        # bucket_name = "your-bucket-name"
+
+        storage_client = storage.Client()
+
+        blobs = storage_client.list_blobs(bucket_name, versions=True)
+
+        for blob in blobs:
+            print(f"{blob.name},{blob.generation}")
+
+    def copy_file_archived_generation(
+        self, bucket_name, blob_name, destination_bucket_name, destination_blob_name, generation
+    ):
+        """Copies a blob from one bucket to another with a new name with the same generation."""
+        # bucket_name = "your-bucket-name"
+        # blob_name = "your-object-name"
+        # destination_bucket_name = "destination-bucket-name"
+        # destination_blob_name = "destination-object-name"
+        # generation = 1579287380533984
+
+        storage_client = storage.Client()
+
+        source_bucket = storage_client.bucket(bucket_name)
+        source_blob = source_bucket.blob(blob_name)
+        destination_bucket = storage_client.bucket(destination_bucket_name)
+
+        # Optional: set a generation-match precondition to avoid potential race conditions
+        # and data corruptions. The request to copy is aborted if the object's
+        # generation number does not match your precondition. For a destination
+        # object that does not yet exist, set the if_generation_match precondition to 0.
+        # If the destination object already exists in your bucket, set instead a
+        # generation-match precondition using its generation number.
+        destination_generation_match_precondition = 0
+
+        # source_generation selects a specific revision of the source object, as opposed to the latest version.
+        blob_copy = source_bucket.copy_blob(
+            source_blob, destination_bucket, destination_blob_name, source_generation=generation, if_generation_match=destination_generation_match_precondition
+        )
+
+        print(
+            "Generation {} of the blob {} in bucket {} copied to blob {} in bucket {}.".format(
+                generation,
+                source_blob.name,
+                source_bucket.name,
+                blob_copy.name,
+                destination_bucket.name,
+            )
+        )
+
+    def delete_file_archived_generation(self, bucket_name, blob_name, generation):
+        """Delete a blob in the bucket with the given generation."""
+        # bucket_name = "your-bucket-name"
+        # blob_name = "your-object-name"
+        # generation = 1579287380533984
+
+        storage_client = storage.Client()
+
+        bucket = storage_client.get_bucket(bucket_name)
+        bucket.delete_blob(blob_name, generation=generation)
+        print(
+            f"Generation {generation} of blob {blob_name} was deleted from {bucket_name}"
+        )
+
+    def create_key(self, project_id, service_account_email):
+        """
+        Create a new HMAC key using the given project and service account.
+        """
+        # project_id = 'Your Google Cloud project ID'
+        # service_account_email = 'Service account used to generate the HMAC key'
+
+        storage_client = storage.Client(project=project_id)
+
+        hmac_key, secret = storage_client.create_hmac_key(
+            service_account_email=service_account_email, project_id=project_id
+        )
+
+        print(f"The base64 encoded secret is {secret}")
+        print("Do not miss that secret, there is no API to recover it.")
+        print("The HMAC key metadata is:")
+        print(f"Service Account Email: {hmac_key.service_account_email}")
+        print(f"Key ID: {hmac_key.id}")
+        print(f"Access ID: {hmac_key.access_id}")
+        print(f"Project ID: {hmac_key.project}")
+        print(f"State: {hmac_key.state}")
+        print(f"Created At: {hmac_key.time_created}")
+        print(f"Updated At: {hmac_key.updated}")
+        print(f"Etag: {hmac_key.etag}")
+
+        return hmac_key
+
+    def list_keys(self, project_id):
+        """
+        List all HMAC keys associated with the project.
+        """
+        # project_id = "Your Google Cloud project ID"
+
+        storage_client = storage.Client(project=project_id)
+        hmac_keys = storage_client.list_hmac_keys(project_id=project_id)
+        print("HMAC Keys:")
+        for hmac_key in hmac_keys:
+            print(
+                f"Service Account Email: {hmac_key.service_account_email}"
+            )
+            print(f"Access ID: {hmac_key.access_id}")
+
+        return hmac_keys
+
+    def get_key(self, access_id, project_id):
+        """
+        Retrieve the HMACKeyMetadata with the given access id.
+        """
+        # project_id = "Your Google Cloud project ID"
+        # access_id = "ID of an HMAC key"
+
+        storage_client = storage.Client(project=project_id)
+
+        hmac_key = storage_client.get_hmac_key_metadata(
+            access_id, project_id=project_id
+        )
+
+        print("The HMAC key metadata is:")
+        print(f"Service Account Email: {hmac_key.service_account_email}")
+        print(f"Key ID: {hmac_key.id}")
+        print(f"Access ID: {hmac_key.access_id}")
+        print(f"Project ID: {hmac_key.project}")
+        print(f"State: {hmac_key.state}")
+        print(f"Created At: {hmac_key.time_created}")
+        print(f"Updated At: {hmac_key.updated}")
+        print(f"Etag: {hmac_key.etag}")
+        
+        return hmac_key
+
+    def deactivate_key(self, access_id, project_id):
+        """
+        Deactivate the HMAC key with the given access ID.
+        """
+        # project_id = "Your Google Cloud project ID"
+        # access_id = "ID of an active HMAC key"
+
+        storage_client = storage.Client(project=project_id)
+
+        hmac_key = storage_client.get_hmac_key_metadata(
+            access_id, project_id=project_id
+        )
+        hmac_key.state = "INACTIVE"
+        hmac_key.update()
+
+        print("The HMAC key is now inactive.")
+        print("The HMAC key metadata is:")
+        print(f"Service Account Email: {hmac_key.service_account_email}")
+        print(f"Key ID: {hmac_key.id}")
+        print(f"Access ID: {hmac_key.access_id}")
+        print(f"Project ID: {hmac_key.project}")
+        print(f"State: {hmac_key.state}")
+        print(f"Created At: {hmac_key.time_created}")
+        print(f"Updated At: {hmac_key.updated}")
+        print(f"Etag: {hmac_key.etag}")
+        
+        return hmac_key
+
+    def activate_key(self, access_id, project_id):
+        """
+        Activate the HMAC key with the given access ID.
+        """
+        # project_id = "Your Google Cloud project ID"
+        # access_id = "ID of an inactive HMAC key"
+
+        storage_client = storage.Client(project=project_id)
+
+        hmac_key = storage_client.get_hmac_key_metadata(
+            access_id, project_id=project_id
+        )
+        hmac_key.state = "ACTIVE"
+        hmac_key.update()
+
+        print("The HMAC key metadata is:")
+        print(f"Service Account Email: {hmac_key.service_account_email}")
+        print(f"Key ID: {hmac_key.id}")
+        print(f"Access ID: {hmac_key.access_id}")
+        print(f"Project ID: {hmac_key.project}")
+        print(f"State: {hmac_key.state}")
+        print(f"Created At: {hmac_key.time_created}")
+        print(f"Updated At: {hmac_key.updated}")
+        print(f"Etag: {hmac_key.etag}")
+        
+        return hmac_key
+
+    def delete_key(self, access_id, project_id):
+        """
+        Delete the HMAC key with the given access ID. Key must have state INACTIVE
+        in order to succeed.
+        """
+        # project_id = "Your Google Cloud project ID"
+        # access_id = "ID of an HMAC key (must be in INACTIVE state)"
+
+        storage_client = storage.Client(project=project_id)
+
+        hmac_key = storage_client.get_hmac_key_metadata(
+            access_id, project_id=project_id
+        )
+        hmac_key.delete()
+
+        print(
+            "The key is deleted, though it may still appear in list_hmac_keys()"
+            " results."
+        )
+        

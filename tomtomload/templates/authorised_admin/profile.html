@@ -2,9 +2,7 @@
 
 {% block bodyContent %}
     <div class="account">
-        <form novalidate="" method="patch"
-            action="https://demo.ttlcms.com/api/users/63909c60eb18a6399e33f560?locale=en&amp;depth=0"
-            class="account__form form">
+        <form method="post" class="account__form form">
             <div class="account__main">
                 <div class="eyebrow">
                     <div class="gutter--left gutter--right eyebrow__wrap">
@@ -15,103 +13,48 @@
                                 </svg></a><span>Account</span></nav>
                     </div>
                 </div>
+
                 <div class="account__edit">
                     <div class="gutter--left gutter--right account__header">
-                        <h1><span class="render-title">demo@ttlcms.com</span></h1>
+                        <h1><span class="render-title">{{ email }}</span></h1>
+
                         <div class="auth-fields">
-                            <div class="field-type email"><label for="field-email"
-                                    class="field-label">Email<span class="required">*</span></label><input
-                                    id="field-email" type="email" name="email" autocomplete="email"
-                                    value="demo@ttlcms.com"></div><button type="button"
-                                class="btn btn--style-secondary btn--icon-style-without-border btn--size-small btn--icon-position-right"><span
-                                    class="btn__content"><span class="btn__label">Change
-                                        Password</span></span></button><button type="button"
-                                class="btn btn--style-secondary btn--icon-style-without-border btn--size-small btn--icon-position-right"><span
-                                    class="btn__content"><span class="btn__label">Force
-                                        Unlock</span></span></button>
-                            <div class="auth-fields__api-key">
-                                <div class="field-type checkbox">
-                                    <div class="checkbox__error-wrap"></div><input id="field-enableAPIKey"
-                                        type="checkbox" name="enableAPIKey" readonly=""><button
-                                        type="button"><span class="checkbox__input"><svg
-                                                class="icon icon--check" xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 25 25">
-                                                <path d="M10.6092 16.0192L17.6477 8.98076" class="stroke"
-                                                    stroke-linecap="square" stroke-linejoin="bevel"></path>
-                                                <path d="M7.35229 12.7623L10.6092 16.0192" class="stroke"
-                                                    stroke-linecap="square" stroke-linejoin="bevel"></path>
-                                            </svg></span><span class="checkbox__label">Enable API
-                                            Key</span></button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="render-fields">
-                            <div class="field-type text"><label for="field-name"
-                                    class="field-label">Name</label><input id="field-name" type="text"
-                                    name="name" value="Demo User"></div>
-                        </div>
-                    </div>
-                    <div class="gutter--left gutter--right account__ttl-settings">
-                        <h3>ttl Settings</h3>
-                        <div class="field-type radio-group radio-group--layout-horizontal">
-                            <div class="radio-group__error-wrap"></div><label for="field-theme"
-                                class="field-label">Admin Theme</label>
-                            <ul id="field-theme" class="radio-group--group">
-                                <li><label for="field-theme-auto">
-                                        <div class="radio-input radio-input--is-selected"><input
-                                                id="field-theme-auto" type="radio" checked=""><span
-                                                class="radio-input__styled-radio"></span><span
-                                                class="radio-input__label">Automatic</span></div>
-                                    </label></li>
-                                <li><label for="field-theme-light">
-                                        <div class="radio-input"><input id="field-theme-light"
-                                                type="radio"><span
-                                                class="radio-input__styled-radio"></span><span
-                                                class="radio-input__label">Light</span></div>
-                                    </label></li>
-                                <li><label for="field-theme-dark">
-                                        <div class="radio-input"><input id="field-theme-dark"
-                                                type="radio"><span
-                                                class="radio-input__styled-radio"></span><span
-                                                class="radio-input__label">Dark</span></div>
-                                    </label></li>
-                            </ul>
+                            <div class="field-type email">
+                                <label for="field-email" class="field-label">Email<span class="required">*</span></label>
+                                <input id="field-email" type="email" name="email" autocomplete="email" value="{{ email }}"></div>
+                                
+                                <button type="button" class="btn btn--style-secondary btn--icon-style-without-border btn--size-small btn--icon-position-right">
+                                    <span class="btn__content"><span class="btn__label">Change Password</span></span>
+                                </button>
+
                         </div>
                     </div>
                 </div>
             </div>
+
             <div class="account__sidebar-wrap">
                 <div class="account__sidebar">
                     <div class="account__sidebar-sticky-wrap">
                         <ul class="account__collection-actions">
-                            <li><a href="/admin/collections/users/create">Create New</a></li>
+                            <li><a href="/admin/users/create/{{ new_user }}">Create New</a></li>
                         </ul>
+
                         <div class="account__document-actions">
-                            <div class="form-submit"><button type="submit"
-                                    class="btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right"><span
-                                        class="btn__content"><span
-                                            class="btn__label">Save</span></span></button></div>
+                            <div class="form-submit">
+                                <button type="submit" class="btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right">
+                                    <span class="btn__content"><span class="btn__label">Save</span></span>
+                                </button>
+                            </div>
                         </div>
-                        <div class="account__sidebar-fields">
-                            <div class="render-fields"></div>
-                        </div>
+
                         <ul class="account__meta">
-                            <li class="account__api-url"><span class="account__label">API URL <button
-                                        type="button" class="copy-to-clipboard"><svg class="icon icon--copy"
-                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25">
-                                            <rect x="6.5" y="10" width="8" height="8" class="stroke"></rect>
-                                            <path d="M10 9.98438V6.5H18V14.5H14" class="stroke"></path>
-                                        </svg>
-                                        <aside class="tooltip">copy<span></span></aside><textarea
-                                            readonly="">https://demo.ttlcms.com/api/users/63909c60eb18a6399e33f560</textarea>
-                                    </button></span><a
-                                    href="https://demo.ttlcms.com/api/users/63909c60eb18a6399e33f560"
-                                    target="_blank"
-                                    rel="noopener noreferrer">https://demo.ttlcms.com/api/users/63909c60eb18a6399e33f560</a>
+                            <li class="account__api-url">
+                                <span class="account__label">API URL</span>
+                                <a href="https://demo.ttlcms.com/api/users/63909c60eb18a6399e33f560" target="_blank">https://demo.ttlcms.com/api/users/63909c60eb18a6399e33f560</a>
                             </li>
                             <li>
                                 <div class="account__label">ID</div>
-                                <div>63909c60eb18a6399e33f560</div>
+                                <div>{{ id }}</div>
                             </li>
                             <li>
                                 <div class="account__label">Last Modified</div>
