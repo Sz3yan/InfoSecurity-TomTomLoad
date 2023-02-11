@@ -20,6 +20,7 @@ from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
 from functools import wraps
+import socket
 
 
 potential_user = Blueprint('potential_user', __name__, template_folder="templates", static_folder='static')
@@ -215,7 +216,7 @@ def authorisation():
                     ca_name=sub_certificate,
                     ca_duration=100 * 24 * 60 * 60
                 )
-                IdentityProxyLogging.INFO("super admin certificate created")
+                IdentityProxyLogging.info("super admin certificate created")
 
                 used = 1
 

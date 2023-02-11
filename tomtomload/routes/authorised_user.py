@@ -486,16 +486,19 @@ def media_upload(id):
 
         # -----------------  START OF DATA LOSS PREVENTION ----------------- #
 
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Data Loss Prevention Initialised on {temp_Mediafile_path}")
+
         OCR = OpticalCharacterRecognition(temp_Mediafile_path)
 
         DLP = DataLossPrevention(OCR.ocr())
 
         if DLP.detect_sensitive_data():
-            print(DLP.replace_sensitive_data().encode('utf-8'))
 
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Data Loss Prevention detected sensitive data in {temp_Mediafile_path}")
+            TomTomLoadLogging.warning(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Data Loss Prevention detected sensitive data in {temp_Mediafile_path}")
 
-            abort(403)
+            abort(400)
+
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Data Loss Prevention completed on {temp_Mediafile_path}")
 
         # -----------------  END OF DATA LOSS PREVENTION ----------------- #
 
@@ -577,11 +580,11 @@ def media_upload(id):
             else:
                 print("malwarewareware")
 
-                TomTomLoadLogging.error(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Malware found in media {id}. Aborting upload.")
+                TomTomLoadLogging.warning(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Malware found in media {id}. Aborting upload.")
 
                 abort(403)
 
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. End of Malware Analysis on {temp_Mediafile_path}")
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Malware Analysis completed on {temp_Mediafile_path}")
 
             if original_hash == new_hash:
                 TomTomLoadLogging.info(f"Integrity check of media {id} passed. {temp_Mediafile_path} has not been tampered with during upload. Hash matches.")
@@ -592,7 +595,7 @@ def media_upload(id):
                 TomTomLoadLogging.error(f"Integrity check of media {id} failed. {temp_Mediafile_path} has been tampered with during upload. Hash does not match.")
                 print(f"{temp_Mediafile_path} has been tampered with during upload. Hash does not match.")
 
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. End of Integrity Check on {temp_Mediafile_path}")
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Integrity Check completed on {temp_Mediafile_path}")
 
         else:
 
@@ -841,7 +844,7 @@ def post_upload(id):
                 )
 
                 TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Encrypted post {post_upload_id} to {temp_post_path}")
-                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. End of Data Loss Prevention on post {post_upload_id}")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Data Loss Prevention completed on post {post_upload_id}")
 
                 # -----------------  END OF ENCRYPTION ---------------- #
 
