@@ -171,8 +171,8 @@ if __name__ == "__main__":
     )
     scheduler.add_job(
         retention_policy,
-        "interval", hours=0, minutes=4, seconds=0
-        # "interval", hours=23, minutes=59, seconds=59
+        # "interval", hours=0, minutes=0, seconds=30
+        "interval", hours=23, minutes=59, seconds=59
 )
 
 
