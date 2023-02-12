@@ -105,12 +105,12 @@
                                     <td class="cell-email"><a href="/admin/users/{{ user_id }}">{{ email }}</a></td>
                                     <td class="cell-id"><span>{{ user_id }}</span></td>
                                     <td class="cell-name"><span>{{ role }}</span></td>
-                                    <td><a type="button" class="btn btn--style-secondary btn--size-small" href="users/edit_access">
+                                    <td><a type="button" class="btn btn--style-secondary btn--size-small" href="users/edit_access/{{ user_id }}">
                                     <span class="btn__content"><span class="btn__label">Edit Access</span></span></a></td>
                                 </tr>
                             {% else %}
                             <thead>
-                                <tr>
+                                <tr>{
                                     <th id="heading-email">Email</th>
                                     <th id="heading-role">Role</th>
                                     <th id="heading-access">Access</th>
@@ -119,9 +119,9 @@
                             <tbody>
                                 {% for user in Admins_list %}
                                     <tr class="row-1">
-                                        <td class="cell-email"><a href="">{{ user }}</a></td>
+                                        <td class="cell-email"><a href="/admin/users/{{ user[1] }}">{{ user[0] }}</a></td>
                                         <td class="cell-name"><span>Admins</span></td>
-                                        <td><a type="button" class="btn btn--style-secondary btn--size-small" href="users/edit_access">
+                                        <td><a type="button" class="btn btn--style-secondary btn--size-small" href="users/edit_access/{{ user[1] }}">
                                         <span class="btn__content"><span class="btn__label">Edit Access</span></span></a></td>
                                     </tr>
                                 {% endfor %}

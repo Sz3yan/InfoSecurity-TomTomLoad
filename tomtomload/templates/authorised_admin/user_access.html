@@ -24,33 +24,48 @@
                         <h2><span class="render-title">{{ email }}</span></h2>
                     </header>
 
-                    <div class="auth-fields" id="accessCheckbox">
-                        <h3>Access:</h3>
-                        <div class="auth-fields__api-key">
-                            {% if 'read' in access_list %}
-                            <input type="checkbox" name="readAccess" value = 'read' checked disabled><span style="font-size: 1.2em">Read Access</span>
-                            {% else %}
-                            <input type="checkbox" name="readAccess" value = 'read'>i<span style="font-size: 1.2em">Read Accesss</span>
-                            {% endif %}
-                        </div>
-                        <div class="auth-fields__api-key">
-                            {% if 'write' in access_list %}
-                            <input type="checkbox" name="writeAccess" value = 'write' checked=true><span style="font-size: 1.2em">Write Access</span>
-                            {% else %}
-                            <input type="checkbox" name="writeAccess" value = ' '>i<span style="font-size: 1.2em">Write Accesss</span>
-                            {% endif %}
-                        </div>
-                        <div class="auth-fields__api-key">
-                            {% if 'delete' in access_list %}
-                            <input type="checkbox" name="deleteAccess" value = 'delete' checked=true><span style="font-size: 1.2em">Delete Access</span>
-                            {% else %}
-                            <input type="checkbox" name="deleteAccess" value = ' '><span style="font-size: 1.2em">Delete Accesss</span>
-                            {% endif %}
-                        </div>
+                    {% if "banned" in access_list %}
+                        <div class="auth-fields" id="accessCheckbox">
+                            <h3>Access:</h3>
+                            <div class="auth-fields__api-key">
+                                <input type="checkbox" name="readAccess" value = 'read' disabled><span style="font-size: 1.2em">Read Access</span>
+                            </div>
+                            <div class="auth-fields__api-key">
+                                <input type="checkbox" name="writeAccess" value = ' ' disabled><span style="font-size: 1.2em">Write Access</span>
+                            </div>
+                            <div class="auth-fields__api-key">
+                                <input type="checkbox" name="deleteAccess" value = '' disabled><span style="font-size: 1.2em">Delete Access</span>
+                            </div>
 
+                    {% else %}
+
+                        <div class="auth-fields" id="accessCheckbox">
+                            <h3>Access:</h3>
+                            <div class="auth-fields__api-key">
+                                {% if 'read' in access_list %}
+                                <input type="checkbox" name="readAccess" value = 'read' checked disabled><span style="font-size: 1.2em">Read Access</span>
+                                {% else %}
+                                <input type="checkbox" name="readAccess" value = 'read'><span style="font-size: 1.2em">Read Access</span>
+                                {% endif %}
+                            </div>
+                            <div class="auth-fields__api-key">
+                                {% if 'write' in access_list %}
+                                <input type="checkbox" name="writeAccess" value = 'write' checked=true><span style="font-size: 1.2em">Write Access</span>
+                                {% else %}
+                                <input type="checkbox" name="writeAccess" value = ' '><span style="font-size: 1.2em">Write Access</span>
+                                {% endif %}
+                            </div>
+                            <div class="auth-fields__api-key">
+                                {% if 'delete' in access_list %}
+                                <input type="checkbox" name="deleteAccess" value = 'delete' checked=true><span style="font-size: 1.2em">Delete Access</span>
+                                {% else %}
+                                <input type="checkbox" name="deleteAccess" value = ' '><span style="font-size: 1.2em">Delete Access</span>
+                                {% endif %}
+                            </div>
+                    {% endif %}
 
                             <br>
-                        <h4>Role: {{ access }}</h4>
+                        <h4>Role: Admins</h4>
                         <h4>the list: {{access_list}}</h4>
                     </div>
                 </div>
@@ -59,6 +74,19 @@
                 <div class="collection-edit__sidebar">
                     <div class="collection-edit__sidebar-sticky-wrap">
                         <div class="collection-edit__document-actions">
+                            <br>
+
+                            {% if "unbanned" in access_list %}
+<!--                                <a type="button" class="btn btn&#45;&#45;style-primary btn&#45;&#45;icon-style-without-border btn&#45;&#45;size-medium btn&#45;&#45;icon-position-right" href="" name="ban">-->
+<!--                                    <span class="btn__content" ><span class="btn__label">{{ ban }} banned?</span></span></a>-->
+                                <input type="checkbox" name="ban" id="ban" value = 'banned'><span style="font-size: 1.2em">Ban Admin</span>
+                            {% else %}
+<!--                                <a type="button" class="btn btn&#45;&#45;style-secondary btn&#45;&#45;size-small" href="" name="ban">-->
+<!--                                    <span class="btn__content"><span class="btn__label" >{{ ban }}  unbanned?</span></span></a>-->
+                                <input type="checkbox" name="ban" value = 'unbanned' checked><span style="font-size: 1.2em">Banned</span>
+                            {% endif %}
+
+
                             <div class="form-submit"><button type="submit" id="action-save"
                                     class="btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right"><span
                                         class="btn__content"><span

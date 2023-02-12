@@ -156,7 +156,7 @@ def authorisation():
             if ttlSession.get_data_from_session('id_info', data=True).get("email") not in acl['Admins']:
                 w = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r")
                 dict_acl = json.loads(w.read())
-                dict_acl['Admins'][ttlSession.get_data_from_session('id_info', data=True).get("email")] = ["read", "write", "delete", ttlSession.get_data_from_session('id_info', data=True).get("sub")]
+                dict_acl['Admins'][ttlSession.get_data_from_session('id_info', data=True).get("email")] = ["read", "write", "delete", ttlSession.get_data_from_session('id_info', data=True).get("sub"), "unbanned"]
                 w.close()
 
                 r = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "w")
