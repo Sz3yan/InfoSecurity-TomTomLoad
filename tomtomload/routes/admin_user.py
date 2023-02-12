@@ -2,9 +2,9 @@ import re
 import pyotp
 import smtplib
 import json
+import bcrypt 
 
 from random import *
-from routes.authorised_user import push_admin_user
 from static.classes.config import CONSTANTS
 from static.classes.unique_id import UniqueID
 from static.classes.storage import GoogleCloudStorage
@@ -32,26 +32,26 @@ def api_admin_user_login():
         if login.validate_on_submit():
             email = login.email.data
             password = login.password.data
-
+            
             existing_user = False
             for user in adminuser["Users"]:
-                if user["email"] == email and user["password"] == password:
-                    existing_user = True
-                    break
+                if user["email"] == email:
+                    password_to_verify = password.encode('utf-8')
+                    if bcrypt.checkpw(password_to_verify, user["password"].encode('utf-8')):
+                        existing_user = True
+                        break
                 
             if email == "":
                 return redirect(url_for('admin_user.api_admin_user_login'))
+            if password == "":
+                return redirect(url_for('admin_user.api_admin_user_signup'))
 
             if existing_user:
                 session['email'] = email
                 return redirect(url_for('admin_user.api_admin_user_choosetwofa'))
             else:
                 flash('You have entered the wrong details. Please try again.', category='error')
-                
-            
-    
-            # else:
-            #     return redirect(url_for('admin_user.api_admin_user_login'))
+                return redirect(url_for('admin_user.api_admin_user_login'))
                 
     return render_template('user/login.html')
 
@@ -67,10 +67,13 @@ def api_admin_user_signup():
             email = signup.email.data
             password = signup.password.data
 
-            # if email == "":
-            #     return redirect(url_for('admin_user.api_admin_user_signup'))
-            # if password == "":
-            #     return redirect(url_for('admin_user.api_admin_user_signup'))
+            salt = bcrypt.gensalt()
+            hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
+
+            if email == "":
+                return redirect(url_for('admin_user.api_admin_user_signup'))
+            if password == "":
+                return redirect(url_for('admin_user.api_admin_user_signup'))
 
         #------ PASSWORD VALIDATION ------
             email_regex = re.compile(r"[^@]+@[^@]+\.[^@]+")
@@ -97,17 +100,29 @@ def api_admin_user_signup():
             elif not special_char_regex.search(password):
                 flash('Password should have at least one special character', category='error')
                 return redirect(url_for('admin_user.api_admin_user_signup'))
-            
+
             existing_user = False
             for user in adminuser["Users"]:
-                if user["email"] == email and user["password"] == password:
-                    existing_user = True
-                    break
+                if user["email"] == email:
+                    password_to_verify = password.encode('utf-8')
+                    if bcrypt.checkpw(password_to_verify, user["password"].encode('utf-8')):
+                        existing_user = True
+                        break
 
             if existing_user:
                 flash('Account has already been created', category='error')
             else:
-                push_admin_user(email, password)
+                user_data = {'email': email, 'password': hashed_password.decode('utf-8')}
+                adminuser['Users'].append(user_data)
+                with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("adminuser.json"), "w") as f:
+                    json.dump(adminuser, f)
+
+                storage.upload_blob(
+                    bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+                    source_file_name=CONSTANTS.TTL_CONFIG_FOLDER.joinpath("adminuser.json"),
+                    destination_blob_name="adminuser.json"
+                )
+                flash('Account successfully created', category='success')
                 
     return render_template('user/signup.html')
 
