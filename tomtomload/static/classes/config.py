@@ -39,6 +39,7 @@ class Constants:
     STORAGE_BUCKET_NAME: str = "ttl1234567890"
     BLACKLISTED_FILE_NAME: str = "blacklisted.json"
     ACL_FILE_NAME: str = "acl.json"
+    ADMINUSER_FILE_NAME: str = "adminuser.json"
 
     # -----------------  GOOGLE CLOUD KMS ----------------- #
     KMS_IP_KEY_RING_ID: str = "identity-proxy"

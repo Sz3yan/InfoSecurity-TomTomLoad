@@ -12,10 +12,11 @@ from static.classes.storage import GoogleCloudStorage
 from static.security.secure_data import GoogleCloudKeyManagement, Encryption
 from static.security.session_management import TTLSession
 from static.security.malware_analysis import malwareAnalysis
+from static.security.steganography import Decode
 from static.security.DatalossPrevention import DataLossPrevention, OpticalCharacterRecognition
-from static.security.logging import TTLLogger
+from static.security.log import TTLLogger
 
-from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort
+from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort, flash, send_file
 from functools import wraps
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -250,6 +251,22 @@ def check_role_delete(func):
             return abort(403)
 
     return decorated_function
+
+def push_admin_user(email, password):
+        with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("adminuser.json"), "r") as f:
+            adminuser = json.load(f) 
+
+            user_data = {'email': email, 'password': password}
+            adminuser['Users'].append(user_data)
+            with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("adminuser.json"), "w") as f:
+                json.dump(adminuser, f)
+
+            storage.upload_blob(
+                bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+                source_file_name=CONSTANTS.TTL_CONFIG_FOLDER.joinpath("adminuser.json"),
+                destination_blob_name="adminuser.json"
+            )
+            flash('Account successfully created', category='success')
 
 # -----------------  END OF WRAPPER ----------------- #
 
@@ -530,9 +547,15 @@ def media_upload(id):
 
             TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Malware Check Initialised on {temp_Mediafile_path}")
 
+            Decode(temp_Mediafile_path)
+            if Decode(temp_Mediafile_path) == 0:
+                print("steganography detected")
+
+                TomTomLoadLogging.warning(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Steganography found in media {id}. Aborting upload.")
+                abort(403)
+
             malwareAnalysis(original_hash)
             if malwareAnalysis(original_hash) == 0:
-
                 # -----------------  START OF UPLOADING TO GCS ----------------- #
 
                 storage.upload_blob(
@@ -663,29 +686,35 @@ def media_export():
 
         # -----------------  START OF CHECKING LOCAL MEDIA ----------------- #
 
+        if not os.path.isdir(os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "downloads")):
+            os.mkdir(os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "downloads"))
+
         for id in id_list:
             temp_Mediafile_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "media", id)
             temp_Mediafile_path = temp_Mediafile_path + ".png"
 
-            download_folder_path = os.path.join(os.path.expanduser('~'), 'Downloads', id)
+            download_folder_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "downloads", id)
             download_folder_path = download_folder_path + ".png"
 
-            storage.download_blob(
-                bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
-                source_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + id + ".png",
-                destination_file_name = download_folder_path
-            )
-
+            if not os.path.isfile(download_folder_path):
+                storage.download_blob(
+                    bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+                    source_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + id + ".png",
+                    destination_file_name = download_folder_path
+                )
+            
             TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Downloaded media {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to {download_folder_path}")
 
-        # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
+        shutil.make_archive(os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "downloads"), 'zip', os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "downloads"))
 
-        return redirect(url_for('authorised_user.media'))
+        return send_file(os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "downloads.zip"), as_attachment=True)
+
+        # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
 
     else:
 
         TomTomLoadLogging.error(f"User not logged in, aborting media export")
-
+        
         abort(403)
 
 

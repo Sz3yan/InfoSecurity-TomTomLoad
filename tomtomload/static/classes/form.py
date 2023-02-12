@@ -17,3 +17,6 @@ class Forget(FlaskForm):
 class Otp(FlaskForm):
     shared_secret = StringField([validators.DataRequired()], render_kw={"placeholder": "Secret Key"})
     totpval = StringField([validators.DataRequired()], render_kw={"placeholder": "Otp"})
+
+class EmailOtp(FlaskForm):
+        onetimepass = StringField([validators.DataRequired()], render_kw={"placeholder": "Onetimepass"})

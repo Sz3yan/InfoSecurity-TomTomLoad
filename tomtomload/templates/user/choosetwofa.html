@@ -1,0 +1,157 @@
+{% extends "other_base.html" %}
+
+{% block bodyContent %}
+<html data-theme="light" style="--vw:12.63px; --vh:1.5px;" lang="en" data-react-helmet="lang">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+    <script defer="defer" src="/admin/styles.d70984b007c8fb12762a.js"></script>
+    <script defer="defer" src="/admin/main.8fb1a28005d2f5676439.js"></script>
+    <link href="/admin/styles.css" rel="stylesheet">
+    <title>Choose 2FA - TTL</title>
+    <!--href???-->
+    <link rel="icon" type="image/svg+xml" href="/admin/ebcc1430049fddb274f8.svg" data-react-helmet="true">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css" 
+    integrity="sha512-vebUliqxrVkBy3gucMhClmyQP9On/HAWQdKDXRaAlb/FKuTbxkjPKUyqVOxAcGwFDka79eTF+YXwfke1h3/wfg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <meta name="description" content="Login user" data-react-helmet="true">
+    <meta name="keywords" content="Login" data-react-helmet="true">
+    <meta property="og:title" content="Login - TTL" data-react-helmet="true">
+    <meta property="og:image" content="/admin/4d8845b830f4e8e2affb.png" data-react-helmet="true">
+    <meta property="og:description" content="Login user" data-react-helmet="true">
+    <meta property="og:type" content="website" data-react-helmet="true">
+    <meta name="twitter:card" content="summary" data-react-helmet="true">
+    <meta name="twitter:title" content="Login" data-react-helmet="true">
+    <meta name="twitter:description" content="Login user" data-react-helmet="true">
+</head>
+
+    <script src="https://www.google.com/recaptcha/api.js?render=6LcmXogjAAAAAOTMJEaOmWBAxklTmmUQdtEK0mMr"></script>
+    <!--<script>
+   function onSubmit(token) {
+      document.getElementById("demo-form").submit();
+    }
+  </script>-->
+  <style>
+    .wrapper{
+        height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+    .wrapper > h2{
+        margin-bottom: 80px;
+        font-size: 40px;
+        font-weight: 400;
+        text-transform: capitalize;
+    }
+    .radio-buttons{
+        width: 100%;
+        margin: 0 auto;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;   
+    }
+    .custom-radio input {
+        display: none;
+    }
+    .radio-btn{
+        position: relative;
+        width: 234px;
+        height: 330px;
+        margin:50px;
+        border: 4px solid transparent;
+        border-radius: 10px;
+        cursor: pointer;
+        background-color: #f3f3f3;
+    }
+    .radio-btn .content{
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .radio-btn .profile-img{
+        width: 80px;
+        height: 80px;
+        margin: 20px 0;
+        border-radius: 50%;
+        overflow: hidden;
+    }
+    .radio-btn .profile-img img{
+        width: 100%;
+        height: 100%;
+        user-select: none;
+    }
+    .radio-btn h2{
+        margin-bottom:5px;
+        font-size: 25px;
+        font-weight: 700;
+        text-transform: capitalize;
+    }
+    .radio-btn .info{
+        display: inline-block;
+        margin-bottom: 20px;
+        font-size: 13px;
+    }
+    
+  </style>
+
+<body>
+    <div class="gutter--left gutter--right collection-list__wrap">
+        <header class="collection-list__header">
+            <h1>Choose your security method</h1>
+        </header>
+
+            <div>
+            <form novalidate="" method="post" action="#" class="form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>    
+                <div class="wrapper">
+                    <div class="radio-buttons">
+                        <label class="custom-radio">
+                            <input type="radio" name="radio" onclick="location.href='/user/otp'"/>
+                            <div class="radio-btn">
+                                <div class="content">
+                                    <div class="profile-img">
+                                        <img src="/static/images/GoogleAuth.png" />
+                                    </div>
+                                        <h2>Google Authenticator</h2>
+                                        <span class="info">Google authenticator will generate a code that you'll enter 
+                                            with a setup key.</span>
+                                        <span class="check-icon">
+                                            <span class="icon"></span>
+                                        </span> 
+                                </div>
+                            </div>
+                        </label>
+                        <label class="custom-radio">
+                            <input type="radio" name="radio" onclick="location.href='/user/emailotp'"/>
+                            <div class="radio-btn">
+                                <div class="content">
+                                    <div class="profile-img">
+                                        <img src="https://cdn.iconscout.com/icon/free/png-512/gmail-2923657-2416660.png" />
+                                    </div>
+                                        <h2>Email Verification</h2>
+                                        <span class="info">We'll send you a code to your email address.</span>
+                                        <span class="check-icon">
+                                            <span class="icon"></span>
+                                        </span> 
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+                        <!--<button class="g-recaptcha btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right" type="submit"
+                        data-sitekey="6LcmXogjAAAAAOTMJEaOmWBAxklTmmUQdtEK0mMr" -->
+            </form>
+            </div>
+        </section>
+        <div class="Toastify"></div>
+    </div>
+    <div id="portal"></div>
+</body>
+
+</html>
+{% endblock %}
