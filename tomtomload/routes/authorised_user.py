@@ -410,6 +410,7 @@ def media():
 
 @authorised_user.route("/media/<regex('[0-9a-f]{32}'):id>")
 @check_signed_credential
+@check_role_delete
 def media_id(id):
     media_id = id
     create_new_media_id = UniqueID()
@@ -1278,14 +1279,6 @@ def addBlock_IPAddresses():
     return render_template('authorised_admin/blockIPAddressesAdd.html', email=decoded_jwt["email"], role = decoded_jwt["role"], pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/users/edit_access/<regex('[0-9]{21}'):id>", methods=['GET', 'POST'])
-# @authorised_user.route("/users/addBan_Admin", methods=['GET', 'POST'])
-@check_signed_credential
-@check_role_write
-def addBan_Admin():
-    return render_template('authorised_admin/user_access.html', email=decoded_jwt["email"], role = decoded_jwt["role"],pic=decoded_jwt["picture"], access_list=access_list, ban=ban)
-
-
 @authorised_user.route("/users/revoke_cert", methods=['GET', 'POST'])
 @check_signed_credential
 def revoke_cert():
@@ -1312,7 +1305,7 @@ def revoke_cert():
 
         # -----------------  START OF REMOVING REVOKE CERT ---------------- #
 
-        super_admin_certificate = os.path.join(CONSTANTS.SUPER_CERTIFICATE_FOLDER, acl[decoded_jwt["role"]][decoded_jwt["email"]][3] + '_' + str(ttlSession.get_data_from_session("TTLContextAwareAccess", data=True)["TTL-Context-Aware-Access-Client-IP"]["ip"]).replace('.', '_'))
+        super_admin_certificate = os.path.join(CONSTANTS.SUPER_CERTIFICATE_FOLDER,acl[decoded_jwt["role"]][decoded_jwt["email"]][3] + '_' + acl[decoded_jwt["role"]][decoded_jwt["email"]][5])
         super_admin = os.path.join(super_admin_certificate, "SUPER_ADMIN.crt")
 
         # print the full path
@@ -1341,51 +1334,5 @@ def revoke_cert():
 
     return redirect(url_for('authorised_user.users'))
 
-    if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
-
-        # -----------------  START OF OVERWRITE ACL ---------------- #
-
-        with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
-            acl = json.load(s)
-
-        used = 0
-
-        w = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r")
-        dict_acl = json.loads(w.read())
-        dict_acl[decoded_jwt["role"]][decoded_jwt["email"]][4] = used
-        w.close()
-
-        r = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "w")
-        r.write(json.dumps(dict_acl))
-        r.close()
-
-        # -----------------  END OF OVERWRITE ACL ---------------- #
-
-        # -----------------  START OF REMOVING REVOKE CERT ---------------- #
-
-        certificate_directory = CONSTANTS.IP_CONFIG_FOLDER.joinpath("certificates")
-        super_admin = os.path.join(certificate_directory, "SUPER_ADMIN.crt")
-
-
-        os.remove(super_admin)
-
-        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)} has revoked their certificate")
-
-        # -----------------  END OF REMOVING REVOKE CERT ---------------- #
-
-        # -----------------  START OF UPLOADING TO GCS ---------------- #
-
-        storage.upload_blob(
-            bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
-            source_file_name=CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"),
-            destination_blob_name="acl.json"
-        )
-
-        # -----------------  END OF UPLOADING TO GCS ---------------- #
-
-
-        return redirect(url_for('authorised_user.users'))
-
-    return redirect(url_for('authorised_user.users'))
-
 # -----------------  END OF AUTHENTICATED SIGNED TRAFFIC ----------------- #
+
