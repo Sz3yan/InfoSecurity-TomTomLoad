@@ -3,11 +3,13 @@ from flask import request, jsonify, session, redirect, url_for
 from static.security.session_management import TTLSession
 from static.security.secure_data import GoogleCloudKeyManagement
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
+from static.classes.storage import GoogleCloudStorage
 from datetime import datetime, timedelta
 import jwt
 
 KeyManagement = GoogleCloudKeyManagement()
 ttlSession = TTLSession()
+storage = GoogleCloudStorage()
 
 # ----- Webpage authentication -----
 def authenticated(func):
@@ -58,11 +60,10 @@ def ttl_jwt_authentication(func):
 def ttl_redirect_user(func):
     @wraps(func)
     def decorated_function(*args, **kwargs):
-        ttlSession = TTLSession()
         # ttlSession.write_data_to_session("route_from","api")
         try:
             if ttl_check_user_agent() and not ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
-                print("inside")
+  
                 return redirect(CONSTANTS.IDENTITY_PROXY_URL)
             else:
                 return func(*args, **kwargs)
