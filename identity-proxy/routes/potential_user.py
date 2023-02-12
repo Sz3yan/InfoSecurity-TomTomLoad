@@ -191,7 +191,7 @@ def authorisation():
         sub_certificate = os.path.join(certificate_directory, "SUBORDINATE_IDENTITY_PROXY")
 
         super_admin_certificate_directory = os.path.join(certificate_directory, "SUPERADMIN")
-        super_admin_certificate = os.path.join(super_admin_certificate_directory, f"{str(ttlSession.get_data_from_session('id_info', data=True).get('sub')) + '_' + str(TTLContextAwareAccessClientIP['ip']).replace('.', '_')}")
+        super_admin_certificate = os.path.join(super_admin_certificate_directory, f"{str(ttlSession.get_data_from_session('id_info', data=True).get('sub')) + '_' + acl['SuperAdmins'][ttlSession.get_data_from_session('id_info', data=True).get('email')][5]}")
         super_admin = os.path.join(super_admin_certificate, "SUPER_ADMIN.crt")
 
         used = 0
@@ -226,7 +226,7 @@ def authorisation():
 
                 certificate_directory = os.path.join(CONSTANTS.IP_CONFIG_FOLDER, "certificates")
                 super_admin_certificate_directory = os.path.join(certificate_directory, "SUPERADMIN")
-                super_admin_certificate = os.path.join(super_admin_certificate_directory, f"{str(ttlSession.get_data_from_session('id_info', data=True).get('sub')) + '_' + str(TTLContextAwareAccessClientIP['ip']).replace('.', '_')}")
+                super_admin_certificate = os.path.join(super_admin_certificate_directory, f"{str(ttlSession.get_data_from_session('id_info', data=True).get('sub')) + '_' + acl['SuperAdmins'][ttlSession.get_data_from_session('id_info', data=True).get('email')][5]}")
                 cert_crt = os.path.join(super_admin_certificate, "SUPER_ADMIN.crt")
                 cert_csr = os.path.join(super_admin_certificate, "SUPER_ADMIN_csr.pem")
                 cert_key = os.path.join(super_admin_certificate, "SUPER_ADMIN_key.pem")

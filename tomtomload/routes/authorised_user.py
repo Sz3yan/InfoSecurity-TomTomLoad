@@ -1311,7 +1311,7 @@ def revoke_cert():
 
         # -----------------  START OF REMOVING REVOKE CERT ---------------- #
 
-        super_admin_certificate = os.path.join(CONSTANTS.SUPER_CERTIFICATE_FOLDER, acl[decoded_jwt["role"]][decoded_jwt["email"]][3] + '_' + str(ttlSession.get_data_from_session("TTLContextAwareAccess", data=True)["TTL-Context-Aware-Access-Client-IP"]["ip"]).replace('.', '_'))
+        super_admin_certificate = os.path.join(CONSTANTS.SUPER_CERTIFICATE_FOLDER,acl[decoded_jwt["role"]][decoded_jwt["email"]][3] + '_' + acl[decoded_jwt["role"]][decoded_jwt["email"]][5])
         super_admin = os.path.join(super_admin_certificate, "SUPER_ADMIN.crt")
 
         # print the full path
