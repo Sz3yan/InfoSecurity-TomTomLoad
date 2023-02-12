@@ -878,6 +878,7 @@ def post_upload(id):
                     plaintext = DLP.replace_sensitive_data()
                 )
 
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. sensitive data redacted on post {post_upload_id}")
                 TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Encrypted post {post_upload_id} to {temp_post_path}")
                 TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Data Loss Prevention completed on post {post_upload_id}")
 
@@ -982,6 +983,7 @@ def post_update(id):
                     plaintext = DLP.replace_sensitive_data()
                 )
 
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. sensitive data redacted on post {post_update_id}")
                 TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Encrypted post {post_update_id} to {temp_post_path}")
                 TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. End of Data Loss Prevention on post {post_update_id}")
 
@@ -1006,79 +1008,6 @@ def post_update(id):
             return redirect(url_for('authorised_user.post_id', id=post_update_id))
 
         return redirect(url_for('authorised_user.post_id', id=post_update_id))
-
-    else:
-
-        TomTomLoadLogging.error(f"User not logged in, aborting post")
-
-        abort(403)
-
-
-@authorised_user.route("/posts/export")
-@check_signed_credential
-@check_role_read
-def post_export():
-    if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
-
-        list_post = storage.list_blobs_with_prefix(
-            bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
-            prefix = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/",
-            delimiter = "/"
-        )
-
-        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Retrieved {len(list_post)} post from {CONSTANTS.STORAGE_BUCKET_NAME}")
-
-        id_list = []
-
-        for post in list_post:
-            remove_slash = post.split("/")[3]
-            remove_extension = remove_slash.split(".")[0]
-            id_list.append(remove_extension)
-
-        # -----------------  START OF CHECKING LOCAL MEDIA ----------------- #
-
-        for id in id_list:
-            temp_post_path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "post", id)
-            temp_post_path = temp_post_path + ".json"
-
-            if not os.path.isfile(temp_post_path):
-                storage.download_blob(
-                    bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
-                    source_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + id + ".json",
-                    destination_file_name = temp_post_path,
-                )
-
-                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Downloaded post {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to {temp_post_path}")
-
-            with open(temp_post_path, 'rb') as outfile:
-
-                encrypted_content = outfile.read()
-
-                # -----------------  START OF DECRYPTION ---------------- #
-
-                decrypted_content = encryption.decrypt_symmetric(
-                    project_id = CONSTANTS.GOOGLE_PROJECT_ID,
-                    location_id = CONSTANTS.GOOGLE_LOCATION_ID,
-                    key_ring_id = CONSTANTS.KMS_TTL_KEY_RING_ID,
-                    key_id = CONSTANTS.KMS_KEY_ID,
-                    ciphertext = encrypted_content
-                )
-
-                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Decrypted post {id} from {temp_post_path}")
-
-                # -----------------  END OF DECRYPTION ---------------- #
-
-                # -----------------  START OF SAVING FILE LOCALLY ----------------- #
-
-                download_folder_path = os.path.join(os.path.expanduser('~'), 'Downloads', id)
-                download_folder_path = download_folder_path + ".txt"
-
-                with open(download_folder_path, 'w') as outfile:
-                    outfile.write(str(decrypted_content))
-
-                # -----------------  END OF SAVING FILE LOCALLY ----------------- #
-
-        return redirect(url_for('authorised_user.post'))
 
     else:
 
