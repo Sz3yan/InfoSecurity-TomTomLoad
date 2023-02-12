@@ -158,6 +158,12 @@ def authorisation():
         (acl[role][ttlSession.get_data_from_session('id_info', data=True).get("email")][-1] != "banned") and \
         (ttlSession.verfiy_Ptoken('id_info')):
 
+    if (ttlSession.get_data_from_session('id_info', data=True).get("name") not in blacklisted["blacklisted_users"]) and \
+        (TTLContextAwareAccessClientUserAgent not in blacklisted["blacklisted_useragent"]) and \
+        (TTLContextAwareAccessClientIP["ip"] not in blacklisted["blacklisted_ip"]) and \
+        (acl[role][ttlSession.get_data_from_session('id_info', data=True).get("email")][-1] != "banned") and \
+        (ttlSession.verfiy_Ptoken('id_info')):
+
         if ttlSession.get_data_from_session('id_info', data=True).get("email") not in acl['SuperAdmins']:
             if ttlSession.get_data_from_session('id_info', data=True).get("email") not in acl['Admins']:
                 w = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r")

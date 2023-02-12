@@ -50,7 +50,7 @@ def retention_policy():
     current_time_pre = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     current_time = datetime.strptime(current_time_pre,"%Y-%m-%d %H:%M:%S")
 
-    TomTomLoadLogging.info("Data Retention Policy started")
+    TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Data Retention Policy started")
 
     # -----------------  START OF RETRIEVING MEDIA ----------------- #
 
@@ -125,22 +125,22 @@ def retention_policy():
                     destination_blob_name = 'archive/' + decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + id + ".json",
                 )
 
-                TomTomLoadLogging.info(f"Moved post {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to archive")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Moved post {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to archive")
 
         # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
 
-        TomTomLoadLogging.info("Data Retention Policy Initialised")
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Data Retention Policy Initialised")
 
 
-scheduler = BackgroundScheduler()
-scheduler.configure(timezone="Asia/Singapore")
-
-scheduler.add_job(
-    retention_policy,
-    # "interval", hours=0, minutes=0, seconds=30
-    "interval", hours=23, minutes=59, seconds=59
-)
-scheduler.start()
+# scheduler = BackgroundScheduler()
+# scheduler.configure(timezone="Asia/Singapore")
+#
+# scheduler.add_job(
+#     retention_policy,
+#     "interval", hours=0, minutes=0, seconds=30
+#     # "interval", hours=23, minutes=59, seconds=59
+# )
+# scheduler.start()
 
 # -----------------  START OF WRAPPER ----------------- #
 
@@ -748,6 +748,7 @@ def post():
 
 @authorised_user.route("/posts/<regex('[0-9a-f]{32}'):id>")
 @check_signed_credential
+@check_role_write
 def post_id(id):
     if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
         post_id = id
