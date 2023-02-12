@@ -252,21 +252,6 @@ def check_role_delete(func):
 
     return decorated_function
 
-def push_admin_user(email, password):
-        with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("adminuser.json"), "r") as f:
-            adminuser = json.load(f) 
-
-            user_data = {'email': email, 'password': password}
-            adminuser['Users'].append(user_data)
-            with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("adminuser.json"), "w") as f:
-                json.dump(adminuser, f)
-
-            storage.upload_blob(
-                bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
-                source_file_name=CONSTANTS.TTL_CONFIG_FOLDER.joinpath("adminuser.json"),
-                destination_blob_name="adminuser.json"
-            )
-            flash('Account successfully created', category='success')
 
 # -----------------  END OF WRAPPER ----------------- #
 
