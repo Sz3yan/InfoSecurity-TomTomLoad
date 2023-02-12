@@ -11,8 +11,9 @@ from static.classes.storage import GoogleCloudStorage
 from static.security.secure_data import GoogleCloudKeyManagement, Encryption
 from static.security.session_management import TTLSession
 from static.security.malware_analysis import malwareAnalysis
+from static.security.steganography import Decode
 from static.security.DatalossPrevention import DataLossPrevention, OpticalCharacterRecognition
-from static.security.logging import TTLLogger
+from static.security.log import TTLLogger
 
 from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort
 from functools import wraps
@@ -525,9 +526,15 @@ def media_upload(id):
 
             TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Malware Check Initialised on {temp_Mediafile_path}")
 
+            Decode(temp_Mediafile_path)
+            if Decode(temp_Mediafile_path) == 0:
+                print("steganography detected")
+
+                TomTomLoadLogging.warning(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Steganography found in media {id}. Aborting upload.")
+                abort(403)
+
             malwareAnalysis(original_hash)
             if malwareAnalysis(original_hash) == 0:
-
                 # -----------------  START OF UPLOADING TO GCS ----------------- #
 
                 storage.upload_blob(
