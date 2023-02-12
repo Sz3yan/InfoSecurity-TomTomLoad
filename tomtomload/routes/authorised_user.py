@@ -592,12 +592,12 @@ def media_upload(id):
             TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Malware Analysis completed on {temp_Mediafile_path}")
 
             if original_hash == new_hash:
-                TomTomLoadLogging.info(f"Integrity check of media {id} passed. {temp_Mediafile_path} has not been tampered with during upload. Hash matches.")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Integrity check of media {id} passed. {temp_Mediafile_path} has not been tampered with during upload. Hash matches.")
                 print(f"{temp_Mediafile_path} has not been tampered with during upload. Hash matches.")
 
             else:
 
-                TomTomLoadLogging.error(f"Integrity check of media {id} failed. {temp_Mediafile_path} has been tampered with during upload. Hash does not match.")
+                TomTomLoadLogging.error(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Integrity check of media {id} failed. {temp_Mediafile_path} has been tampered with during upload. Hash does not match.")
                 print(f"{temp_Mediafile_path} has been tampered with during upload. Hash does not match.")
 
             TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Integrity Check completed on {temp_Mediafile_path}")
@@ -1198,7 +1198,7 @@ def edit_access(id):
                 destination_blob_name="acl.json"
             )
 
-            TomTomLoadLogging.info("updated ACL file")
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)} updated ACL file")
 
             return redirect(url_for('authorised_user.home'))
 
@@ -1264,7 +1264,7 @@ def addBlock_IPAddresses():
                     source_file_name=CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"),
                     destination_blob_name="blacklisted.json"
                 )
-                TomTomLoadLogging.info("updated Blacklisted file")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)} updated Blacklisted file")
 
             return redirect(url_for('authorised_user.home'))
 
@@ -1311,7 +1311,7 @@ def revoke_cert():
 
         # -----------------  START OF REMOVING REVOKE CERT ---------------- #
 
-        super_admin_certificate = os.path.join(CONSTANTS.SUPER_CERTIFICATE_FOLDER,acl[decoded_jwt["role"]][decoded_jwt["email"]][3] + '_' + acl[decoded_jwt["role"]][decoded_jwt["email"]][5])
+        super_admin_certificate = os.path.join(CONSTANTS.SUPER_CERTIFICATE_FOLDER, acl[decoded_jwt["role"]][decoded_jwt["email"]][3] + '_' + str(ttlSession.get_data_from_session("TTLContextAwareAccess", data=True)["TTL-Context-Aware-Access-Client-IP"]["ip"]).replace('.', '_'))
         super_admin = os.path.join(super_admin_certificate, "SUPER_ADMIN.crt")
 
         # print the full path
@@ -1320,6 +1320,53 @@ def revoke_cert():
 
         # remove the directory
         shutil.rmtree(super_admin_certificate)
+
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)} has revoked their certificate")
+
+        # -----------------  END OF REMOVING REVOKE CERT ---------------- #
+
+        # -----------------  START OF UPLOADING TO GCS ---------------- #
+
+        storage.upload_blob(
+            bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+            source_file_name=CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"),
+            destination_blob_name="acl.json"
+        )
+
+        # -----------------  END OF UPLOADING TO GCS ---------------- #
+
+
+        return redirect(url_for('authorised_user.users'))
+
+    return redirect(url_for('authorised_user.users'))
+
+    if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
+
+        # -----------------  START OF OVERWRITE ACL ---------------- #
+
+        with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
+            acl = json.load(s)
+
+        used = 0
+
+        w = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r")
+        dict_acl = json.loads(w.read())
+        dict_acl[decoded_jwt["role"]][decoded_jwt["email"]][4] = used
+        w.close()
+
+        r = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "w")
+        r.write(json.dumps(dict_acl))
+        r.close()
+
+        # -----------------  END OF OVERWRITE ACL ---------------- #
+
+        # -----------------  START OF REMOVING REVOKE CERT ---------------- #
+
+        certificate_directory = CONSTANTS.IP_CONFIG_FOLDER.joinpath("certificates")
+        super_admin = os.path.join(certificate_directory, "SUPER_ADMIN.crt")
+
+
+        os.remove(super_admin)
 
         TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)} has revoked their certificate")
 
