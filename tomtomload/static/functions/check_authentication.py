@@ -3,16 +3,18 @@ from flask import request, jsonify, session, redirect, url_for
 from static.security.session_management import TTLSession
 from static.security.secure_data import GoogleCloudKeyManagement
 from static.classes.config import CONSTANTS, SECRET_CONSTANTS
+from static.classes.storage import GoogleCloudStorage
 from datetime import datetime, timedelta
 import jwt
 
 KeyManagement = GoogleCloudKeyManagement()
+ttlSession = TTLSession()
+storage = GoogleCloudStorage()
 
 # ----- Webpage authentication -----
 def authenticated(func):
     @wraps(func)
     def decorated_function(*args, **kwargs):
-        ttlSession = TTLSession()
         if "id_info" in session and ttlSession.verfiy_Ptoken("id_info"):
             return func(*args, **kwargs)
 
@@ -27,10 +29,9 @@ def ttl_jwt_authentication(func):
         if not ttl_check_user_agent():
             try:
                 bearer_token = request.headers['Authorization'].split(" ")[1]
-                print(bearer_token)
                 jwt.decode(
                     bearer_token, 
-                    algorithms = "HS256",
+                    algorithms = CONSTANTS.JWT_ALGORITHM,
                     key = str(KeyManagement.retrieve_key(
                             project_id = CONSTANTS.GOOGLE_PROJECT_ID,
                             location_id = CONSTANTS.GOOGLE_LOCATION_ID,
@@ -38,15 +39,19 @@ def ttl_jwt_authentication(func):
                             key_id = CONSTANTS.JWT_ACCESS_TOKEN_SECRET_KEY
                         ))
                 )
-                print("hd")
                 return func(*args, **kwargs)
             except KeyError:
-                print("heS")
                 return jsonify(message="Please input a authorization token"),401
             except jwt.ExpiredSignatureError:
                 return jsonify(message="Token has expired"),401
             except jwt.InvalidTokenError:
                 return jsonify(message="Forbidden access"),403
+        else:
+            if ttlSession.verfiy_Ptoken('TTLAuthenticatedUserName'):
+                return func(*args, **kwargs)
+            else:
+                return jsonify(Error="Access Denied"),403
+            
     
     return decorated_function
 
@@ -55,10 +60,10 @@ def ttl_jwt_authentication(func):
 def ttl_redirect_user(func):
     @wraps(func)
     def decorated_function(*args, **kwargs):
-        ttlSession = TTLSession()
         # ttlSession.write_data_to_session("route_from","api")
         try:
             if ttl_check_user_agent() and not ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
+  
                 return redirect(CONSTANTS.IDENTITY_PROXY_URL)
             else:
                 return func(*args, **kwargs)

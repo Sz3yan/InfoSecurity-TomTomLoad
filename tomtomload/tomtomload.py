@@ -9,7 +9,7 @@ from flask_moment import Moment
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from routes.authorised_user import authorised_user
+from routes.authorised_user import authorised_user, retention_policy
 from routes.admin_user import admin_user
 from routes.api import api
 from routes.Errors import error
@@ -169,6 +169,12 @@ if __name__ == "__main__":
         remove_post,
         "interval", hours=23, minutes=59, seconds=0
     )
+    scheduler.add_job(
+        retention_policy,
+        "interval", hours=0, minutes=4, seconds=0
+        # "interval", hours=23, minutes=59, seconds=59
+)
+
 
     scheduler.start()
 

@@ -4,6 +4,7 @@ import json
 import requests
 import base64
 import ipinfo
+import shutil
 from datetime import datetime, timedelta
 import google.auth.transport.requests
 
@@ -122,6 +123,8 @@ def authorisation():
     TTLContextAwareAccessClientUserAgent = request.headers.get('User-Agent')
     TTLContextAwareAccessClientCertificate = "cert"
 
+    print(custom_ip)
+
     # -----------------  END OF CONTEXT-AWARE ACCESS ----------------- #
 
     # -----------------  START OF BLACKLIST ----------------- #
@@ -142,16 +145,19 @@ def authorisation():
     with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
         acl = json.load(s)
 
-    if (ttlSession.get_data_from_session('id_info', data=True).get("name") not in blacklisted["blacklisted_users"]) and \
-        (TTLContextAwareAccessClientUserAgent not in blacklisted["blacklisted_useragent"]) and \
-        (TTLContextAwareAccessClientIP["ip"] not in blacklisted["blacklisted_ip"]) and \
-        (ttlSession.verfiy_Ptoken('id_info')):
-
         role = 'Admins'
 
         for user, value in acl['SuperAdmins'].items():
             if ttlSession.get_data_from_session('id_info', data=True).get("email") == user:
                 role = 'SuperAdmins'
+
+
+    if (ttlSession.get_data_from_session('id_info', data=True).get("name") not in blacklisted["blacklisted_users"]) and \
+        (TTLContextAwareAccessClientUserAgent not in blacklisted["blacklisted_useragent"]) and \
+        (TTLContextAwareAccessClientIP["ip"] not in blacklisted["blacklisted_ip"]) and \
+        (acl[role][ttlSession.get_data_from_session('id_info', data=True).get("email")][-1] != "banned") and \
+        (ttlSession.verfiy_Ptoken('id_info')):
+
 
         if ttlSession.get_data_from_session('id_info', data=True).get("email") not in acl['SuperAdmins']:
             if ttlSession.get_data_from_session('id_info', data=True).get("email") not in acl['Admins']:
@@ -181,57 +187,79 @@ def authorisation():
 
         # -----------------  START OF CERTIFICATE AUTHORITY ----------------- #
 
-        IdentityProxyLogging.info("Initialising Certificate Authority")
+        if role == "SuperAdmins":
 
-        certificate_directory = CONSTANTS.IP_CONFIG_FOLDER.joinpath("certificates")
+            IdentityProxyLogging.info("Initialising Certificate Authority")
 
-        sub_certificate = os.path.join(certificate_directory, "SUBORDINATE_IDENTITY_PROXY")
-        super_admin = os.path.join(certificate_directory, "SUPER_ADMIN.crt")
+            certificate_directory = CONSTANTS.IP_CONFIG_FOLDER.joinpath("certificates")
 
-        used = 0
+            sub_certificate = os.path.join(certificate_directory, "SUBORDINATE_IDENTITY_PROXY")
 
-        if ttlSession.get_data_from_session("id_info", data=True).get("email") in acl['SuperAdmins']:
+            super_admin_certificate_directory = os.path.join(certificate_directory, "SUPERADMIN")
+            super_admin_certificate = os.path.join(super_admin_certificate_directory, f"{str(ttlSession.get_data_from_session('id_info', data=True).get('sub')) + '_' + str(TTLContextAwareAccessClientIP['ip']).replace('.', '_')}")
+            super_admin = os.path.join(super_admin_certificate, "SUPER_ADMIN.crt")
 
-            w = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r")
-            dict_acl = json.loads(w.read())
-            used = dict_acl['SuperAdmins'][ttlSession.get_data_from_session("id_info", data=True).get("email")][4]
+            used = 0
 
-            if used == 1:
-                if not os.path.exists(super_admin):
-                    IdentityProxyLogging.warning("super admin certificate not found")
-                    IdentityProxyLogging.warning("super admin access denied")
+            if ttlSession.get_data_from_session("id_info", data=True).get("email") in acl['SuperAdmins']:
 
-                    return abort(401)
+                w = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r")
+                dict_acl = json.loads(w.read())
+                used = dict_acl['SuperAdmins'][ttlSession.get_data_from_session("id_info", data=True).get("email")][4]
 
-                else:
-                    IdentityProxyLogging.info("super admin certificate found")
-                    IdentityProxyLogging.info("super admin access granted")
+                if used == 1:
+                    if not os.path.exists(super_admin):
+                        IdentityProxyLogging.warning("super admin certificate not found")
+                        IdentityProxyLogging.warning("super admin access denied")
 
-                    TTLContextAwareAccessClientCertificate = str(super_admin)
+                        return abort(401)
 
-            if used == 0:
-                certificate.create_certificate_csr(ca_name="SUPER_ADMIN")
-                certificate_authority.create_certificate_from_csr(
-                    csr_file="SUPER_ADMIN",
-                    ca_name=sub_certificate,
-                    ca_duration=100 * 24 * 60 * 60
-                )
-                IdentityProxyLogging.info("super admin certificate created")
+                    else:
+                        IdentityProxyLogging.info("super admin certificate found")
+                        IdentityProxyLogging.info("super admin access granted")
 
-                used = 1
+                        TTLContextAwareAccessClientCertificate = str(super_admin)
 
-                r = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "w")
-                dict_acl['SuperAdmins'][ttlSession.get_data_from_session("id_info", data=True).get("email")][4] = used
-                r.write(json.dumps(dict_acl))
-                r.close()
+                if used == 0:
+                    certificate.create_certificate_csr(ca_name="SUPER_ADMIN")
+                    certificate_authority.create_certificate_from_csr(
+                        csr_file="SUPER_ADMIN",
+                        ca_name=sub_certificate,
+                        ca_duration=100 * 24 * 60 * 60
+                    )
+                    IdentityProxyLogging.info("super admin certificate created")
 
-                storage.upload_blob(
-                    bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
-                    source_file_name=CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"),
-                    destination_blob_name="acl.json"
-                )
+                    certificate_directory = os.path.join(CONSTANTS.IP_CONFIG_FOLDER, "certificates")
+                    super_admin_certificate_directory = os.path.join(certificate_directory, "SUPERADMIN")
+                    super_admin_certificate = os.path.join(super_admin_certificate_directory, f"{str(ttlSession.get_data_from_session('id_info', data=True).get('sub')) + '_' + str(TTLContextAwareAccessClientIP['ip']).replace('.', '_')}")
+                    cert_crt = os.path.join(super_admin_certificate, "SUPER_ADMIN.crt")
+                    cert_csr = os.path.join(super_admin_certificate, "SUPER_ADMIN_csr.pem")
+                    cert_key = os.path.join(super_admin_certificate, "SUPER_ADMIN_key.pem")
 
-                IdentityProxyLogging.info("updated ACL file")
+                    if not os.path.exists(super_admin_certificate_directory):
+                        os.mkdir(super_admin_certificate_directory)
+
+                    if not os.path.exists(super_admin_certificate):
+                        os.mkdir(super_admin_certificate)
+
+                    shutil.copyfile(os.path.join(certificate_directory, "SUPER_ADMIN.crt"), cert_crt)
+                    shutil.copyfile(os.path.join(certificate_directory, "SUPER_ADMIN_csr.pem"), cert_csr)
+                    shutil.copyfile(os.path.join(certificate_directory, "SUPER_ADMIN_key.pem"), cert_key)
+
+                    used = 1
+
+                    r = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "w")
+                    dict_acl['SuperAdmins'][ttlSession.get_data_from_session("id_info", data=True).get("email")][4] = used
+                    r.write(json.dumps(dict_acl))
+                    r.close()
+
+                    storage.upload_blob(
+                        bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+                        source_file_name=CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"),
+                        destination_blob_name="acl.json"
+                    )
+
+                    IdentityProxyLogging.info("updated ACL file")
 
         # -----------------  END OF CERTIFICATE AUTHORITY ----------------- #
 

@@ -9,6 +9,7 @@ from flask_limiter.util import get_remote_address
 
 from routes.potential_user import potential_user
 from routes.api import api
+from routes.errors import error
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -68,6 +69,7 @@ if not app.config["CONSTANTS"].DEBUG_MODE:
 with app.app_context():
     app.register_blueprint(potential_user)
     app.register_blueprint(api)
+    app.register_blueprint(error)
 
 # -----------------  END OF BLUEPRINT  ----------------- #
 

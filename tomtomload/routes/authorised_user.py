@@ -4,6 +4,7 @@ import json
 import base64
 import hashlib
 import datetime
+import shutil
 
 from static.classes.config import CONSTANTS
 from static.classes.unique_id import UniqueID
@@ -15,7 +16,7 @@ from static.security.steganography import Decode
 from static.security.DatalossPrevention import DataLossPrevention, OpticalCharacterRecognition
 from static.security.log import TTLLogger
 
-from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort
+from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort, flash
 from functools import wraps
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -49,6 +50,8 @@ def retention_policy():
     print("Retention policy is running")
     current_time_pre = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     current_time = datetime.strptime(current_time_pre,"%Y-%m-%d %H:%M:%S")
+
+    TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Data Retention Policy started")
 
     # -----------------  START OF RETRIEVING MEDIA ----------------- #
 
@@ -123,23 +126,25 @@ def retention_policy():
                     destination_blob_name = 'archive/' + decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/post/" + id + ".json",
                 )
 
-                TomTomLoadLogging.info(f"Moved post {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to archive")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Moved post {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to archive")
 
         # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
 
-        TomTomLoadLogging.info("Data Retention Policy Initialised")
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Data Retention Policy Initialised")
 
 
-scheduler = BackgroundScheduler()
-scheduler.configure(timezone="Asia/Singapore")
-
-scheduler.add_job(
-    retention_policy,
-    "interval", hours=23, minutes=58, seconds=0
-)
-scheduler.start()
+# scheduler = BackgroundScheduler()
+# scheduler.configure(timezone="Asia/Singapore")
+#
+# scheduler.add_job(
+#     retention_policy,
+#     "interval", hours=0, minutes=0, seconds=30
+#     # "interval", hours=23, minutes=59, seconds=59
+# )
+# scheduler.start()
 
 # -----------------  START OF WRAPPER ----------------- #
+
 
 def check_signed_credential(func):
     @wraps(func)
@@ -247,6 +252,22 @@ def check_role_delete(func):
             return abort(403)
 
     return decorated_function
+
+def push_admin_user(email, password):
+        with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("adminuser.json"), "r") as f:
+            adminuser = json.load(f) 
+
+            user_data = {'email': email, 'password': password}
+            adminuser['Users'].append(user_data)
+            with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("adminuser.json"), "w") as f:
+                json.dump(adminuser, f)
+
+            storage.upload_blob(
+                bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+                source_file_name=CONSTANTS.TTL_CONFIG_FOLDER.joinpath("adminuser.json"),
+                destination_blob_name="adminuser.json"
+            )
+            flash('Account successfully created', category='success')
 
 # -----------------  END OF WRAPPER ----------------- #
 
@@ -406,6 +427,7 @@ def media():
 
 @authorised_user.route("/media/<regex('[0-9a-f]{32}'):id>")
 @check_signed_credential
+@check_role_delete
 def media_id(id):
     media_id = id
     create_new_media_id = UniqueID()
@@ -513,7 +535,7 @@ def media_upload(id):
                 # Create a new hash object
                 hash_object = hashlib.sha256()
 
-                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Integrity Check Initialised on {temp_Mediafile_path}")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Integrity Check Initialised on {temp_Mediafile_path} before uploading")
 
                 # Update the hash object with the file's data
                 hash_object.update(file_data)
@@ -572,7 +594,7 @@ def media_upload(id):
                 with open(temp_Mediafile_path, "rb") as fs:
                     file_data = fs.read()
 
-                    TomTomLoadLogging.info(f'{ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True)}. Integrity Check Initialised on {temp_Mediafile_path}')
+                    TomTomLoadLogging.info(f'{ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True)}. Integrity Check Initialised on {temp_Mediafile_path} after uploading')
 
                     # Create a new hash object
                     hash_object = hashlib.sha256()
@@ -594,12 +616,12 @@ def media_upload(id):
             TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Malware Analysis completed on {temp_Mediafile_path}")
 
             if original_hash == new_hash:
-                TomTomLoadLogging.info(f"Integrity check of media {id} passed. {temp_Mediafile_path} has not been tampered with during upload. Hash matches.")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Integrity check of media {id} passed. {temp_Mediafile_path} has not been tampered with during upload. Hash matches.")
                 print(f"{temp_Mediafile_path} has not been tampered with during upload. Hash matches.")
 
             else:
 
-                TomTomLoadLogging.error(f"Integrity check of media {id} failed. {temp_Mediafile_path} has been tampered with during upload. Hash does not match.")
+                TomTomLoadLogging.error(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Integrity check of media {id} failed. {temp_Mediafile_path} has been tampered with during upload. Hash does not match.")
                 print(f"{temp_Mediafile_path} has been tampered with during upload. Hash does not match.")
 
             TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Integrity Check completed on {temp_Mediafile_path}")
@@ -750,6 +772,7 @@ def post():
 
 @authorised_user.route("/posts/<regex('[0-9a-f]{32}'):id>")
 @check_signed_credential
+@check_role_write
 def post_id(id):
     if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
         post_id = id
@@ -1061,6 +1084,7 @@ def post_export():
 
 @authorised_user.route("/users")
 @check_signed_credential
+@check_role_read
 def users():
     user_id = decoded_jwt["google_id"]
     role = decoded_jwt["role"]
@@ -1070,19 +1094,29 @@ def users():
 
     Admins_list = []
 
-    for value in acl["Admins"]:
-        if value not in Admins_list:
-            Admins_list.append(value)
+    for user, value in acl['Admins'].items():
+        if user not in Admins_list:
+            acl['Admins'][user] = user, value[-2]
+            Admins_list.append(acl['Admins'][user])
 
     return render_template('authorised_admin/users.html', user_id=user_id, email=decoded_jwt["email"], role=role, pic=decoded_jwt["picture"], Admins_list=Admins_list)
 
 
 @authorised_user.route("/users/<regex('[0-9]{21}'):id>")
 @check_signed_credential
+@check_role_read
 def users_id(id):
     user_id = id
+    email = ''
 
-    return render_template('authorised_admin/user_id.html', user_id=user_id, email=decoded_jwt["email"],role = decoded_jwt["role"], pic=decoded_jwt["picture"])
+    with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
+        acl = json.load(s)
+
+    for user, value in acl['Admins'].items():
+        if value[-1] == user_id:
+            email = user
+
+    return render_template('authorised_admin/user_id.html', user_id=user_id, email=email,role = decoded_jwt["role"], pic=decoded_jwt["picture"])
 
 
 @authorised_user.route("/users/create/<regex('[0-9]{21}'):id>")
@@ -1094,6 +1128,7 @@ def create_users(id):
 
 @authorised_user.route("/account")
 @check_signed_credential
+@check_role_read
 def profile():
 
     new_user = UniqueID()
@@ -1109,58 +1144,88 @@ def profile():
     return render_template('authorised_admin/profile.html', email=email, new_user=new_user, id=id, role = decoded_jwt["role"], pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/users/edit_access", methods=['GET', 'POST'])
+@authorised_user.route("/users/edit_access/<regex('[0-9]{21}'):id>", methods=['GET', 'POST'])
 @check_signed_credential
-def edit_access():
+@check_role_write
+@check_role_read
+def edit_access(id):
     with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
         acl = json.load(s)
 
+    email = ''
+    for user, value in acl['Admins'].items():
+        print(user)
+        if id == value[-2]:
+            email = user
+
     access_list = []
 
-    for value in acl[decoded_jwt["role"]][decoded_jwt["email"]]:
-        if value == "read":
-            access_list.append("read")
-        elif value == "write":
-            access_list.append("write")
-        elif value == "delete":
-            access_list.append("delete")
+    for user, value in acl['Admins'].items():
+        if user == email:
+            access_list = value
+
+    print('access_list:', access_list)
 
     if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
         if request.method == 'POST':
-            write = request.form.get('writeAccess')
-            delete = request.form.get('deleteAccess')
-
-            updated_access_list = ['read']
-
-            if write is not None:
-                updated_access_list.append('write')
-
-            if delete is not None:
-                updated_access_list.append("delete")
-
-            print(updated_access_list)
-
-            if updated_access_list == acl[decoded_jwt["role"]][decoded_jwt["email"]]:
-                return redirect(url_for('authorised_user.profile'))
+            banned = request.form.get('ban')
+            print('banned?:', banned)
+            if banned is not None:
+                access_list_original = access_list
+                access_list = ["None", "None", "None"] + access_list_original[3:4] + ['banned']
             else:
-                w = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r")
-                dict_acl = json.loads(w.read())
-                dict_acl[decoded_jwt["role"]][decoded_jwt["email"]] = updated_access_list
-                w.close()
+                access_list = ["read", "None", "None"] + access_list[3:4] + ['unbanned']
 
-                r = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "w")
-                r.write(json.dumps(dict_acl))
-                r.close()
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Changed access for {email} to unbanned")
 
-                storage.upload_blob(
-                    bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
-                    source_file_name=CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"),
-                    destination_blob_name="acl.json"
-                )
+                write = request.form.get('writeAccess')
+                delete = request.form.get('deleteAccess')
 
-                TomTomLoadLogging.info("updated ACL file")
+                if write is not None:
+                    if 'write' in access_list:
+                        pass
+                    else:
+                        access_list[1] = 'write'
+                else:
+                    if 'write' in access_list:
+                        access_list[1] = 'None'
+                    else:
+                        pass
 
-                return redirect(url_for('authorised_user.home'))
+                if delete is not None:
+                    if 'delete' in access_list:
+                        pass
+                    else:
+                        access_list[2] = 'delete'
+                else:
+                    if 'delete' in access_list:
+                        access_list[2] = 'None'
+                    else:
+                        pass
+
+                print('email',email)
+                print('access_list:', access_list)
+                print('acl: ', acl['Admins'][email])
+
+            w = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r")
+            dict_acl = json.loads(w.read())
+            dict_acl['Admins'][email] = access_list
+            print('dict_acl:', dict_acl)
+            w.close()
+
+            r = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "w")
+            r.write(json.dumps(dict_acl))
+            r.close()
+
+            storage.upload_blob(
+                bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+                source_file_name=CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"),
+                destination_blob_name="acl.json"
+            )
+
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)} updated ACL file")
+
+            return redirect(url_for('authorised_user.home'))
 
     else:
 
@@ -1168,11 +1233,12 @@ def edit_access():
 
         abort(403)
 
-    return render_template('authorised_admin/user_access.html', pic=decoded_jwt["picture"], email=decoded_jwt["email"], access=decoded_jwt['role'],role = decoded_jwt["role"], access_list=access_list)
+    return render_template('authorised_admin/user_access.html', pic=decoded_jwt["picture"], email=email, role = decoded_jwt["role"], access_list=access_list)
 
 
 @authorised_user.route("/logs/")
 @check_signed_credential
+@check_role_read
 def logs():
 
     role = decoded_jwt["role"]
@@ -1199,6 +1265,7 @@ def logs():
 
 @authorised_user.route("/users/addBlockIPAddresses", methods=['GET', 'POST'])
 @check_signed_credential
+@check_role_write
 def addBlock_IPAddresses():
     with open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"), "r") as f:
         blacklisted = json.load(f)
@@ -1222,7 +1289,7 @@ def addBlock_IPAddresses():
                     source_file_name=CONSTANTS.IP_CONFIG_FOLDER.joinpath("blacklisted.json"),
                     destination_blob_name="blacklisted.json"
                 )
-                TomTomLoadLogging.info("updated Blacklisted file")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)} updated Blacklisted file")
 
             return redirect(url_for('authorised_user.home'))
 
@@ -1235,10 +1302,60 @@ def addBlock_IPAddresses():
     return render_template('authorised_admin/blockIPAddressesAdd.html', email=decoded_jwt["email"], role = decoded_jwt["role"], pic=decoded_jwt["picture"])
 
 
-@authorised_user.route("/users/addBanAdmin", methods=['GET', 'POST'])
+@authorised_user.route("/users/revoke_cert", methods=['GET', 'POST'])
 @check_signed_credential
-def addBan_Admin():
+def revoke_cert():
 
-    return render_template('authorised_admin/banAdmin.html', email=decoded_jwt["email"], role = decoded_jwt["role"],pic=decoded_jwt["picture"])
+    if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
+
+        # -----------------  START OF OVERWRITE ACL ---------------- #
+
+        with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
+            acl = json.load(s)
+
+        used = 0
+
+        w = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r")
+        dict_acl = json.loads(w.read())
+        dict_acl[decoded_jwt["role"]][decoded_jwt["email"]][4] = used
+        w.close()
+
+        r = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "w")
+        r.write(json.dumps(dict_acl))
+        r.close()
+
+        # -----------------  END OF OVERWRITE ACL ---------------- #
+
+        # -----------------  START OF REMOVING REVOKE CERT ---------------- #
+
+        super_admin_certificate = os.path.join(CONSTANTS.SUPER_CERTIFICATE_FOLDER,acl[decoded_jwt["role"]][decoded_jwt["email"]][3] + '_' + acl[decoded_jwt["role"]][decoded_jwt["email"]][5])
+        super_admin = os.path.join(super_admin_certificate, "SUPER_ADMIN.crt")
+
+        # print the full path
+        print("super_admin_certificate: " + super_admin_certificate)
+        print("super_admin: " + super_admin)
+
+        # remove the directory
+        shutil.rmtree(super_admin_certificate)
+
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)} has revoked their certificate")
+
+        # -----------------  END OF REMOVING REVOKE CERT ---------------- #
+
+        # -----------------  START OF UPLOADING TO GCS ---------------- #
+
+        storage.upload_blob(
+            bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+            source_file_name=CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"),
+            destination_blob_name="acl.json"
+        )
+
+        # -----------------  END OF UPLOADING TO GCS ---------------- #
+
+
+        return redirect(url_for('authorised_user.users'))
+
+    return redirect(url_for('authorised_user.users'))
 
 # -----------------  END OF AUTHENTICATED SIGNED TRAFFIC ----------------- #
+
