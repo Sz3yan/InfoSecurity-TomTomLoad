@@ -15,7 +15,7 @@ from static.security.malware_analysis import malwareAnalysis
 from static.security.DatalossPrevention import DataLossPrevention, OpticalCharacterRecognition
 from static.security.logging import TTLLogger
 
-from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort
+from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort, flash
 from functools import wraps
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -251,6 +251,22 @@ def check_role_delete(func):
             return abort(403)
 
     return decorated_function
+
+def push_admin_user(email, password):
+        with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("adminuser.json"), "r") as f:
+            adminuser = json.load(f) 
+
+            user_data = {'email': email, 'password': password}
+            adminuser['Users'].append(user_data)
+            with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("adminuser.json"), "w") as f:
+                json.dump(adminuser, f)
+
+            storage.upload_blob(
+                bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+                source_file_name=CONSTANTS.TTL_CONFIG_FOLDER.joinpath("adminuser.json"),
+                destination_blob_name="adminuser.json"
+            )
+            flash('Account successfully created', category='success')
 
 # -----------------  END OF WRAPPER ----------------- #
 
