@@ -47,26 +47,26 @@ def Decode(src):
 
 
 
-#steganography using LSB
-def show_lsb(image_path, n = 2) -> None:
-    """n = least significant bits of image (i think)"""
-    image = Image.open(image_path)
-
-    # Used to set everything but the least significant n bits to 0 when
-    # using bitwise AND on an integer
-    mask = (1 << n) - 1
-
-    image_data = cast(Iterable[Tuple[int, int, int]], image.getdata())
-    color_data = [
-        (255 * ((rgb[0] & mask) + (rgb[1] & mask) + (rgb[2] & mask)) // (3 * mask),) * 3
-        for rgb in image_data
-    ]
-
-    image.putdata(color_data)  # type: ignore
-    file_name, file_extension = os.path.splitext(image_path)
-    decoded_image = image.save(file_name + "_{}LSBs".format(n) + file_extension)
-    return decoded_image
-
-
-
-show_lsb('C:\\lalala\ISPJ\\InfoSecurity-TomTomLoad\\tomtomload\\static\\images\\tomtomload.png')
+# #steganography using LSB
+# def show_lsb(image_path, n = 2) -> None:
+#     """n = least significant bits of image (i think)"""
+#     image = Image.open(image_path)
+#
+#     # Used to set everything but the least significant n bits to 0 when
+#     # using bitwise AND on an integer
+#     mask = (1 << n) - 1
+#
+#     image_data = cast(Iterable[Tuple[int, int, int]], image.getdata())
+#     color_data = [
+#         (255 * ((rgb[0] & mask) + (rgb[1] & mask) + (rgb[2] & mask)) // (3 * mask),) * 3
+#         for rgb in image_data
+#     ]
+#
+#     image.putdata(color_data)  # type: ignore
+#     file_name, file_extension = os.path.splitext(image_path)
+#     decoded_image = image.save(file_name + "_{}LSBs".format(n) + file_extension)
+#     return decoded_image
+#
+#
+#
+# show_lsb('C:\\lalala\ISPJ\\InfoSecurity-TomTomLoad\\tomtomload\\static\\images\\tomtomload.png')

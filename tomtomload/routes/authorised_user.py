@@ -5,6 +5,7 @@ import base64
 import hashlib
 import datetime
 import shutil
+import smtplib
 
 from static.classes.config import CONSTANTS
 from static.classes.unique_id import UniqueID
@@ -85,8 +86,10 @@ def retention_policy():
                 destination_bucket_name = 'ttl_backup',
                 destination_blob_name = 'archive/' + decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + id + ".png",
             )
-
             TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Moved media {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to archive")
+        elif (current_time - file_time).days >= 730:
+            storage.delete_blob(CONSTANTS.STORAGE_BUCKET_NAME, decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/media/" + id + ".png")
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Deleted media {id} from {CONSTANTS.STORAGE_BUCKET_NAME}")
 
     # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
 
@@ -126,6 +129,9 @@ def retention_policy():
                 )
 
                 TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Moved post {id} from {CONSTANTS.STORAGE_BUCKET_NAME} to archive")
+            elif (current_time - file_time).days >= 730:
+                storage.delete_blob(CONSTANTS.STORAGE_BUCKET_NAME, decoded_TTLJWTAuthenticatedUser["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName",  data=True) + "/post/" + id + ".json")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Deleted post {id} from {CONSTANTS.STORAGE_BUCKET_NAME}")
 
         # -----------------  END OF CHECKING LOCAL MEDIA ----------------- #
 
@@ -1104,6 +1110,8 @@ def users():
             acl['Admins'][user] = user, value[-2]
             Admins_list.append(acl['Admins'][user])
 
+    print(Admins_list)
+
     return render_template('authorised_admin/users.html', user_id=user_id, email=decoded_jwt["email"], role=role, pic=decoded_jwt["picture"], Admins_list=Admins_list)
 
 
@@ -1118,10 +1126,12 @@ def users_id(id):
         acl = json.load(s)
 
     for user, value in acl['Admins'].items():
-        if value[-1] == user_id:
+        print(user, value)
+        if value[-2] == user_id:
             email = user
+            print(email)
 
-    return render_template('authorised_admin/user_id.html', user_id=user_id, email=email,role = decoded_jwt["role"], pic=decoded_jwt["picture"])
+    return render_template('authorised_admin/user_id.html', user_id=user_id, email=email, role = decoded_jwt["role"], pic=decoded_jwt["picture"])
 
 
 @authorised_user.route("/users/create/<regex('[0-9]{21}'):id>")
@@ -1179,6 +1189,15 @@ def edit_access(id):
                 access_list_original = access_list
                 access_list = ["None", "None", "None"] + access_list_original[3:4] + ['banned']
                 TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Changed access for {email} to banned")
+
+                server = smtplib.SMTP('smtp.gmail.com', 587)
+                server.ehlo()
+                server.starttls()
+                server.login('tomtomloadcms@gmail.com', 'jixepnkykfebnkai')
+                message = f"Subject: Account status\n\nYour account with {email} will be banned until further notice. \n\nPlease note that you will not be able to access TomTomLoad.com with this email during this period."
+                server.sendmail('tomtomloadcms@gmail.com', email, message)
+                server.quit()
+
             else:
                 access_list = ["read", "None", "None"] + access_list[3:4] + ['unbanned']
 
@@ -1364,4 +1383,3 @@ def revoke_cert():
     return redirect(url_for('authorised_user.users'))
 
 # -----------------  END OF AUTHENTICATED SIGNED TRAFFIC ----------------- #
-
