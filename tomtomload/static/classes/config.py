@@ -18,13 +18,17 @@ class Constants:
     TTL_CONFIG_MEDIA_FOLDER: pathlib.Path = TTL_CONFIG_FOLDER / "media"
     TTL_CONFIG_POSTS_FOLDER: pathlib.Path = TTL_CONFIG_FOLDER / "post"
     TTL_CONFIG_DOWNLOAD_FOLDER: pathlib.Path = TTL_CONFIG_FOLDER / "downloads"
+    SUPER_CERTIFICATE_FOLDER: pathlib.Path = TTL_ROOT_FOLDER.parent.absolute() / "identity-proxy/static/config_files/certificates/SUPERADMIN"
     TTL_MALWARELOGS_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.absolute() / "malwarelogs"
     IP_CONFIG_FOLDER: pathlib.Path = pathlib.Path(__file__).parent.parent.parent.parent.absolute() / "identity-proxy/static/config_files"
 
     ADMIN_URL: str = "https://127.0.0.1:5000/admin" if DEBUG_MODE else "https://www.tomtomload.com/admin"
-    API_MEDIA_URL: str = "https://127.0.0.1:5000/api/view_media" if DEBUG_MODE else "https://www.tomtomload.com/api/view_media"
-    API_POSTS_URL: str = "https://127.0.0.1:5000/api/view_post" if DEBUG_MODE else "https://www.tomtomload.com/api/view_post"
+    API_MEDIA_URL: str = "https://127.0.0.1:5000/api/v1/view_media" if DEBUG_MODE else "https://www.tomtomload.com/api/v1/view_media"
+    API_POSTS_URL: str = "https://127.0.0.1:5000/api/v1/view_post" if DEBUG_MODE else "https://www.tomtomload.com/api/v1/view_post"
     IDENTITY_PROXY_URL: str = "https://127.0.0.1:8080/" if DEBUG_MODE else "https://tomtomload.com/"
+
+    # -----------------  APP NAME ----------------- #
+    APP_NAME = 'tomtomload'
 
     # -----------------  GOOGLE CLOUD ----------------- #
     GOOGLE_PROJECT_ID: str = "infosec-62c05"

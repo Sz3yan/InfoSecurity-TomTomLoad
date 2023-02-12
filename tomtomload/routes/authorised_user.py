@@ -4,6 +4,7 @@ import json
 import base64
 import hashlib
 import datetime
+import shutil
 
 from static.classes.config import CONSTANTS
 from static.classes.unique_id import UniqueID
@@ -11,7 +12,7 @@ from static.classes.storage import GoogleCloudStorage
 from static.security.secure_data import GoogleCloudKeyManagement, Encryption
 from static.security.session_management import TTLSession
 from static.security.malware_analysis import malwareAnalysis
-from static.security.DatalossPrevention import DataLossPrevention
+from static.security.DatalossPrevention import DataLossPrevention, OpticalCharacterRecognition
 from static.security.logging import TTLLogger
 
 from flask import Blueprint, render_template, session, redirect, request, make_response, url_for, abort
@@ -488,6 +489,24 @@ def media_upload(id):
 
         # -----------------  END OF SAVING FILE LOCALLY ----------------- #
 
+        # -----------------  START OF DATA LOSS PREVENTION ----------------- #
+
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Data Loss Prevention Initialised on {temp_Mediafile_path}")
+
+        OCR = OpticalCharacterRecognition(temp_Mediafile_path)
+
+        DLP = DataLossPrevention(OCR.ocr())
+
+        if DLP.detect_sensitive_data():
+
+            TomTomLoadLogging.warning(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Data Loss Prevention detected sensitive data in {temp_Mediafile_path}")
+
+            abort(400)
+
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Data Loss Prevention completed on {temp_Mediafile_path}")
+
+        # -----------------  END OF DATA LOSS PREVENTION ----------------- #
+
         # -----------------  START OF UPLOADING TO GCS ----------------- #
         
         if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
@@ -566,11 +585,11 @@ def media_upload(id):
             else:
                 print("malwarewareware")
 
-                TomTomLoadLogging.error(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Malware found in media {id}. Aborting upload.")
+                TomTomLoadLogging.warning(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Malware found in media {id}. Aborting upload.")
 
                 abort(403)
 
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. End of Malware Analysis on {temp_Mediafile_path}")
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Malware Analysis completed on {temp_Mediafile_path}")
 
             if original_hash == new_hash:
                 TomTomLoadLogging.info(f"Integrity check of media {id} passed. {temp_Mediafile_path} has not been tampered with during upload. Hash matches.")
@@ -581,7 +600,7 @@ def media_upload(id):
                 TomTomLoadLogging.error(f"Integrity check of media {id} failed. {temp_Mediafile_path} has been tampered with during upload. Hash does not match.")
                 print(f"{temp_Mediafile_path} has been tampered with during upload. Hash does not match.")
 
-            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. End of Integrity Check on {temp_Mediafile_path}")
+            TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Integrity Check completed on {temp_Mediafile_path}")
 
         else:
 
@@ -830,7 +849,7 @@ def post_upload(id):
                 )
 
                 TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Encrypted post {post_upload_id} to {temp_post_path}")
-                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. End of Data Loss Prevention on post {post_upload_id}")
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Data Loss Prevention completed on post {post_upload_id}")
 
                 # -----------------  END OF ENCRYPTION ---------------- #
 
@@ -1264,5 +1283,61 @@ def addBlock_IPAddresses():
 @check_role_write
 def addBan_Admin():
     return render_template('authorised_admin/user_access.html', email=decoded_jwt["email"], role = decoded_jwt["role"],pic=decoded_jwt["picture"], access_list=access_list, ban=ban)
+
+
+@authorised_user.route("/users/revoke_cert", methods=['GET', 'POST'])
+@check_signed_credential
+def revoke_cert():
+
+    if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
+
+        # -----------------  START OF OVERWRITE ACL ---------------- #
+
+        with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
+            acl = json.load(s)
+
+        used = 0
+
+        w = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r")
+        dict_acl = json.loads(w.read())
+        dict_acl[decoded_jwt["role"]][decoded_jwt["email"]][4] = used
+        w.close()
+
+        r = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "w")
+        r.write(json.dumps(dict_acl))
+        r.close()
+
+        # -----------------  END OF OVERWRITE ACL ---------------- #
+
+        # -----------------  START OF REMOVING REVOKE CERT ---------------- #
+
+        super_admin_certificate = os.path.join(CONSTANTS.SUPER_CERTIFICATE_FOLDER, acl[decoded_jwt["role"]][decoded_jwt["email"]][3] + '_' + str(ttlSession.get_data_from_session("TTLContextAwareAccess", data=True)["TTL-Context-Aware-Access-Client-IP"]["ip"]).replace('.', '_'))
+        super_admin = os.path.join(super_admin_certificate, "SUPER_ADMIN.crt")
+
+        # print the full path
+        print("super_admin_certificate: " + super_admin_certificate)
+        print("super_admin: " + super_admin)
+
+        # remove the directory
+        shutil.rmtree(super_admin_certificate)
+
+        TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)} has revoked their certificate")
+
+        # -----------------  END OF REMOVING REVOKE CERT ---------------- #
+
+        # -----------------  START OF UPLOADING TO GCS ---------------- #
+
+        storage.upload_blob(
+            bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+            source_file_name=CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"),
+            destination_blob_name="acl.json"
+        )
+
+        # -----------------  END OF UPLOADING TO GCS ---------------- #
+
+
+        return redirect(url_for('authorised_user.users'))
+
+    return redirect(url_for('authorised_user.users'))
 
 # -----------------  END OF AUTHENTICATED SIGNED TRAFFIC ----------------- #

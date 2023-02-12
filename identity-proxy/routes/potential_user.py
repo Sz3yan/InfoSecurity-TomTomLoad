@@ -4,6 +4,7 @@ import json
 import requests
 import base64
 import ipinfo
+import shutil
 from datetime import datetime, timedelta
 import google.auth.transport.requests
 
@@ -20,6 +21,7 @@ from google.oauth2 import id_token
 from google_auth_oauthlib.flow import Flow
 from pip._vendor import cachecontrol
 from functools import wraps
+import socket
 
 
 potential_user = Blueprint('potential_user', __name__, template_folder="templates", static_folder='static')
@@ -121,6 +123,8 @@ def authorisation():
     TTLContextAwareAccessClientUserAgent = request.headers.get('User-Agent')
     TTLContextAwareAccessClientCertificate = "cert"
 
+    print(custom_ip)
+
     # -----------------  END OF CONTEXT-AWARE ACCESS ----------------- #
 
     # -----------------  START OF BLACKLIST ----------------- #
@@ -185,7 +189,10 @@ def authorisation():
         certificate_directory = CONSTANTS.IP_CONFIG_FOLDER.joinpath("certificates")
 
         sub_certificate = os.path.join(certificate_directory, "SUBORDINATE_IDENTITY_PROXY")
-        super_admin = os.path.join(certificate_directory, "SUPER_ADMIN.crt")
+
+        super_admin_certificate_directory = os.path.join(certificate_directory, "SUPERADMIN")
+        super_admin_certificate = os.path.join(super_admin_certificate_directory, f"{str(ttlSession.get_data_from_session('id_info', data=True).get('sub')) + '_' + str(TTLContextAwareAccessClientIP['ip']).replace('.', '_')}")
+        super_admin = os.path.join(super_admin_certificate, "SUPER_ADMIN.crt")
 
         used = 0
 
@@ -215,7 +222,24 @@ def authorisation():
                     ca_name=sub_certificate,
                     ca_duration=100 * 24 * 60 * 60
                 )
-                IdentityProxyLogging.INFO("super admin certificate created")
+                IdentityProxyLogging.info("super admin certificate created")
+
+                certificate_directory = os.path.join(CONSTANTS.IP_CONFIG_FOLDER, "certificates")
+                super_admin_certificate_directory = os.path.join(certificate_directory, "SUPERADMIN")
+                super_admin_certificate = os.path.join(super_admin_certificate_directory, f"{str(ttlSession.get_data_from_session('id_info', data=True).get('sub')) + '_' + str(TTLContextAwareAccessClientIP['ip']).replace('.', '_')}")
+                cert_crt = os.path.join(super_admin_certificate, "SUPER_ADMIN.crt")
+                cert_csr = os.path.join(super_admin_certificate, "SUPER_ADMIN_csr.pem")
+                cert_key = os.path.join(super_admin_certificate, "SUPER_ADMIN_key.pem")
+
+                if not os.path.exists(super_admin_certificate_directory):
+                    os.mkdir(super_admin_certificate_directory)
+
+                if not os.path.exists(super_admin_certificate):
+                    os.mkdir(super_admin_certificate)
+
+                shutil.copyfile(os.path.join(certificate_directory, "SUPER_ADMIN.crt"), cert_crt)
+                shutil.copyfile(os.path.join(certificate_directory, "SUPER_ADMIN_csr.pem"), cert_csr)
+                shutil.copyfile(os.path.join(certificate_directory, "SUPER_ADMIN_key.pem"), cert_key)
 
                 used = 1
 
