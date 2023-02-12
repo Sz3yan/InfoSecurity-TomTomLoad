@@ -184,77 +184,79 @@ def authorisation():
 
         # -----------------  START OF CERTIFICATE AUTHORITY ----------------- #
 
-        IdentityProxyLogging.info("Initialising Certificate Authority")
+        if role == 'SuperAdmins':
 
-        certificate_directory = CONSTANTS.IP_CONFIG_FOLDER.joinpath("certificates")
+            IdentityProxyLogging.info("Initialising Certificate Authority")
 
-        sub_certificate = os.path.join(certificate_directory, "SUBORDINATE_IDENTITY_PROXY")
+            certificate_directory = CONSTANTS.IP_CONFIG_FOLDER.joinpath("certificates")
 
-        super_admin_certificate_directory = os.path.join(certificate_directory, "SUPERADMIN")
-        super_admin_certificate = os.path.join(super_admin_certificate_directory, f"{str(ttlSession.get_data_from_session('id_info', data=True).get('sub')) + '_' + acl['SuperAdmins'][ttlSession.get_data_from_session('id_info', data=True).get('email')][5]}")
-        super_admin = os.path.join(super_admin_certificate, "SUPER_ADMIN.crt")
+            sub_certificate = os.path.join(certificate_directory, "SUBORDINATE_IDENTITY_PROXY")
 
-        used = 0
+            super_admin_certificate_directory = os.path.join(certificate_directory, "SUPERADMIN")
+            super_admin_certificate = os.path.join(super_admin_certificate_directory, f"{str(ttlSession.get_data_from_session('id_info', data=True).get('sub')) + '_' + acl['SuperAdmins'][ttlSession.get_data_from_session('id_info', data=True).get('email')][5]}")
+            super_admin = os.path.join(super_admin_certificate, "SUPER_ADMIN.crt")
 
-        if ttlSession.get_data_from_session("id_info", data=True).get("email") in acl['SuperAdmins']:
+            used = 0
 
-            w = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r")
-            dict_acl = json.loads(w.read())
-            used = dict_acl['SuperAdmins'][ttlSession.get_data_from_session("id_info", data=True).get("email")][4]
+            if ttlSession.get_data_from_session("id_info", data=True).get("email") in acl['SuperAdmins']:
 
-            if used == 1:
-                if not os.path.exists(super_admin):
-                    IdentityProxyLogging.warning("super admin certificate not found")
-                    IdentityProxyLogging.warning("super admin access denied")
+                w = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "r")
+                dict_acl = json.loads(w.read())
+                used = dict_acl['SuperAdmins'][ttlSession.get_data_from_session("id_info", data=True).get("email")][4]
 
-                    return abort(401)
+                if used == 1:
+                    if not os.path.exists(super_admin):
+                        IdentityProxyLogging.warning("super admin certificate not found")
+                        IdentityProxyLogging.warning("super admin access denied")
 
-                else:
-                    IdentityProxyLogging.info("super admin certificate found")
-                    IdentityProxyLogging.info("super admin access granted")
+                        return abort(401)
 
-                    TTLContextAwareAccessClientCertificate = str(super_admin)
+                    else:
+                        IdentityProxyLogging.info("super admin certificate found")
+                        IdentityProxyLogging.info("super admin access granted")
 
-            if used == 0:
-                certificate.create_certificate_csr(ca_name="SUPER_ADMIN")
-                certificate_authority.create_certificate_from_csr(
-                    csr_file="SUPER_ADMIN",
-                    ca_name=sub_certificate,
-                    ca_duration=100 * 24 * 60 * 60
-                )
-                IdentityProxyLogging.info("super admin certificate created")
+                        TTLContextAwareAccessClientCertificate = str(super_admin)
 
-                certificate_directory = os.path.join(CONSTANTS.IP_CONFIG_FOLDER, "certificates")
-                super_admin_certificate_directory = os.path.join(certificate_directory, "SUPERADMIN")
-                super_admin_certificate = os.path.join(super_admin_certificate_directory, f"{str(ttlSession.get_data_from_session('id_info', data=True).get('sub')) + '_' + acl['SuperAdmins'][ttlSession.get_data_from_session('id_info', data=True).get('email')][5]}")
-                cert_crt = os.path.join(super_admin_certificate, "SUPER_ADMIN.crt")
-                cert_csr = os.path.join(super_admin_certificate, "SUPER_ADMIN_csr.pem")
-                cert_key = os.path.join(super_admin_certificate, "SUPER_ADMIN_key.pem")
+                if used == 0:
+                    certificate.create_certificate_csr(ca_name="SUPER_ADMIN")
+                    certificate_authority.create_certificate_from_csr(
+                        csr_file="SUPER_ADMIN",
+                        ca_name=sub_certificate,
+                        ca_duration=100 * 24 * 60 * 60
+                    )
+                    IdentityProxyLogging.info("super admin certificate created")
 
-                if not os.path.exists(super_admin_certificate_directory):
-                    os.mkdir(super_admin_certificate_directory)
+                    certificate_directory = os.path.join(CONSTANTS.IP_CONFIG_FOLDER, "certificates")
+                    super_admin_certificate_directory = os.path.join(certificate_directory, "SUPERADMIN")
+                    super_admin_certificate = os.path.join(super_admin_certificate_directory, f"{str(ttlSession.get_data_from_session('id_info', data=True).get('sub')) + '_' + acl['SuperAdmins'][ttlSession.get_data_from_session('id_info', data=True).get('email')][5]}")
+                    cert_crt = os.path.join(super_admin_certificate, "SUPER_ADMIN.crt")
+                    cert_csr = os.path.join(super_admin_certificate, "SUPER_ADMIN_csr.pem")
+                    cert_key = os.path.join(super_admin_certificate, "SUPER_ADMIN_key.pem")
 
-                if not os.path.exists(super_admin_certificate):
-                    os.mkdir(super_admin_certificate)
+                    if not os.path.exists(super_admin_certificate_directory):
+                        os.mkdir(super_admin_certificate_directory)
 
-                shutil.copyfile(os.path.join(certificate_directory, "SUPER_ADMIN.crt"), cert_crt)
-                shutil.copyfile(os.path.join(certificate_directory, "SUPER_ADMIN_csr.pem"), cert_csr)
-                shutil.copyfile(os.path.join(certificate_directory, "SUPER_ADMIN_key.pem"), cert_key)
+                    if not os.path.exists(super_admin_certificate):
+                        os.mkdir(super_admin_certificate)
 
-                used = 1
+                    shutil.copyfile(os.path.join(certificate_directory, "SUPER_ADMIN.crt"), cert_crt)
+                    shutil.copyfile(os.path.join(certificate_directory, "SUPER_ADMIN_csr.pem"), cert_csr)
+                    shutil.copyfile(os.path.join(certificate_directory, "SUPER_ADMIN_key.pem"), cert_key)
 
-                r = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "w")
-                dict_acl['SuperAdmins'][ttlSession.get_data_from_session("id_info", data=True).get("email")][4] = used
-                r.write(json.dumps(dict_acl))
-                r.close()
+                    used = 1
 
-                storage.upload_blob(
-                    bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
-                    source_file_name=CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"),
-                    destination_blob_name="acl.json"
-                )
+                    r = open(CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"), "w")
+                    dict_acl['SuperAdmins'][ttlSession.get_data_from_session("id_info", data=True).get("email")][4] = used
+                    r.write(json.dumps(dict_acl))
+                    r.close()
 
-                IdentityProxyLogging.info("updated ACL file")
+                    storage.upload_blob(
+                        bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
+                        source_file_name=CONSTANTS.IP_CONFIG_FOLDER.joinpath("acl.json"),
+                        destination_blob_name="acl.json"
+                    )
+
+                    IdentityProxyLogging.info("updated ACL file")
 
         # -----------------  END OF CERTIFICATE AUTHORITY ----------------- #
 
