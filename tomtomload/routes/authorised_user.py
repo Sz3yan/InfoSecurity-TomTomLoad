@@ -46,11 +46,10 @@ TomTomLoadLogging.info(f"Downloaded ACL from {CONSTANTS.STORAGE_BUCKET_NAME} to 
 # -----------------  END OF INITIALISATION ----------------- #
 
 def retention_policy():
-    print("Retention policy is running")
+    TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Data Retention Policy started")
+
     current_time_pre = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     current_time = datetime.strptime(current_time_pre,"%Y-%m-%d %H:%M:%S")
-
-    TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Data Retention Policy started")
 
     # -----------------  START OF RETRIEVING MEDIA ----------------- #
 
@@ -410,7 +409,7 @@ def media():
 
 @authorised_user.route("/media/<regex('[0-9a-f]{32}'):id>")
 @check_signed_credential
-@check_role_delete
+@check_role_read
 def media_id(id):
     media_id = id
     create_new_media_id = UniqueID()
@@ -617,7 +616,7 @@ def media_upload(id):
 
 @authorised_user.route("/media/delete/<regex('[0-9a-f]{32}'):id>")
 @check_signed_credential
-@check_role_read
+@check_role_delete
 def media_delete(id):
     media_delete_id = id
 
@@ -749,7 +748,7 @@ def post():
 
 @authorised_user.route("/posts/<regex('[0-9a-f]{32}'):id>")
 @check_signed_credential
-@check_role_write
+@check_role_read
 def post_id(id):
     if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
         post_id = id
@@ -1124,8 +1123,8 @@ def profile():
 @authorised_user.route("/users/edit_access/<regex('[0-9]{21}'):id>", methods=['GET', 'POST'])
 @check_signed_credential
 @check_role_write
-@check_role_read
 def edit_access(id):
+    user_id = id
     with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r") as s:
         acl = json.load(s)
 
@@ -1150,6 +1149,7 @@ def edit_access(id):
             if banned is not None:
                 access_list_original = access_list
                 access_list = ["None", "None", "None"] + access_list_original[3:4] + ['banned']
+                TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)}. Changed access for {email} to banned")
             else:
                 access_list = ["read", "None", "None"] + access_list[3:4] + ['unbanned']
 
@@ -1202,7 +1202,7 @@ def edit_access(id):
 
             TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)} updated ACL file")
 
-            return redirect(url_for('authorised_user.home'))
+            return redirect(url_for('authorised_user.users'))
 
     else:
 
@@ -1210,7 +1210,7 @@ def edit_access(id):
 
         abort(403)
 
-    return render_template('authorised_admin/user_access.html', pic=decoded_jwt["picture"], email=email, role = decoded_jwt["role"], access_list=access_list)
+    return render_template('authorised_admin/user_access.html', pic=decoded_jwt["picture"], email=email, role = decoded_jwt["role"], access_list=access_list, user_id=user_id)
 
 
 @authorised_user.route("/logs/")
@@ -1268,7 +1268,7 @@ def addBlock_IPAddresses():
                 )
                 TomTomLoadLogging.info(f"{ttlSession.get_data_from_session('TTLAuthenticatedUserName', data=True)} updated Blacklisted file")
 
-            return redirect(url_for('authorised_user.home'))
+            return redirect(url_for('authorised_user.users'))
 
     else:
 
