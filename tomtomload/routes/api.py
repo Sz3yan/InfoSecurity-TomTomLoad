@@ -402,6 +402,21 @@ def api_view_media(id):
     else:
         return jsonify(Error="Unauthorized Access"),401
 
+    # path = os.path.join(CONSTANTS.TTL_CONFIG_FOLDER, "media" , id)
+    # path = path + ".png"
+
+    # storage.download_blob(
+    #     bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+    #     source_blob_name = decoded_jwt["role"] + "/" + ttlSession.get_data_from_session("TTLAuthenticatedUserName", data=True) + "/media/" + media_id + ".png",
+    #     destination_file_name = path
+    # )
+
+    if ttl_check_user_agent():
+        url = storage.generate_download_signed_url(
+            bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+            blob_name=decoded_dict["role"] + "/" + name + "/media/" + id + ".png")
+
+        return jsonify(url=url),200
 
     return jsonify(message="Work in progress"),200
 
