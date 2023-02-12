@@ -1159,7 +1159,7 @@ def edit_access(id):
 
     email = ''
     for user, value in acl['Admins'].items():
-        print(user)
+        # print(user)
         if id == value[-2]:
             email = user
 
@@ -1169,12 +1169,12 @@ def edit_access(id):
         if user == email:
             access_list = value
 
-    print('access_list:', access_list)
+    # print('access_list:', access_list)
 
     if ttlSession.verfiy_Ptoken("TTLAuthenticatedUserName"):
         if request.method == 'POST':
             banned = request.form.get('ban')
-            print('banned?:', banned)
+            # print('banned?:', banned)
             if banned is not None:
                 access_list_original = access_list
                 access_list = ["None", "None", "None"] + access_list_original[3:4] + ['banned']
@@ -1209,14 +1209,14 @@ def edit_access(id):
                     else:
                         pass
 
-                print('email',email)
-                print('access_list:', access_list)
-                print('acl: ', acl['Admins'][email])
+                # print('email',email)
+                # print('access_list:', access_list)
+                # print('acl: ', acl['Admins'][email])
 
             w = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "r")
             dict_acl = json.loads(w.read())
             dict_acl['Admins'][email] = access_list
-            print('dict_acl:', dict_acl)
+            # print('dict_acl:', dict_acl)
             w.close()
 
             r = open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"), "w")
