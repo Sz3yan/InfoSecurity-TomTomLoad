@@ -23,7 +23,7 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 
-
+ 
 authorised_user = Blueprint('authorised_user', __name__, url_prefix="/admin", template_folder="templates", static_folder='static')
 
 # -----------------  START OF INITIALISATION ----------------- #
