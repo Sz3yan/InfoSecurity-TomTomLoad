@@ -405,14 +405,12 @@ def api_view_media(id):
         return jsonify(Error="Unauthorized Access"),401
 
 
-    if ttl_check_user_agent():
-        url = storage.generate_download_signed_url(
-            bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
-            blob_name=decoded_dict["role"] + "/" + name + "/media/" + id + ".png")
+    
+    url = storage.generate_download_signed_url(
+        bucket_name = CONSTANTS.STORAGE_BUCKET_NAME,
+        blob_name=decoded_dict["role"] + "/" + name + "/media/" + id + ".png")
 
-        return jsonify(url=url),200
-
-    return jsonify(message="Work in progress"),200
+    return jsonify(url=url),200
 
 
 @api.route("/delete_media/<regex('[0-9a-f]{32}'):id>", methods=["DELETE"])
