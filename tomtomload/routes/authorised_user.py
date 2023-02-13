@@ -39,14 +39,15 @@ TomTomLoadLogging.info(f"Initialising {__name__}")
 
 # -----------------  START OF DOWNLOAD ACL ----------------- #
 
-storage.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, CONSTANTS.ACL_FILE_NAME, CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"))
+@authorised_user.before_app_request
+def download_acl():
+    storage.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, CONSTANTS.ACL_FILE_NAME, CONSTANTS.TTL_CONFIG_FOLDER.joinpath("acl.json"))
 
-TomTomLoadLogging.info(f"Downloaded ACL from {CONSTANTS.STORAGE_BUCKET_NAME} to {CONSTANTS.TTL_CONFIG_FOLDER.joinpath('acl.json')}")
+    TomTomLoadLogging.info(f"Downloaded ACL from {CONSTANTS.STORAGE_BUCKET_NAME} to {CONSTANTS.TTL_CONFIG_FOLDER.joinpath('acl.json')}")
 
-storage.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, "adminuser.json", CONSTANTS.TTL_CONFIG_FOLDER.joinpath("adminuser.json"))
+    storage.download_blob(CONSTANTS.STORAGE_BUCKET_NAME, "adminuser.json", CONSTANTS.TTL_CONFIG_FOLDER.joinpath("adminuser.json"))
 
-TomTomLoadLogging.info(f"Downloaded ADMINUSER from {CONSTANTS.STORAGE_BUCKET_NAME} to {CONSTANTS.TTL_CONFIG_FOLDER.joinpath('adminuser.json')}")
-
+    TomTomLoadLogging.info(f"Downloaded ADMINUSER from {CONSTANTS.STORAGE_BUCKET_NAME} to {CONSTANTS.TTL_CONFIG_FOLDER.joinpath('adminuser.json')}")
 
 # -----------------  END OF DOWNLOAD ACL ----------------- #
 
