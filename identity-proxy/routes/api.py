@@ -66,7 +66,7 @@ def api_ip_to_ttl_jwt():
 # -----------------  START OF AUTHENTICATION ----------------- #
 
 @api.route("/login")
-@ttl_redirect_user
+# @ttl_redirect_user
 def verification():
 
     ttlSession.write_data_to_session("route_from","api")
@@ -102,7 +102,7 @@ def ip_api_route(route):
 
 
 @api.route("/<route>/<regex('(\d{21})|([0-9a-z]{32})'):id>", methods=['GET', 'PUT', 'DELETE'])
-@ttl_redirect_user
+# @ttl_redirect_user
 @ttl_jwt_authentication
 @ttlLimiter.limit_user(limit_value="10/day")
 def ip_api_route_wif_id(route, id):
