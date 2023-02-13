@@ -89,19 +89,21 @@
                             <thead>
                                 <tr>
                                     <th id="heading-email">Email</th>
-                                    <th id="heading-id">ID</th>
+                                    <th id="heading-id">Created Time</th>
                                     <th id="heading-role">Role</th>
-                                    <th id="heading-access">Access</th>
+<!--                                    <th id="heading-access">Access</th>-->
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td class="cell-email"><a href="/admin/users/{{ user_id }}">{{ email }}</a></td>
-                                    <td class="cell-id"><span>{{ user_id }}</span></td>
-                                    <td class="cell-name"><span>{{ role }}</span></td>
-                                    <td><a type="button" class="btn btn--style-secondary btn--size-small" href="users/edit_access/{{ user_id }}">
-                                    <span class="btn__content"><span class="btn__label">Edit Access</span></span></a></td>
-                                </tr>
+                                {% for user in adminuser_list %}
+                                    <tr>
+                                        <td class="cell-email">{{ user[0] }}</td>
+                                        <td class="cell-id"><span>{{ user[1] }}</span></td>
+                                        <td class="cell-name"><span>User</span></td>
+    <!--                                    <td><a type="button" class="btn btn&#45;&#45;style-secondary btn&#45;&#45;size-small" href="users/edit_access/{{ user_id }}">-->
+    <!--                                    <span class="btn__content"><span class="btn__label">Edit Access</span></span></a></td>-->
+                                    </tr>
+                                {% endfor %}
                             {% else %}
                             <thead>
                                 <tr>

@@ -36,6 +36,18 @@
                             <div class="auth-fields__api-key">
                                 <input type="checkbox" name="deleteAccess" value = '' disabled><span style="font-size: 1.2em">Delete Access</span>
                             </div>
+                                <br>
+
+                            {% if "unbanned" in access_list %}
+<!--                                <a type="button" class="btn btn&#45;&#45;style-primary btn&#45;&#45;icon-style-without-border btn&#45;&#45;size-medium btn&#45;&#45;icon-position-right" href="" name="ban">-->
+<!--                                    <span class="btn__content" ><span class="btn__label">{{ ban }} banned?</span></span></a>-->
+                                <input type="checkbox" name="ban" id="ban" value = 'banned'><span style="font-size: 1.2em">Ban Admin</span>
+                            {% else %}
+<!--                                <a type="button" class="btn btn&#45;&#45;style-secondary btn&#45;&#45;size-small" href="" name="ban">-->
+<!--                                    <span class="btn__content"><span class="btn__label" >{{ ban }}  unbanned?</span></span></a>-->
+                                <input type="checkbox" name="ban" value = 'unbanned' checked><span style="font-size: 1.2em">Banned</span>
+                            {% endif %}
+
 
                     {% else %}
 
@@ -61,6 +73,21 @@
                                 {% else %}
                                 <input type="checkbox" name="deleteAccess" value = ' '><span style="font-size: 1.2em">Delete Access</span>
                                 {% endif %}
+                                <br><br>
+
+                                {% if role == 'SuperAdmins' %}
+                                    {% if "unbanned" in access_list %}
+        <!--                                <a type="button" class="btn btn&#45;&#45;style-primary btn&#45;&#45;icon-style-without-border btn&#45;&#45;size-medium btn&#45;&#45;icon-position-right" href="" name="ban">-->
+        <!--                                    <span class="btn__content" ><span class="btn__label">{{ ban }} banned?</span></span></a>-->
+                                        <input type="checkbox" name="ban" id="ban" value = 'banned'><span style="font-size: 1.2em">Ban Admin</span>
+                                    {% else %}
+        <!--                                <a type="button" class="btn btn&#45;&#45;style-secondary btn&#45;&#45;size-small" href="" name="ban">-->
+        <!--                                    <span class="btn__content"><span class="btn__label" >{{ ban }}  unbanned?</span></span></a>-->
+                                        <input type="checkbox" name="ban" value = 'unbanned' checked><span style="font-size: 1.2em">Banned</span>
+                                    {% endif %}
+                                {% endif %}
+
+
                             </div>
                     {% endif %}
 
@@ -75,17 +102,17 @@
                     <div class="collection-edit__sidebar-sticky-wrap">
                         <div class="collection-edit__document-actions">
                             <br>
-                            {% if role == 'SuperAdmins' %}
-                                {% if "unbanned" in access_list %}
-    <!--                                <a type="button" class="btn btn&#45;&#45;style-primary btn&#45;&#45;icon-style-without-border btn&#45;&#45;size-medium btn&#45;&#45;icon-position-right" href="" name="ban">-->
-    <!--                                    <span class="btn__content" ><span class="btn__label">{{ ban }} banned?</span></span></a>-->
-                                    <input type="checkbox" name="ban" id="ban" value = 'banned'><span style="font-size: 1.2em">Ban Admin</span>
-                                {% else %}
-    <!--                                <a type="button" class="btn btn&#45;&#45;style-secondary btn&#45;&#45;size-small" href="" name="ban">-->
-    <!--                                    <span class="btn__content"><span class="btn__label" >{{ ban }}  unbanned?</span></span></a>-->
-                                    <input type="checkbox" name="ban" value = 'unbanned' checked><span style="font-size: 1.2em">Banned</span>
-                                {% endif %}
-                            {% endif %}
+<!--                            {% if role == 'SuperAdmins' %}-->
+<!--                                {% if "unbanned" in access_list %}-->
+<!--    &lt;!&ndash;                                <a type="button" class="btn btn&#45;&#45;style-primary btn&#45;&#45;icon-style-without-border btn&#45;&#45;size-medium btn&#45;&#45;icon-position-right" href="" name="ban">&ndash;&gt;-->
+<!--    &lt;!&ndash;                                    <span class="btn__content" ><span class="btn__label">{{ ban }} banned?</span></span></a>&ndash;&gt;-->
+<!--                                    <input type="checkbox" name="ban" id="ban" value = 'banned'><span style="font-size: 1.2em">Ban Admin</span>-->
+<!--                                {% else %}-->
+<!--    &lt;!&ndash;                                <a type="button" class="btn btn&#45;&#45;style-secondary btn&#45;&#45;size-small" href="" name="ban">&ndash;&gt;-->
+<!--    &lt;!&ndash;                                    <span class="btn__content"><span class="btn__label" >{{ ban }}  unbanned?</span></span></a>&ndash;&gt;-->
+<!--                                    <input type="checkbox" name="ban" value = 'unbanned' checked><span style="font-size: 1.2em">Banned</span>-->
+<!--                                {% endif %}-->
+<!--                            {% endif %}-->
 
                             <div class="form-submit"><button type="submit" id="action-save"
                                     class="btn btn--style-primary btn--icon-style-without-border btn--size-medium btn--icon-position-right"><span
