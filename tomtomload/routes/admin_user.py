@@ -3,6 +3,7 @@ import pyotp
 import smtplib
 import json
 import bcrypt 
+import datetime
 
 from random import *
 from static.classes.config import CONSTANTS
@@ -74,6 +75,8 @@ def api_admin_user_signup():
                 return redirect(url_for('admin_user.api_admin_user_signup'))
             if password == "":
                 return redirect(url_for('admin_user.api_admin_user_signup'))
+            
+            time = datetime.datetime.now()
 
         #------ PASSWORD VALIDATION ------
             email_regex = re.compile(r"[^@]+@[^@]+\.[^@]+")
@@ -112,10 +115,10 @@ def api_admin_user_signup():
             if existing_user:
                 flash('Account has already been created', category='error')
             else:
-                user_data = {'email': email, 'password': hashed_password.decode('utf-8')}
+                user_data = {'email': email, 'password': hashed_password.decode('utf-8'), 'created_at': time}
                 adminuser['Users'].append(user_data)
                 with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("adminuser.json"), "w") as f:
-                    json.dump(adminuser, f)
+                    json.dump(adminuser, f, default=str)
 
                 storage.upload_blob(
                     bucket_name=CONSTANTS.STORAGE_BUCKET_NAME,
