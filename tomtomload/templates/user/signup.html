@@ -61,7 +61,34 @@
             .closebtn:hover {
               color: black;
             }
-            </style>
+            .container .strengthMeter{
+              position: absolute;
+              bottom: 56%;
+              left: 78px;
+              width: 89%;
+              height: 3px;
+              
+            }
+            .container .strengthMeter::before{
+              content: '';
+              position: absolute;
+              width: 0;
+              height: 100%;
+              transition: 0.5s;
+              background: black;
+            }
+            .container.weak .strengthMeter::before{
+              width: 33%;
+            }
+            .container.medium .strengthMeter::before{
+              width: 66%;
+            }
+            .container.strong .strengthMeter::before{
+              width: 100%;
+            }
+            
+
+        </style>
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
@@ -112,16 +139,70 @@
                             class="required">*</span></label><input id="field-email" type="email" name="email"
                         autocomplete="email" value=""></div>
 
-
+                <div class="container">
                 <div class="field-type password"><label for="field-password" class="field-label">Password<span
                             class="required">*</span></label><input id="field-password" type="password"
                         autocomplete="off" name="password" value=""></div>
+                <div class="strengthMeter"></div>
+                </div>
+
+                <script>
+                  function Strength(password){
+                    let i = 0;
+                    // if (password.length>6){
+                    //   i++;
+                    //   console.log(i)
+                    // }
+                    if (password.length>=8){
+                      i++;
+                      console.log(i)
+                    }
+                    if (/[A-Z]/.test(password)){
+                      i++;
+                      console.log(i)
+                    }
+                    if (/[0-9]/.test(password)){
+                      i++;
+                      console.log(i)
+                    }
+                    if (/[A-Za-z0-8]/.test(password)){
+                      i++;
+                      console.log(i)
+                    }
+                    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+                      i++;
+                    }
+                    return i;
+                    console.log(i)
+                  }
+                  let container = document.querySelector('.container');
+                  document.querySelector("#field-password").addEventListener("keyup", function(e){
+                    let password = document.querySelector('#field-password').value;
+                    let strength = Strength(password);
+                    console.log("Password: ", password);
+                    console.log("Strength: ", strength);
+                    if(strength <= 2){
+                      container.classList.add('weak');
+                      container.classList.remove('medium');
+                      container.classList.remove('strong');
+                    }else if(strength >= 2 && strength <= 4){
+                      container.classList.remove('weak');
+                      container.classList.add('medium');
+                      container.classList.remove('strong');
+                    }else {
+                      container.classList.remove('weak');
+                      container.classList.remove('medium');
+                      container.classList.add('strong');
+                    }
+
+                    })
+                </script>
                   
                 <div class="password"><input id="show-password" type="checkbox"
                       name="password" value="">
                   <label for="password" class="label">Show password</label></div>
-
-                
+                </div>
+              
                   <script>
                   const showPassword = document.querySelector("#show-password");
                   const passwordField = document.querySelector("#field-password");
