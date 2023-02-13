@@ -1029,9 +1029,23 @@ def users():
             acl['Admins'][user] = user, value[-2]
             Admins_list.append(acl['Admins'][user])
 
-    print(Admins_list)
+    # print(Admins_list)
 
-    return render_template('authorised_admin/users.html', user_id=user_id, email=decoded_jwt["email"], role=role, pic=decoded_jwt["picture"], Admins_list=Admins_list)
+    with open(CONSTANTS.TTL_CONFIG_FOLDER.joinpath("adminuser.json"), "r") as a:
+        adminuser = json.load(a)
+
+        adminuser_list = []
+
+        for value in adminuser['Users']:
+            print(value['email'])
+            print(value['created_at'])
+            if value['email'] not in adminuser_list:
+                adminuser[value['email']] = value['email'], value['created_at']
+                adminuser_list.append(adminuser[value['email']])
+
+        # print(adminuser_list)
+
+    return render_template('authorised_admin/users.html', user_id=user_id, email=decoded_jwt["email"], role=role, pic=decoded_jwt["picture"], Admins_list=Admins_list, adminuser_list=adminuser_list)
 
 
 @authorised_user.route("/users/<regex('[0-9]{21}'):id>")
@@ -1045,10 +1059,10 @@ def users_id(id):
         acl = json.load(s)
 
     for user, value in acl['Admins'].items():
-        print(user, value)
+        # print(user, value)
         if value[-2] == user_id:
             email = user
-            print(email)
+            # print(email)
 
     return render_template('authorised_admin/user_id.html', user_id=user_id, email=email, role = decoded_jwt["role"], pic=decoded_jwt["picture"])
 
@@ -1113,7 +1127,7 @@ def edit_access(id):
                 server.ehlo()
                 server.starttls()
                 server.login('tomtomloadcms@gmail.com', 'jixepnkykfebnkai')
-                message = f"Subject: Account status\n\nYour account with {email} will be banned until further notice. \n\nPlease note that you will not be able to access TomTomLoad.com with this email during this period."
+                message = f"Subject: Account status\n\nYour account with {email} will be banned until further notice. \n\nPlease note that you will not be able to access tomtomload.com with this email during this period."
                 server.sendmail('tomtomloadcms@gmail.com', email, message)
                 server.quit()
 
